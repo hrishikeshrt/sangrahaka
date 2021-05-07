@@ -1,0 +1,56 @@
+[
+  {
+    "gid": "1",
+    "cypher": "MATCH (p1)-[r:IS_FATHER_OF]->(p2) WHERE p2.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "p",
+        "type": "entity"
+      }
+    ],
+    "output": ["p1", "r", "p2"],
+    "texts": {
+      "english": "Who is the father of {0}?",
+      "russian": "Кто отец {0}?",
+      "greek": "Ποιος είναι ο πατέρας του {0};"
+    },
+    "groups": {
+      "english": "Kinship",
+      "russian": "Родство",
+      "greek": "Συγγένεια"
+    }
+  },
+  {
+    "gid": "2",
+    "cypher": "MATCH (n1:{0})-[r:{1}]-(n2:{2}) RETURN *",
+    "input": [
+      {
+        "id": "t1",
+        "type": "entity_type"
+      },
+      {
+        "id": "r",
+        "type": "relation"
+      },
+      {
+        "id": "t2",
+        "type": "entity_type"
+      }
+    ],
+    "output": [
+      "n1",
+      "r",
+      "n2"
+    ],
+    "texts": {
+      "english": "Show all matches where an entity of type {0} has relation {1} with an entity of type {2}.",
+      "russian": "Показать все совпадения, в которых сущность типа {0} имеет отношение {1} с сущностью типа {2}.",
+      "greek": "Εμφάνιση όλων των αντιστοιχιών όπου μια οντότητα τύπου {0} έχει σχέση {1} με μια οντότητα τύπου {2}."
+    },
+    "groups": {
+      "english": "Generic",
+      "russian": "Общий",
+      "greek": "Γενικός"
+    }
+  }
+]

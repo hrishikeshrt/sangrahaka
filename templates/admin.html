@@ -1,0 +1,272 @@
+{% set active_page = "admin" %}
+{% include "header.html" %}
+<div class="container py-3">
+    <div class="card">
+        <div class="card-header lead">
+            Users
+        </div>
+        <div class="card-body">
+            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                <div class="form-group row">
+                    <label class="col-sm-1 col-form-label" for="target_user">User</label>
+                    <div class="col-sm-3 my-auto">
+                        <select class="lead m-1 selectpicker" name="target_user" id="target_user" data-live-search="true">
+                            {% for user in data.users %}
+                            <option value="{{user}}">{{user}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <label class="col-sm-1 col-form-label" for="target_role">Role</label>
+                    <div class="col-sm-3 my-auto">
+                        <select class="lead m-1 selectpicker" name="target_role" id="target_role" data-live-search="true">
+                            {% for role in data.roles %}
+                            <option value="{{role}}">{{role}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm my-auto">
+                        <button type="submit" name="action" value="user_role_add" class="btn btn-success disabled m-1">
+                            Add
+                        </button>
+                        <button type="submit" name="action" value="user_role_remove"
+                            class="btn btn-danger disabled m-1">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card mt-2">
+        <div class="card-header lead">
+            Data
+        </div>
+        <div class="card-body p-0">
+            <div class="accordion" id="manage_data">
+                <div class="card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-header collapsed" data-toggle="collapse" data-target="#corpus_container"
+                        aria-expanded="false" aria-controls="corpus_container">
+                        Create Corpus
+                    </div>
+                    <div id="corpus_container" class="collapse" data-parent="#manage_data">
+                        <div class="card-body">
+                            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                                <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                                <div class="form-group row">
+                                    <div class="col-sm-3">
+                                        <label for="corpus_name">Title</label>
+                                    </div>
+                                    <div class="col-sm">
+                                        <input type="text" class="form-control"  name="corpus_name" id="corpus_name" placeholder="Enter new corpus title" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-3">
+                                        <label for="corpus_description">Description</label>
+                                    </div>
+                                    <div class="col-sm">
+                                        <input type="text" class="form-control"  name="corpus_description" id="corpus_description" placeholder="Enter new corpus description">
+                                    </div>
+                                </div>
+                                <button type="submit" name="action" value="corpus_add" class="btn btn-success disabled m-1">
+                                    Create
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-header" data-toggle="collapse" data-target="#chapter_container"
+                        aria-expanded="true" aria-controls="chapter_container">
+                        Add Chapter
+                    </div>
+                    <div id="chapter_container" role="tabpanel" class="collapse show" data-parent="#manage_data">
+                        <div class="card-body">
+                            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                                <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                                <div class="form-group row">
+                                    <div class="col-sm-3">
+                                        <label for="corpus_select">Corpus</label>
+                                    </div>
+                                    <div class="col-sm">
+                                        <select class="lead my-auto selectpicker" name="corpus_id" id="corpus_select" data-live-search="true" data-width="auto" required>
+                                            {% for corpus in data.corpus_list %}
+                                            <option value="{{corpus.id}}">{{corpus.name}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-3">
+                                        <label for="chapter_name">Title</label>
+                                    </div>
+                                    <div class="col-sm">
+                                        <input class="form-control" type="text" name="chapter_name" id="chapter_name" placeholder="Enter new chapter title" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-3">
+                                        <label for="chapter_description">Description</label>
+                                    </div>
+                                    <div class="col-sm">
+                                        <input class="form-control" type="text" name="chapter_description" id="chapter_description" placeholder="Enter new chapter description">
+                                    </div>
+                                </div>
+                                <div class="input-group my-2">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" id="file_upload">Upload</span>
+                                    </div>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="chapter_file" name="chapter_file" aria-describedby="file_upload" required>
+                                        <label class="custom-file-label" for="chapter_file">Choose chapter file</label>
+                                    </div>
+                                </div>
+                                <script>
+                                    $(document).ready(function () {
+                                        bsCustomFileInput.init();
+                                    })
+                                </script>
+                                <button type="submit" name="action" value="chapter_add" class="btn btn-success disabled m-1">
+                                    Add
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mt-2">
+        <div class="card-header lead">
+            Ontology
+        </div>
+        <div class="card-body p-0">
+            <div class="card-group">
+                <div class="card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-header">
+                        Node
+                    </div>
+                    <div class="card-body">
+                        <form class="form" method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                            <div class="form-group">
+                                <label for="node_label_text">Label</label>
+                                <input class="form-control" type="text" name="node_label" id="node_label_text" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="node_label_desc">Description</label>
+                                <input class="form-control" type="text" name="node_label_description" id="node_label_desc" required>
+                            </div>
+                            <button type="submit" name="action" value="node_type_add" class="btn btn-success disabled m-1">
+                                Add
+                            </button>
+                        </form>
+                        <hr>
+                        <form class="form" method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                            <div class="form-group">
+                                <label for="node_label">Label</label>
+                                <select class="lead m-1 selectpicker" name="node_label" id="node_label" data-live-search="true" required>
+                                    {% for _id, _label, _description in constants.node_labels %}
+                                    <option value="{{_label}}">{{_description}}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" name="action" value="node_type_remove" class="btn btn-danger disabled m-1">
+                                    Remove
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-header">
+                        Relation
+                    </div>
+                    <div class="card-body">
+                        <form class="form" method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                            <div class="form-group">
+                                <label for="relation_label_text">Label</label>
+                                <input class="form-control" type="text" name="relation_label" id="relation_label_text" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="relation_label_desc">Description</label>
+                                <input class="form-control" type="text" name="relation_label_description" id="relation_label_desc" required>
+                            </div>
+                            <button type="submit" name="action" value="relation_type_add" class="btn btn-success disabled m-1">
+                                Add
+                            </button>
+                        </form>
+                        <hr>
+                        <form class="form" method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                            <div class="form-group">
+                                <label for="relation_label">Label</label>
+                                <select class="lead m-1 selectpicker" name="relation_label" id="relation_label" data-live-search="true" required>
+                                    {% for _id, _label, _description in constants.relation_labels %}
+                                    <option value="{{_label}}">{{_description}}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" name="action" value="relation_type_remove" class="btn btn-danger disabled m-1">
+                                    Remove
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if current_user.has_role('owner') %}
+    <!-- PythonAnywhere -->
+    <div class="card mt-2">
+        <div class="card-header lead">
+            Application
+        </div>
+        <div class="card-body">
+            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                <button type="submit" name="action" value="application_info" class="btn btn-primary disabled">
+                    info
+                </button>
+                <button type="submit" name="action" value="application_update" class="btn btn-warning disabled">
+                    update
+                </button>
+                <!-- reload button not actually interacting with form -->
+                <button type="button" id="application_reload" class="btn btn-success disabled">
+                    reload
+                </button>
+            </form>
+            <script>
+                $(document).ready(function () {
+                    $("#application_reload").click(function () {
+                        $.ajax({
+                            type: "POST",
+                            url: "{{url_for('action')}}",
+                            data: {
+                                "action": "application_reload"
+                            },
+                            success: function (result) {
+                                location.reload();
+                            },
+                            error: function (result) {
+                                location.reload();
+                            },
+                        })
+
+                    });
+                });
+            </script>
+        </div>
+    </div>
+    {% if data.result %}
+    <div class="card bg-dark">
+        <div class="card-body">
+            <pre class="text-white pre-scrollable">{{data.result}}</pre>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% include "footer.html" %}

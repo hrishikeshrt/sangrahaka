@@ -1,0 +1,32 @@
+{% set active_page = "contact" %}
+{% include "header.html" %}
+<div class="container p-3">
+    <div class="card">
+        <div class="card-header">
+            Contact
+        </div>
+        <div class="card-body">
+            {% if data.contacts %}
+            <ul>
+                {% for contact in data.contacts %}
+                <li>
+                    {{contact.name}},
+                    <span class="text-secondary">{{contact.designation}}</span>,
+                    <span class="text-secondary">{{contact.affiliation}}</span>.
+                    <br />
+                    {% for email_part in contact.email %}
+                    {% if email_part.is_text %}
+                    <span class="text-info">{{email_part.text}}</span>
+                    {% else %}
+                    <span class="text-muted">{{email_part.text}}</span>
+                    {% endif %}
+                    {% endfor %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% include "footer.html" %}

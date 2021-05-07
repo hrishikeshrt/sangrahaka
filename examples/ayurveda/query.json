@@ -1,0 +1,738 @@
+[
+  {
+    "gid": "1",
+    "cypher": "MATCH (entity) RETURN labels(entity) AS entity_label, count(labels(entity)) AS count ORDER BY count DESC",
+    "input": [],
+    "output": [
+      "entity_label",
+      "count"
+    ],
+    "texts": {
+      "english": "What are all the entity types?",
+      "sanskrit": "पदार्थानां के प्रकाराः।"
+    },
+    "groups": {
+      "english": "Contents",
+      "sanskrit": "सूचि"
+    }
+  },
+  {
+    "gid": "1",
+    "cypher": "MATCH (x)-[relation]-(y) RETURN type(relation) AS relation_label, count(type(relation)) AS count ORDER BY count DESC",
+    "input": [],
+    "output": [
+      "relation_label",
+      "count"
+    ],
+    "texts": {
+      "english": "What are all the relationships?",
+      "sanskrit": "पदार्थेषु के सम्बन्धाः।"
+    },
+    "groups": {
+      "english": "Contents",
+      "sanskrit": "सूचि"
+    }
+  },
+  {
+    "gid": "1",
+    "cypher": "MATCH (dravya) WHERE dravya:SUBSTANCE OR dravya:PREPARED_SUBSTANCE OR dravya:COMPOUND_SUBSTANCE OR dravya:PART_OF_SUBSTANCE OR dravya:COLLECTION_OF_SUBSTANCE RETURN dravya",
+    "input": [],
+    "output": [
+      "dravya"
+    ],
+    "texts": {
+      "english": "What are all the substances?",
+      "sanskrit": "के के द्रव्याः।"
+    },
+    "groups": {
+      "english": "Contents",
+      "sanskrit": "सूचि"
+    }
+  },
+  {
+    "gid": "1",
+    "cypher": "MATCH (entity) RETURN entity",
+    "input": [],
+    "output": [
+      "entity"
+    ],
+    "texts": {
+      "english": "What are all the entities?",
+      "sanskrit": "के के पदार्थाः।"
+    },
+    "groups": {
+      "english": "Contents",
+      "sanskrit": "सूचि"
+    }
+  },
+  {
+    "gid": "2",
+    "cypher": "MATCH (x)-[relation]-(entity) WHERE entity.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "x",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Show some details about {0}.",
+      "sanskrit": "{0} इत्यस्य विषये दर्शय।"
+    },
+    "groups": {
+      "english": "Detail",
+      "sanskrit": "वर्णन"
+    }
+  },
+  {
+    "gid": "2",
+    "cypher": "MATCH (x)-[relation*1..2]-(entity) WHERE entity.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "x",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Show some more details about {0}.",
+      "sanskrit": "{0} इत्यस्य विषये अधिकं दर्शय।"
+    },
+    "groups": {
+      "english": "Detail",
+      "sanskrit": "वर्णन"
+    }
+  },
+  {
+    "gid": "3",
+    "cypher": "MATCH (entity) WHERE entity.lemma =~ \"{0}\" RETURN labels(node) as entity_labels",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "entity_labels"
+    ],
+    "texts": {
+      "english": "What is the type of {0}?",
+      "sanskrit": "{0} इत्यस्य प्रकारः कः।"
+    },
+    "groups": {
+      "english": "Type",
+      "sanskrit": "प्रकार"
+    }
+  },
+  {
+    "gid": "3",
+    "cypher": "MATCH (node:{0})-[relation]-(x) RETURN *",
+    "input": [
+      {
+        "id": "t",
+        "type": "entity_type"
+      }
+    ],
+    "output": [
+      "node",
+      "relation",
+      "x"
+    ],
+    "texts": {
+      "english": "Find all the entities of type {0}.",
+      "sanskrit": "सर्वे {0} इति प्रकारस्य पदार्थाः चिनु।"
+    },
+    "groups": {
+      "english": "Type",
+      "sanskrit": "प्रकार"
+    }
+  },
+  {
+    "gid": "3.5",
+    "cypher": "MATCH (property)-[relation:IS_PROPERTY_OF]->(x) WHERE property.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "property",
+      "relation",
+      "x"
+    ],
+    "texts": {
+      "english": "Which substances have a property {0}?",
+      "sanskrit": "केषां द्रव्याणां {0} इति गुणः अस्ति।"
+    },
+    "groups": {
+      "english": "Property",
+      "sanskrit": "गुण"
+    }
+  },
+  {
+    "gid": "4",
+    "cypher": "MATCH (property)-[relation:IS_PROPERTY_OF]->(node) WHERE node.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "property",
+      "relation",
+      "node"
+    ],
+    "texts": {
+      "english": "What are the properties of {0}?",
+      "sanskrit": "{0} इत्यस्य गुणाः के।"
+    },
+    "groups": {
+      "english": "Substance",
+      "sanskrit": "द्रव्य"
+    }
+  },
+  {
+    "gid": "4",
+    "cypher": "MATCH (x)-[relation]->(node) WHERE node.lemma =~ \"{0}\" AND (type(relation) = 'IS_VARIANT_OF' OR type(relation) = 'IS_TYPE_OF') RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "x",
+      "relation",
+      "node"
+    ],
+    "texts": {
+      "english": "What are the types/variants of the substance {0}?",
+      "sanskrit": "{0} इति द्रव्यस्य प्रकाराः के।"
+    },
+    "groups": {
+      "english": "Substance",
+      "sanskrit": "द्रव्य"
+    }
+  },
+  {
+    "gid": "4.5",
+    "cypher": "MATCH (x)-[relation:IS_SYNONYM_OF]-(node) WHERE node.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "x",
+      "relation",
+      "node"
+    ],
+    "texts": {
+      "english": "What are the synonyms of {0}?",
+      "sanskrit": "{0} इत्यस्य अन्यानि नामानि कानि।"
+    },
+    "groups": {
+      "english": "Synonym",
+      "sanskrit": "समानार्थक"
+    }
+  },
+  {
+    "gid": "5",
+    "cypher": "MATCH (dosha:TRIDOSHA)-[relation:IS_INCREASED_BY]->(entity) WHERE dosha.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "dosha",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities increase the dosha {0}?",
+      "sanskrit": "के पदार्थाः {0} इति दोषस्य वर्धनं कुर्वन्ति।"
+    },
+    "groups": {
+      "english": "Tridosha",
+      "sanskrit": "त्रिदोष"
+    }
+  },
+  {
+    "gid": "5",
+    "cypher": "MATCH (dosha:TRIDOSHA)-[relation:IS_DECREASED_BY]->(entity) WHERE dosha.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "dosha",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities decrease the dosha {0}?",
+      "sanskrit": "के पदार्थाः {0} इति दोषस्य ह्रासं कुर्वन्ति।"
+    },
+    "groups": {
+      "english": "Tridosha",
+      "sanskrit": "त्रिदोष"
+    }
+  },
+  {
+    "gid": "5",
+    "cypher": "MATCH (n1:TRIDOSHA)-[r1:IS_INCREASED_BY]->(entity), (n2)-[r2:IS_DECREASED_BY]-(entity) WHERE n1.lemma =~ \"{0}\" AND n2.lemma =~ \"{1}\" RETURN *",
+    "input": [
+      {
+        "id": "n1",
+        "type": "entity"
+      },
+      {
+        "id": "n2",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "n1",
+      "r1",
+      "n2",
+      "r2",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities increase the dosha {0} and decrease the dosha {1}?",
+      "sanskrit": "के पदार्थाः {0} इति दोषस्य वर्धनं {1} इति दोषस्य ह्रासं च कुर्वन्ति।"
+    },
+    "groups": {
+      "english": "Tridosha",
+      "sanskrit": "त्रिदोष"
+    }
+  },
+  {
+    "gid": "5",
+    "cypher": "MATCH (n1:TRIDOSHA)-[r1:IS_INCREASED_BY]->(entity), (n2:TRIDOSHA)-[r2:IS_INCREASED_BY]->(entity), (n3:TRIDOSHA)-[r3:IS_DECREASED_BY]-(entity) WHERE n1.lemma =~ \"{0}\" AND n2.lemma =~ \"{1}\" AND n3.lemma =~ \"{2}\" RETURN *",
+    "input": [
+      {
+        "id": "n1",
+        "type": "entity"
+      },
+      {
+        "id": "n2",
+        "type": "entity"
+      },
+      {
+        "id": "n3",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "n1",
+      "r1",
+      "n2",
+      "r2",
+      "n3",
+      "r3",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities increase the doshas {0} and {1} and decrease the dosha {2}?",
+      "sanskrit": "के पदार्थाः {0} {1} एतयोः दोषयोः वर्धनं {2} इति दोषस्य ह्रासं च कुर्वन्ति।"
+    },
+    "groups": {
+      "english": "Tridosha",
+      "sanskrit": "त्रिदोष"
+    }
+  },
+  {
+    "gid": "5",
+    "cypher": "MATCH (n1:TRIDOSHA)-[r1:IS_INCREASED_BY]->(entity), (n2:TRIDOSHA)-[r2:IS_DECREASED_BY]->(entity), (n3:TRIDOSHA)-[r3:IS_DECREASED_BY)-(entity) WHERE n1.lemma =~ \"{0}\" AND n2.lemma =~ \"{1}\" AND n3.lemma =~ \"{2}\" RETURN *",
+    "input": [
+      {
+        "id": "n1",
+        "type": "entity"
+      },
+      {
+        "id": "n2",
+        "type": "entity"
+      },
+      {
+        "id": "n3",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "n1",
+      "r1",
+      "n2",
+      "r2",
+      "n3",
+      "r3",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities increase the dosha {0} and decrease the doshas {1} and {2}?",
+      "sanskrit": "के पदार्थाः {0} इति दोषस्य वर्धनं {1} {2} एतयोः दोषयोः ह्रासं च कुर्वन्ति।"
+    },
+    "groups": {
+      "english": "Tridosha",
+      "sanskrit": "त्रिदोष"
+    }
+  },
+  {
+    "gid": "6",
+    "cypher": "MATCH (n1)-[relation:{0}]-(n2) RETURN *",
+    "input": [
+      {
+        "id": "r",
+        "type": "relation"
+      }
+    ],
+    "output": [
+      "n1",
+      "relation",
+      "n2"
+    ],
+    "texts": {
+      "english": "Find all entities related by the relation {0}.",
+      "sanskrit": "{0} इति सम्बन्धेन बद्धं सर्वं दर्शय।"
+    },
+    "groups": {
+      "english": "Relation",
+      "sanskrit": "सम्बन्ध"
+    }
+  },
+  {
+    "gid": "6",
+    "cypher": "MATCH path = (n1)-[relation*1..4]-(n2) WHERE n1.lemma =~ \"{0}\" AND n2.lemma =~ \"{1}\" AND n1 <> n2 RETURN *",
+    "input": [
+      {
+        "id": "n1",
+        "type": "entity"
+      },
+      {
+        "id": "n2",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "path",
+      "n1",
+      "n2",
+      "relation"
+    ],
+    "texts": {
+      "english": "What is the relation between {0} and {1}?",
+      "sanskrit": "{0} {1} एतयोः मध्ये कः सम्बन्धः।"
+    },
+    "groups": {
+      "english": "Relation",
+      "sanskrit": "सम्बन्ध"
+    }
+  },
+  {
+    "gid": "7",
+    "cypher": "MATCH (node)-[relation:IS_CAUSED_BY]->(entity) WHERE node.lemma =~ \"{0}\" AND (node:DISEASE) RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "node",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entity causes the disease {0}?",
+      "sanskrit": "के पदार्थाः {0} इति रोगं कुर्वन्ति।"
+    },
+    "groups": {
+      "english": "Disease",
+      "sanskrit": "रोग"
+    }
+  },
+  {
+    "gid": "7",
+    "cypher": "MATCH (node)-[relation:IS_REMOVED_BY]->(entity) WHERE node.lemma =~ \"{0}\" AND (node:DISEASE) RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "node",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entity cures the disease {0}?",
+      "sanskrit": "के पदार्थाः {0} इति रोगं हरन्ति।"
+    },
+    "groups": {
+      "english": "Disease",
+      "sanskrit": "रोग"
+    }
+  },
+  {
+    "gid": "8",
+    "cypher": "MATCH (node)-[relation]->(entity) WHERE n.lemma =~ \"{0}\" AND (type(relation) = 'IS_INCREASED_BY' OR type(relation) = 'IS_DECREASED_BY' OR type(relation) = 'IS_BENEFITTED_BY' OR type(relation) = 'IS_HARMED_BY') RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "node",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities affect {0}?",
+      "sanskrit": "के पदार्थाः {0} एतं विकुर्वन्ति।"
+    },
+    "groups": {
+      "english": "Effect",
+      "sanskrit": "प्रभाव"
+    }
+  },
+  {
+    "gid": "8",
+    "cypher": "MATCH (node)-[relation:IS_BENEFITTED_BY]->(entity) WHERE node.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "node",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities benefit {0}?",
+      "sanskrit": "के पदार्थाः {0} एतस्मै लाभप्रदाः।"
+    },
+    "groups": {
+      "english": "Effect",
+      "sanskrit": "प्रभाव"
+    }
+  },
+  {
+    "gid": "8",
+    "cypher": "MATCH (node)-[relation:IS_HARMED_BY]->(entity) WHERE node.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "node",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities harm {0}?",
+      "sanskrit": "के पदार्थाः {0} एतस्मै क्षतिप्रदाः।"
+    },
+    "groups": {
+      "english": "Effect",
+      "sanskrit": "प्रभाव"
+    }
+  },
+  {
+    "gid": "8",
+    "cypher": "MATCH (effect)-[relation:IS_INCREASED_BY]->(entity) WHERE effect.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "effect",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities increase {0}?",
+      "sanskrit": "के पदार्थाः {0} इत्यस्य वर्धनं कुर्वन्ति।"
+    },
+    "groups": {
+      "english": "Effect",
+      "sanskrit": "प्रभाव"
+    }
+  },
+  {
+    "gid": "8",
+    "cypher": "MATCH (effect)-[relation:IS_DECREASED_BY]->(entity) WHERE effect.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "effect",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "Which entities decrease {0}?",
+      "sanskrit": "के पदार्थाः {0} इत्यस्य ह्रासं कुर्वन्ति।"
+    },
+    "groups": {
+      "english": "Effect",
+      "sanskrit": "प्रभाव"
+    }
+  },
+  {
+    "gid": "9",
+    "cypher": "MATCH (time)-[relation:IS_TIME_OF]->(entity) WHERE entity.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "time",
+      "relation",
+      "entity"
+    ],
+    "texts": {
+      "english": "When does {0} grow?",
+      "sanskrit": "{0} इति पदार्थः कदा जायते।"
+    },
+    "groups": {
+      "english": "Space-Time",
+      "sanskrit": "अधिकरण"
+    }
+  },
+  {
+    "gid": "9",
+    "cypher": "MATCH (location)-[relation:IS_LOCATION_OF]->(entity) WHERE entity.lemma =~ \"{0}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      }
+    ],
+    "output": [
+      "location",
+      "relation",
+      "node"
+    ],
+    "texts": {
+      "english": "Where is {0} found?",
+      "sanskrit": "{0} इति पदार्थः कुत्र लभ्यते।"
+    },
+    "groups": {
+      "english": "Space-Time",
+      "sanskrit": "अधिकरण"
+    }
+  },
+  {
+    "gid": "10",
+    "cypher": "MATCH (x)-[relation]-(node) WHERE node.lemma =~ \"{0}\" AND type(relation) = '{1}' RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      },
+      {
+        "id": "r",
+        "type": "relation"
+      }
+    ],
+    "output": [
+      "x",
+      "relation",
+      "node"
+    ],
+    "texts": {
+      "english": "Which entity is related to {0} by relation {1}?",
+      "sanskrit": "के पदार्थाः {0} इति पदार्थेन सह {1} इति सम्बन्धेन सम्बन्धिताः।"
+    },
+    "groups": {
+      "english": "Generic",
+      "sanskrit": "साधारण"
+    }
+  },
+  {
+    "gid": "10",
+    "cypher": "MATCH (n1)-[x]-(n2) WHERE n1.lemma =~ \"{0}\" AND n2.lemma =~ \"{1}\" RETURN *",
+    "input": [
+      {
+        "id": "n",
+        "type": "entity"
+      },
+      {
+        "id": "r",
+        "type": "relation"
+      }
+    ],
+    "output": [
+      "n1",
+      "x",
+      "n2"
+    ],
+    "texts": {
+      "english": "How is {0} related to {1}?",
+      "sanskrit": "{0} इति पदार्थः {1} इति पदार्थेन सह कथं सम्बन्धितः।"
+    },
+    "groups": {
+      "english": "Generic",
+      "sanskrit": "साधारण"
+    }
+  },
+  {
+    "gid": "10",
+    "cypher": "MATCH (n1:{0})-[r:{1}]-(n2:{2}) RETURN *",
+    "input": [
+      {
+        "id": "t1",
+        "type": "entity_type"
+      },
+      {
+        "id": "r",
+        "type": "relation"
+      },
+      {
+        "id": "t2",
+        "type": "entity_type"
+      }
+    ],
+    "output": [
+      "n1",
+      "r",
+      "n2"
+    ],
+    "texts": {
+      "english": "Show all matches where an entity of type {0} has relation {1} with an entity of type {2}.",
+      "sanskrit": "{0} इति प्रकारस्य पदार्थैः सह {1} इति सम्बन्धेन बद्धाः {2} इति प्रकारस्य पदार्थान् दर्शय।"
+    },
+    "groups": {
+      "english": "Generic",
+      "sanskrit": "साधारण"
+    }
+  }
+]

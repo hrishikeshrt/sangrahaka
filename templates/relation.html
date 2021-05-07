@@ -1,0 +1,56 @@
+<div class="sticky-top">
+    <div class="card">
+        <div class="card-header lead">
+            Prepare
+        </div>
+        <div class="card-body">
+            <form id="form_prepare_relation">
+                <div class="form">
+                    <div class="form-group row">
+                        <label for="line_id_relation" class="col-sm-4">Line</label>
+                        <input type="text" id="line_id_relation" class="form-control col-sm-8" readonly>
+                    </div>
+                    <div class="form-group row">
+                        <label for="input_relation_source" class="col-sm-4">Source</label>
+                        <input type="text" id="input_relation_source" class="form-control col-sm-8" data-url="{{url_for('suggest')}}" required>
+                    </div>
+                    <hr>
+                    <div class="form-group row">
+                        <label for="input_relation_label" class="col-sm-4">Relation</label>
+                        <select id="input_relation_label" title="None" class="form-control col-sm-8 selectpicker" data-live-search="true" required>
+                            {% for _id, _label, _description in constants.relation_labels %}
+                            <option value="{{_label}}">{{_description}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group row">
+                        <label for="input_relation_detail" class="col-sm-4">Detail</label>
+                        <input type="text" id="input_relation_detail" class="form-control col-sm-8">
+                    </div>
+                    <hr>
+                    <div class="form-group row">
+                        <label for="input_relation_target" class="col-sm-4">Target</label>
+                        <input type="text" id="input_relation_target" class="form-control col-sm-8" data-url="{{url_for('suggest')}}" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" id="add_relation" class="btn btn-primary float-right">
+                            Prepare
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card mt-2">
+        <div class="card-header lead">
+            Relations
+            <button id="confirm_relation_list" class="btn btn-primary float-right">
+                Confirm
+            </button>
+        </div>
+        <div class="card-body scroll-small p-0">
+            <ul id="relation_list" class="list-group list-group-flush">
+            </ul>
+        </div>
+    </div>
+</div>

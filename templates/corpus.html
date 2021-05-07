@@ -1,0 +1,275 @@
+{% set active_page = "corpus" %}
+{% include "header.html" %}
+<div class="container-fluid p-3">
+    <div class="row">
+        <div class="col-sm-9">
+            <span id="corpus-title" class="lead"></span>
+            <table id="corpus_viewer" class="table table-bordered table-hover" data-toggle="table"
+                data-url="{{url_for('api_corpus', chapter_id=data.chapter_id)}}"
+                data-response-handler="response_handler"
+                data-toolbar="#corpus-title"
+                data-unique-id="line_id"
+                data-cache="false"
+                data-search="true"
+                data-show-refresh="true"
+                data-show-toggle="true"
+                data-show-columns="true"
+                data-pagination="true"
+                data-page-list="[10, 25, 50, 100, 200, All]"
+                data-click-to-select="true"
+                data-detail-view="true"
+                data-detail-view-icon="false"
+                data-detail-formatter="{{config.line_detail_formatter}}_line_detail_formatter"
+                data-row-attributes="row_attribute_handler"
+                data-key-events="true"
+                data-sticky-header="true"
+                data-sticky-header-offset-left="1%"
+                data-sticky-header-offset-right="26%">
+                <thead>
+                    <tr>
+                        <th scope="col" data-field="edit" data-radio="true"></th>
+                        <th scope="col" data-field="line_id" data-sortable="true">
+                            Line
+                        </th>
+                        <th scope="col" data-field="verse_id" data-visible="false">
+                            Verse
+                        </th>
+                        <th scope="col" data-field="line">
+                            Text
+                        </th>
+                        <th scope="col" data-field="split">
+                            Split
+                        </th>
+                        <th scope="col" data-field="marked" data-align="center" data-formatter="column_marked_formatter" data-card-visible="false">
+                            <i class="fa fa-question"></i>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="col-sm-3">
+            {% if current_user.has_permission('annotate') %}
+            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link active" id="entity-tab" data-toggle="pill" href="#entity-tab-content" role="tab" aria-controls="pills-home" aria-selected="true">Entity</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="relation-tab" data-toggle="pill" href="#relation-tab-content" role="tab" aria-controls="pills-contact" aria-selected="false">Relation</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="pills-tab-content">
+                <div class="tab-pane active" id="entity-tab-content" role="tabpanel" aria-labelledby="entity-tab">
+                    {% include "entity.html" %}
+                </div>
+                <div class="tab-pane" id="relation-tab-content" role="tabpanel" aria-labelledby="relation-tab">
+                    {% include "relation.html" %}
+                </div>
+            </div>
+
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+    const unnamed_prefix = "{{config.unnamed_prefix}}";
+</script>
+<script src="{{url_for('static', filename='custom/js/corpus/elements.js')}}"></script>
+<script src="{{url_for('static', filename='custom/js/corpus/events.js')}}"></script>
+<script src="{{url_for('static', filename='custom/js/corpus/functions.js')}}"></script>
+<script>
+    $add_entity_button.on('click', function(e) {
+        if ($form_prepare_entity[0].checkValidity() && $line_id_entity.val() != "") {
+
+            var _root = unnamed_formatter($line_id_entity.val(), $entity_root.val().trim());
+            var _type = $entity_type.val().trim();
+
+            var entity_html = entity_formatter(_root, _type, "list-group-item-warning", "{{current_user.username}}");
+            $entity_list.append(entity_html);
+            $('[name="entity"]').bootstrapToggle();
+
+            // update local unconfirmed storage
+            var unconfirmed = storage.getItem($line_id_entity.val());
+            if (unconfirmed === null) {
+                unconfirmed = '[]';
+            }
+            unconfirmed = JSON.parse(unconfirmed);
+            unconfirmed.push({
+                'root': _root,
+                'type': _type,
+                'annotator': "{{current_user.username}}",
+                'is_deleted': false
+            });
+            storage.setItem($line_id_entity.val(), JSON.stringify(unconfirmed));
+        } else {
+            $form_prepare_entity[0].reportValidity();
+        }
+    });
+
+    $confirm_entity_button.on('click', function(e) {
+        var entity_add = [];
+        var entity_delete = [];
+        $.each($entity_list.find('[name="entity"]'), function () {
+            if ($(this).closest("li").hasClass("list-group-item-warning") && $(this).is(":checked")) {
+                entity_add.push($(this).val());
+            }
+            if (!$(this).closest("li").hasClass("list-group-item-warning") && !$(this).is(":checked")) {
+                entity_delete.push($(this).val());
+            }
+        });
+        $.post("{{url_for('api')}}", {
+            action: "update_entity",
+            chapter_id: "{{data.chapter_id}}",
+            line_id: $line_id_entity.val(),
+            entity_add: entity_add.join("##"),
+            entity_delete: entity_delete.join("##")
+        },
+        function (response) {
+            if (response.success) {
+                $.notify({
+                    message: "Successfully updated!"
+                }, {
+                    type: "success"
+                });
+                var entity_objects = [];
+                // clear out the unconfirmed storage
+                storage.removeItem($line_id_entity.val());
+
+                // update local entity list
+                $.each($entity_list.find('[name="entity"]'), function () {
+                    if ($(this).is(":checked")) {
+                        $(this).closest('li').removeClass("list-group-item-warning");
+                        var entity_values = $(this).val().split('$');
+                        entity_objects.push({
+                            'root': entity_values[0],
+                            'type': entity_values[1],
+                            'annotator': "{{current_user.username}}",
+                            'is_deleted': false
+                        });
+                        // all_roots.add("<option>" + entity_values[0] + "</option>");
+                    } else {
+                        $(this).closest('li').detach();
+                    }
+                });
+                // update local table
+                var current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_entity.val());
+                current_row.marked = true;
+                current_row.entity = entity_objects;
+
+                $corpus_table.bootstrapTable('updateByUniqueId', {
+                    line_id: current_row.line_id,
+                    row: current_row
+                });
+            } else {
+                $.notify({
+                    message: "Something went wrong!"
+                }, {
+                    type: "danger"
+                });
+            }
+        },
+        'json');
+    });
+
+    $add_relation_button.on('click', function(e) {
+        if ($form_prepare_relation[0].checkValidity() && $line_id_relation.val() != "") {
+
+            var _source = unnamed_formatter($line_id_relation.val(), $relation_source.val().trim());
+            var _detail = $relation_detail.val().trim();
+            var _label = $relation_label.val().trim();
+            var _target = unnamed_formatter($line_id_relation.val(), $relation_target.val().trim());
+
+            var relation_html = relation_formatter(_source, _label, _target, _detail, "list-group-item-warning", "{{current_user.username}}");
+            $relation_list.append(relation_html);
+            $('[name="relation"]').bootstrapToggle();
+
+            // update local unconfirmed storage
+            var unconfirmed_relations = storage.getItem($line_id_relation.val() + '_relations');
+            if (unconfirmed_relations === null) {
+                unconfirmed_relations = '[]';
+            }
+            unconfirmed_relations = JSON.parse(unconfirmed_relations);
+            unconfirmed_relations.push({
+                'source': _source,
+                'label': _label,
+                'detail': _detail,
+                'target': _target,
+                'annotator': "{{current_user.username}}",
+                'is_deleted': false
+            });
+            storage.setItem($line_id_relation.val() + '_relations', JSON.stringify(unconfirmed_relations));
+        } else {
+            $form_prepare_relation[0].reportValidity();
+        }
+    });
+
+    $confirm_relation_button.on('click', function(e) {
+        var relation_add = [];
+        var relation_delete = [];
+        $.each($relation_list.find('[name="relation"]'), function () {
+            if ($(this).closest("li").hasClass("list-group-item-warning") && $(this).is(":checked")) {
+                relation_add.push($(this).val());
+            }
+            if (!$(this).closest("li").hasClass("list-group-item-warning") && !$(this).is(":checked")) {
+                relation_delete.push($(this).val());
+            }
+        });
+        $.post("{{url_for('api')}}", {
+            action: "update_relation",
+            chapter_id: "{{data.chapter_id}}",
+            line_id: $line_id_relation.val(),
+            relation_add: relation_add.join("##"),
+            relation_delete: relation_delete.join("##")
+        },
+        function (response) {
+            if (response.success) {
+                $.notify({
+                    message: "Successfully updated!"
+                }, {
+                    type: "success"
+                });
+                var relation_objects = [];
+                // clear out the unconfirmed storage
+                storage.removeItem($line_id_relation.val() + '_relations');
+
+                // update local relation list
+                $.each($relation_list.find('[name="relation"]'), function () {
+                    if ($(this).is(":checked")) {
+                        $(this).closest('li').removeClass("list-group-item-warning");
+                        var relation_values = $(this).val().split('$');
+                        relation_objects.push({
+                            'source': relation_values[0],
+                            'label': relation_values[1],
+                            'target': relation_values[2],
+                            'detail': relation_values[3],
+                            'annotator': "{{current_user.username}}",
+                            'is_deleted': false
+                        });
+                        // all_roots.add("<option>" + relation_values[0] + "</option>");
+                        // all_roots.add("<option>" + relation_values[2] + "</option>");
+                    } else {
+                        $(this).closest('li').detach();
+                    }
+                });
+                // update local table
+                var current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_relation.val());
+                current_row.marked = true;
+                current_row.relation = relation_objects;
+
+                $corpus_table.bootstrapTable('updateByUniqueId', {
+                    line_id: current_row.line_id,
+                    row: current_row
+                });
+            } else {
+                $.notify({
+                    message: "Something went wrong!"
+                }, {
+                    type: "danger"
+                });
+            }
+        },
+        'json');
+    });
+
+</script>
+
+{% include "footer.html" %}

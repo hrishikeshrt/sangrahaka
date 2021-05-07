@@ -1,0 +1,46 @@
+<div class="sticky-top">
+    <div class="card">
+        <div class="card-header lead">
+            Prepare
+        </div>
+        <div class="card-body">
+            <form id="form_prepare_entity">
+                <div class="form">
+                    <div class="form-group row">
+                        <label for="line_id_entity" class="col-sm-4">Line</label>
+                        <input type="text" id="line_id_entity" class="form-control col-sm-8" readonly>
+                    </div>
+                    <div class="form-group row">
+                        <label for="input_entity_root" class="col-sm-4">Entity</label>
+                        <input type="text" id="input_entity_root" class="form-control col-sm-8" data-url="{{url_for('suggest')}}" autocomplete="off" required>
+                    </div>
+                    <div class="form-group row">
+                        <label for="input_entity_type" class="col-sm-4">Type</label>
+                        <select id="input_entity_type" title="None" class="form-control col-sm-8 selectpicker" data-live-search="true" autocomplete="off" required>
+                            {% for _id, _label, _description in constants.node_labels %}
+                            <option value="{{_label}}">{{_description}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" id="add_entity" class="btn btn-primary float-right">
+                            Prepare
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card mt-2">
+        <div class="card-header lead">
+            Entities
+            <button id="confirm_entity_list" class="btn btn-primary float-right">
+                Confirm
+            </button>
+        </div>
+        <div class="card-body scroll-small p-0">
+            <ul id="entity_list" class="list-group list-group-flush">
+            </ul>
+        </div>
+    </div>
+</div>

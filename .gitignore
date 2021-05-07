@@ -1,0 +1,10 @@
+*.log
+db/
+data/
+output/
+settings.py
+scripts/*.xlsx
+scripts/*.json
+scripts/*.jsonl
+
+**/__pycache__/**

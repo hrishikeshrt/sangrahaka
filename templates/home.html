@@ -1,0 +1,43 @@
+{% set active_page = "home" %}
+{% include "header.html" %}
+<div class="container">
+    {% if data.corpus_list %}
+    <div class="accordion scroll border rounded my-2" id="corpus_list">
+        {% set ns = namespace(expanded=true) %}
+        {% for corpus in data.corpus_list %}
+        <div class="card border-0">
+            <div class="card-header lead {% if not ns.expanded %}collapsed{% endif %}" data-toggle="collapse" data-target="#chapter_list_{{corpus.id}}"
+                aria-expanded="{{ns.expanded}}" aria-controls="chapter_list_{{corpus.id}}">
+                {{corpus.name}}
+            </div>
+            <ul id="chapter_list_{{corpus.id}}" class="list-group scroll list-group-flush collapse {% if ns.expanded %}show{% endif %}"
+                data-parent="#corpus_list">
+                {% if corpus.chapters %}
+                {% for chapter in corpus.chapters %}
+                <li class="list-group-item">
+                    <span class="lead mx-2">{{chapter.name}}</span>
+                    <a href="{{url_for('show_corpus', chapter_id=chapter.id)}}">
+                        <button type="button" class="btn btn-primary float-right">View</button>
+                    </a>
+                </li>
+                {% endfor %}
+                {% else %}
+                <li class="list-group-item">
+                    <span class="mx-2">No chapter found.</span>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% if ns.expanded %}{% set ns.expanded = false %}{% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card my-2">
+        <div class="card-body">
+            No corpus found.
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% include "footer.html" %}
