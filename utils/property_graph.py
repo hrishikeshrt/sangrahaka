@@ -107,9 +107,6 @@ class PropertyGraph:
                 properties=properties
             )
 
-        if 'lemma' not in properties:
-            print("---", node_id, labels, properties, "---")
-
     def add_edge(self, src_id, label, dst_id, properties):
         edge_tuple = (src_id, label, dst_id)
         if edge_tuple in self.edges:
@@ -123,25 +120,13 @@ class PropertyGraph:
                     properties=properties
                 )
             else:
-                possible_labels = self.infer_type(label)
+                _r = self.infer(src_id, label, dst_id, properties)
+                src_labels, dst_labels, src_properties, dst_properties = _r
+
                 if src_id not in self.nodes:
-                    src_properties = {
-                        'lemma': self.get_lemma_by_id(src_id),
-                        'annotator': properties['annotator'],
-                        'line_id': properties['line_id'],
-                        'auto': True
-                    }
-                    possible_src_labels = possible_labels[0]
-                    self.add_node(src_id, possible_src_labels, src_properties)
+                    self.add_node(src_id, src_labels, src_properties)
                 if dst_id not in self.nodes:
-                    dst_properties = {
-                        'lemma': self.get_lemma_by_id(dst_id),
-                        'annotator': properties['annotator'],
-                        'line_id': properties['line_id'],
-                        'auto': True
-                    }
-                    possible_dst_labels = possible_labels[1]
-                    self.add_node(dst_id, possible_dst_labels, dst_properties)
+                    self.add_node(dst_id, dst_labels, dst_properties)
                 self.edges[edge_tuple] = PropertyEdge(
                     start_id=src_id,
                     label=label,
@@ -174,9 +159,15 @@ class PropertyGraph:
             self.remove_edge(src_id, label, dst_id)
             self.add_edge(src_id, label, new_dst, properties)
 
-    def get_transitive_closure(self, node_id, relations=[]):
+    def get_transitive_closure(self, node_id, relations=None):
+        """
+        Get transitive closure of a node with respect to specific relations
+        """
         closure = set()
         current_nodes = {node_id}
+        if relations is None:
+            relations = []
+
         while True:
             next_nodes = set()
             for _node_id in current_nodes:
@@ -196,30 +187,6 @@ class PropertyGraph:
                 break
         return closure
 
-    def get_groups(self, relations=[]):
-        groups = []
-        handled = set()
-        for node_id in self.nodes:
-            if node_id in handled:
-                continue
-            closure = self.get_transitive_closure(node_id, relations=[])
-            if len(closure) > 1:
-                groups.append([
-                    (self.nodes[_id],
-                     sum(self.nodes[_id].incoming.values()) +
-                     sum(self.nodes[_id].outgoing.values()),
-                     self.nodes[_id].properties['line_id'])
-                    for _id in closure
-                ])
-                handled.update(closure)
-
-        answer = []
-        for group in groups:
-            answer.append(
-                sorted(group, key=lambda x: (x[1], max(x[2])), reverse=True)
-            )
-        return answer
-
     def to_jsonl(self):
         jsonl = []
         for node_id, node in self.nodes.items():
@@ -231,12 +198,24 @@ class PropertyGraph:
 
     # ----------------------------------------------------------------------- #
 
-    def infer_type(self, label):
-        raise NotImplementedError
-
-    def get_lemma_by_id(self, id):
-        raise NotImplementedError
-
-    # ----------------------------------------------------------------------- #
+    def infer(self, src_id, label, dst_id, properties):
+        """
+        Infer label and properties of src and dst nodes
+        """
+        src_labels = []
+        dst_labels = []
+        src_properties = {'auto': True}
+        dst_properties = {'auto': True}
+        return src_labels, dst_labels, src_properties, dst_properties
 
 ###############################################################################
+
+
+def main():
+    pass
+
+###############################################################################
+
+
+if __name__ == '__main__':
+    main()

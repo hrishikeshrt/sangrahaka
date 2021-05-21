@@ -189,11 +189,49 @@ SYMMETRIC_RELATIONS = ['IS_SYNONYM_OF', 'IS_SIMILAR_TO']
 
 
 class AyurvedaGraph(PropertyGraph):
-    def infer_type(self, label):
-        return COMPATIBILITY[label]['source'], COMPATIBILITY[label]['source']
+    def infer(self, src_id, label, dst_id, properties):
+        src_labels = COMPATIBILITY[label]['source']
+        dst_labels = COMPATIBILITY[label]['target']
+        src_properties = {
+            'lemma': self.get_lemma_by_id(src_id),
+            'annotator': properties['annotator'],
+            'line_id': properties['line_id'],
+            'auto': True
+        }
+        dst_properties = {
+            'lemma': self.get_lemma_by_id(dst_id),
+            'annotator': properties['annotator'],
+            'line_id': properties['line_id'],
+            'auto': True
+        }
+        return src_labels, dst_labels, src_properties, dst_properties
 
     def get_lemma_by_id(self, node_id):
         return Lexicon.query.filter(Lexicon.id == node_id).first().lemma
+
+    def get_groups(self, relations=None):
+        groups = []
+        handled = set()
+        for node_id in self.nodes:
+            if node_id in handled:
+                continue
+            closure = self.get_transitive_closure(node_id, relations=relations)
+            if len(closure) > 1:
+                groups.append([
+                    (self.nodes[_id],
+                     sum(self.nodes[_id].incoming.values()) +
+                     sum(self.nodes[_id].outgoing.values()),
+                     self.nodes[_id].properties['line_id'])
+                    for _id in closure
+                ])
+                handled.update(closure)
+
+        answer = []
+        for group in groups:
+            answer.append(
+                sorted(group, key=lambda x: (x[1], max(x[2])), reverse=True)
+            )
+        return answer
 
     def add_synonym_edges(self):
         groups = self.get_groups('IS_SYNONYM_OF')

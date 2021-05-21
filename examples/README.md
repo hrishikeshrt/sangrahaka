@@ -55,9 +55,9 @@ e.g.
     - Load nodes and relations from the annotation database
     - Add nodes using `add_node()` method and edges using `add_edge()` method.
     - Export the graph using `to_jsonl()` method.
-* Methods `infer_type` and `get_lemma_by_id` must be implemented.
-    - `infer_type` is used when a node type is unknown
-    - `get_lemma_by_id` fetches lemma text given a `node_id`
+* Method `infer` may be implemented as per need.
+    - Used when an edge is added with at least one of the nodes absent
+    - Should return `src_labels`, `dst_labels`, `src_properties` and `dst_properties`
 * Custom custom functions to implement custom logic for preparing knowledge graph.
 * `build_graph.py` files illustrate the workflow.
 

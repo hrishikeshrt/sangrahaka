@@ -30,8 +30,22 @@ logger = logging.getLogger(__name__)
 
 
 class CustomGraph(PropertyGraph):
-    def infer_type(self, label):
-        return ["PERSON"]
+    def infer(self, src_id, label, dst_id, properties):
+        src_labels = ['PERSON']
+        dst_labels = ['PERSON']
+        src_properties = {
+            'lemma': self.get_lemma_by_id(src_id),
+            'annotator': properties['annotator'],
+            'line_id': properties['line_id'],
+            'auto': True
+        }
+        dst_properties = {
+            'lemma': self.get_lemma_by_id(dst_id),
+            'annotator': properties['annotator'],
+            'line_id': properties['line_id'],
+            'auto': True
+        }
+        return src_labels, dst_labels, src_properties, dst_properties
 
     def get_lemma_by_id(self, node_id):
         return Lexicon.query.filter(Lexicon.id == node_id).first().lemma
