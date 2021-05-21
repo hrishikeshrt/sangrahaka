@@ -37,7 +37,7 @@
                         <th scope="col" data-field="line">
                             Text
                         </th>
-                        <th scope="col" data-field="split">
+                        <th scope="col" data-field="split" {% if not config.show_split %}data-visible="false"{% endif %}>
                             Split
                         </th>
                         <th scope="col" data-field="marked" data-align="center" data-formatter="column_marked_formatter" data-card-visible="false">

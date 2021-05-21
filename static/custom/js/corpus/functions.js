@@ -5,7 +5,7 @@ function response_handler(response) {
 
 function generic_line_detail_formatter(index, row) {
     var html = [
-        '<div><table class="table table-responsive-sm table-striped">'
+        '<div class="table-responsive-sm"><table class="table table-striped">'
     ];
 
     var rows = {};
@@ -53,7 +53,7 @@ function sanskrit_line_detail_formatter(index, row) {
     }
 
     var html = [
-        '<div><table class="table table-responsive-sm table-striped">',
+        '<div class="table-responsive-sm"><table class="table table-striped">',
         '<tr><th scope="row">Word</th><td>' + words.join("</td><td>") + '</td></tr>',
         '<tr><th scope="row">Root</th><td>' + roots.join("</td><td>") + '</td></tr>',
         '<tr><th scope="row">Gender</th><td>' + genders.join("</td><td>") + '</td></tr>',

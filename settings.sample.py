@@ -37,6 +37,7 @@ APPLICATION_CONFIG = {
     'var_suffix': '#',
     'query_limit': 50,
     'unnamed_prefix': 'X',
+    'show_split': False,
     'line_detail_formatter': 'generic',
     'query_languages': ['english'],
     'default_query_language': 'english'
@@ -76,8 +77,8 @@ ADMIN_MAIL = os.environ.get('ADMIN_MAIL', 'admin@localhost')
 # Neo4j
 
 NEO4J_SERVER = 'bolt://localhost:7687'
-NEO4J_USERNAME = 'n3o4j'
-NEO4J_PASSWORD = 'admin'
+NEO4J_USERNAME = 'neo4j'
+NEO4J_PASSWORD = 'neo4j'
 
 # --------------------------------------------------------------------------- #
 # PythonAnywhere
