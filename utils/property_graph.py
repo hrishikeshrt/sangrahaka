@@ -13,7 +13,7 @@ from collections import Counter
 
 ###############################################################################
 
-logger = logging.getLevelName(__name__)
+logger = logging.getLogger(__name__)
 
 ###############################################################################
 
@@ -45,9 +45,10 @@ class PropertyNode:
                 v += [e for e in properties[k] if e not in v]
             else:
                 if properties.get(k) and properties.get(k) != v:
-                    v = [v]
-                    v += [properties.get(k)]
-                    logger.warning(f"Property {k} changed into a list.")
+                    self.properties[k] = [v, properties[k]]
+                    logger.warning(
+                        f"Property '{k}' changed into a list for '{self.id}'."
+                    )
 
     def to_json(self):
         return json.dumps({
@@ -58,7 +59,7 @@ class PropertyNode:
         }, ensure_ascii=False)
 
     def __repr__(self):
-        return f'''(id="{self.id}", lemma="{self.properties['lemma']}")'''
+        return f'''(id="{self.id}", properties={self.properties})'''
 
 # --------------------------------------------------------------------------- #
 
@@ -76,9 +77,11 @@ class PropertyEdge:
                 v += [e for e in properties[k] if e not in v]
             else:
                 if properties.get(k) and properties.get(k) != v:
-                    v = [v]
-                    v += [properties[k]]
-                    logger.warning(f"Property {k} changed into a list.")
+                    self.properties[k] = [v, properties[k]]
+                    logger.warning(
+                        f"Property '{k}' changed into a list for "
+                        f" ({self.start_id}, {self.label}, {self.end_id})."
+                    )
 
     def to_json(self):
         return json.dumps({
