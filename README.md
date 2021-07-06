@@ -6,7 +6,7 @@ An easy and robust web-based distributed **Annotation and Querying Framework**.
 
 * Clone repository
 * `pip install -r requirements.txt`
-*  Install [Neo4j](https://neo4j.com/download-center/#community) (Optional. Required for querying)
+*  Install [Neo4j](https://neo4j.com/download-center/#community) (Required for querying)
     - Navigate to the `Neo4j` installation directory
     - Start Graph server `./bin/neo4j console`
 * Copy `settings.sample.py` to `settings.py` and make appropriate changes.
