@@ -49,7 +49,9 @@
                 </thead>
             </table>
         </div>
-        <div class="col-sm-3">
+        <div class="col-sm-3 sticky-top align-self-start">
+            <!-- For "sticky-top" to work on a "col" element requires "align-self-start" class as well. -->
+            <div class="scroll-large">
             {% if current_user.has_permission('annotate') %}
             <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                 <li class="nav-item">
@@ -66,6 +68,7 @@
                 <div class="tab-pane" id="relation-tab-content" role="tabpanel" aria-labelledby="relation-tab">
                     {% include "relation.html" %}
                 </div>
+            </div>
             </div>
 
             {% endif %}
