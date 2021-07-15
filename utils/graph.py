@@ -51,10 +51,17 @@ class Graph:
                 find_entity_type(match.values(), py2neo.data.Relationship)
             )
 
-        final_nodes = {node.identity: self.format_node(node) for node in nodes}
-        final_edges = {edge.identity: self.format_edge(edge) for edge in edges}
+        final_nodes = {
+            self.repr_entity(node): self.format_node(node) for node in nodes
+        }
+        final_edges = {
+            self.repr_entity(edge): self.format_edge(edge) for edge in edges
+        }
         final_matches = [
-            {k: self.repr_entity(v) for k, v in match.items()}
+            {
+                self.repr_entity(k): self.repr_entity(v)
+                for k, v in match.items()
+            }
             for match in matches
         ]
         return final_matches, final_nodes, final_edges
@@ -69,9 +76,9 @@ class Graph:
         For other types, some kind of string representation for direct display
         """
         if isinstance(entity, py2neo.data.Node):
-            return entity.identity
+            return f"N:{entity.identity}"
         if isinstance(entity, py2neo.data.Relationship):
-            return entity.identity
+            return f"R:{entity.identity}"
         if isinstance(entity, py2neo.data.Path):
             return (self.repr_entity(entity.start_node),
                     self.repr_entity(entity.relationships),
@@ -85,10 +92,9 @@ class Graph:
         self.__logger.warning(f"Entity of type {type(entity)} encountered.")
         return str(entity)
 
-    @staticmethod
-    def format_node(node, jsonify=False):
+    def format_node(self, node, jsonify=False):
         node_dict = {
-            'id': node.identity,
+            'id': self.repr_entity(node),
             'type': 'node',
             'labels': list(node._labels),
             'properties': {
@@ -103,17 +109,16 @@ class Graph:
             node_dict
         )
 
-    @staticmethod
-    def format_edge(edge, jsonify=False):
+    def format_edge(self, edge, jsonify=False):
         edge_dict = {
-            'id': edge.identity,
+            'id': self.repr_entity(edge),
             'type': 'relationship',
             'label': type(edge).__name__,
             'start': {
-                'id': edge.start_node.identity
+                'id': self.repr_entity(edge.start_node)
             },
             'end': {
-                'id': edge.end_node.identity
+                'id': self.repr_entity(edge.end_node)
             },
             'properties': {
                 'line_id': edge.get('line_id'),

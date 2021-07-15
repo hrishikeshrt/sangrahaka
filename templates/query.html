@@ -126,12 +126,12 @@
                     });
                     process_query_response(response);
                 } else {
+                    console.log(response.message);
                     $.notify({
                         message: response.message
                     }, {
                         type: "danger"
                     });
-                    console.log(response.message);
                 }
                 if (response.warning) {
                     console.log(response.warning);
