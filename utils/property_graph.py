@@ -1,7 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed May 05 22:31:54 2021
+The Property Graph Data Model
+
+Conforms to specification from,
+https://neo4j.com/developer/graph-database/#property-graph
+
+Nodes are the entities in the graph.
+They can hold any number of attributes (key-value pairs) called properties.
+Nodes can be tagged with labels, representing their different roles in a
+specific domain. Node labels may also serve to attach metadata (such as index
+or constraint information) to certain nodes.
+
+Relationships provide directed, named, semantically-relevant connections
+between two node entities.
+A relationship always has a direction, a type, a start node, and an end node.
+Like nodes, relationships can also have properties. I
+
+Primary classes provided here are,
+* `PropertyNode` - to model a node in a Property Graph
+* `PropertyEdge` - to model a relationship (or an edge) in a Property Graph
+* `PropertyGraph` - to model a Property Graph
 
 @author: Hrishikesh Terdalkar
 """
@@ -19,10 +38,28 @@ logger = logging.getLogger(__name__)
 
 
 class PropertyNode:
-    def __init__(self, node_id, labels=[], properties={}):
+    """Node in a Property Graph"""
+
+    def __init__(self, node_id, labels=None, properties=None):
+        """
+        Create an instance of `PropertyNode`
+
+        Recommended to use `PropertyGraph.add_node()` method,
+        which will create an instance instead of doing so explicitly.
+        """
         self.id = node_id
-        self.labels = labels
-        self.properties = properties
+        if isinstance(labels, list):
+            self.labels = labels
+        elif isinstance(labels, str):
+            self.labels = [labels]
+        else:
+            self.labels = []
+
+        self.properties = {}
+        if isinstance(properties, dict):
+            self.update([], properties)
+
+        # track incoming and outgoing neighbours
         self.incoming = Counter()
         self.outgoing = Counter()
 
@@ -39,18 +76,45 @@ class PropertyNode:
         self.outgoing[neighbour_id] -= 1
 
     def update(self, labels, properties):
+        """
+        Update labels and properties of a node.
+
+        The labels will be extended, not replaced.
+        Similarly, properties will be extended.
+        In case a property key exists, and the value is not a list, value will
+        be converted to a list containing the current and the new value.
+        """
         self.labels += [label for label in labels if label not in self.labels]
-        for k, v in self.properties.items():
-            if isinstance(v, list):
-                v += [e for e in properties[k] if e not in v]
-            else:
-                if properties.get(k) and properties.get(k) != v:
-                    self.properties[k] = [v, properties[k]]
+        for k, v in properties.items():
+            valid_property = (
+                isinstance(k, str)
+                and isinstance(v, (int, float, bool, str))
+            )
+            if not valid_property:
+                logger.warning(
+                    f"Ignored invalid property '{k}' ({type(k)}) "
+                    f"with value '{v}' ({type(v)})."
+                )
+                continue
+
+            # If a property does not exist, set it
+            if self.properties.get(k) is None:
+                self.properties[k] = v
+                continue
+
+            # Property exists
+            if isinstance(self.properties[k], list):
+                if v not in self.properties[k]:
+                    self.properties[k] += [v]
+            elif isinstance(self.properties[k], (int, float, bool, str)):
+                if v != self.properties[k]:
+                    self.properties[k] = [self.properties[k], v]
                     logger.warning(
-                        f"Property '{k}' changed into a list for '{self.id}'."
+                        f"Property '{k}' changed into a list for {self}."
                     )
 
     def to_json(self):
+        """Return a JSON representation of the node compatible with neo4j."""
         return json.dumps({
             'type': 'node',
             'id': self.id,
@@ -59,31 +123,71 @@ class PropertyNode:
         }, ensure_ascii=False)
 
     def __repr__(self):
-        return f'''(id="{self.id}", properties={self.properties})'''
+        return f'{self.__class__.__name__}(id="{self.id}")'
+
 
 # --------------------------------------------------------------------------- #
 
 
 class PropertyEdge:
-    def __init__(self, start_id, label, end_id, properties):
+    """Relationship in a Property Graph"""
+
+    def __init__(self, start_id, label, end_id, properties=None):
+        """
+        Create an instance of `PropertyEdge`
+
+        An edge represents a relationship, and is always directed.
+
+        Recommended to use `PropertyGraph.add_edge()` method,
+        which will create an instance instead of doing so explicitly.
+        """
         self.start_id = start_id
         self.end_id = end_id
         self.label = label
-        self.properties = properties
+        self.properties = properties if properties is not None else {}
+
+        self.properties = {}
+        if isinstance(properties, dict):
+            self.update(properties)
 
     def update(self, properties):
-        for k, v in self.properties.items():
-            if isinstance(v, list):
-                v += [e for e in properties[k] if e not in v]
-            else:
-                if properties.get(k) and properties.get(k) != v:
-                    self.properties[k] = [v, properties[k]]
+        """
+        Update properties of an edge.
+
+        Properties will be extended.
+        In case a property key exists, and the value is not a list, value will
+        be converted to a list containing the current and the new value.
+        """
+        for k, v in properties.items():
+            valid_property = (
+                isinstance(k, str)
+                and isinstance(v, (int, float, bool, str))
+            )
+            if not valid_property:
+                logger.warning(
+                    f"Ignored invalid property '{k}' ({type(k)}) "
+                    f"with value '{v}' ({type(v)})."
+                )
+                continue
+
+            # If a property does not exist, set it
+            if self.properties.get(k) is None:
+                self.properties[k] = v
+                continue
+
+            # Property exists
+            if isinstance(self.properties[k], list):
+                if v not in self.properties[k]:
+                    self.properties[k] += [v]
+            elif isinstance(self.properties[k], (int, float, bool, str)):
+                if v != self.properties[k]:
+                    self.properties[k] = [self.properties[k], v]
                     logger.warning(
-                        f"Property '{k}' changed into a list for "
-                        f" ({self.start_id}, {self.label}, {self.end_id})."
+                        f"Property '{k}' changed into a list for {self}."
                     )
 
     def to_json(self):
+        """Return a JSON representation of the edge compatible with neo4j."""
         return json.dumps({
             'type': 'relationship',
             'label': self.label,
@@ -92,15 +196,43 @@ class PropertyEdge:
             'properties': self.properties
         }, ensure_ascii=False)
 
+    def __repr__(self):
+        return (
+            f'{self.__class__.__name__}'
+            f'(start="{self.start_id}", '
+            f'label="{self.label}", '
+            f'end="{self.end_id}")'
+        )
+
 # --------------------------------------------------------------------------- #
 
 
 class PropertyGraph:
+    """Property Graph"""
+
     def __init__(self):
+        """Create an instance of a property graph."""
         self.nodes = {}
         self.edges = {}
 
-    def add_node(self, node_id, labels, properties):
+    def add_node(self, node_id, labels=None, properties=None):
+        """
+        Add a node to the graph.
+
+        If the node already exists, its labels and properties will be
+        updated.
+
+        Parameters
+        ----------
+        node_id : str
+            Unique ID for a node, w.r.t to the graph
+        labels : list, optional
+            List of string labels to represent roles of the node.
+            The default is None.
+        properties : dict, optional
+            Properties in the form of key-value pairs (dict).
+            The default is None.
+        """
         if node_id in self.nodes:
             self.nodes[node_id].update(labels, properties)
         else:
@@ -110,7 +242,37 @@ class PropertyGraph:
                 properties=properties
             )
 
-    def add_edge(self, src_id, label, dst_id, properties):
+    def add_edge(self, src_id, label, dst_id, properties=None):
+        """
+        Add an edge (i.e. a relationship) to the graph.
+
+        Ideally, both source and destination nodes should exist in the graph
+        prior to adding an edge between them. In case any of the nodes don't
+        exist, they will be created. Labels and properties of the nodes
+        are inferred using a stub `PropertyGraph.infer()` method.
+
+        By default, the infer method doesn't actually infer anything and
+        nodes will have no labels and a single property `auto` set to `True` to
+        indicate that the node was added automatically.
+
+        It is highly recommended to do one of the following,
+        1. Ensure that both the nodes already exist in the graph
+        2. Implement a domain-relevant infer() function
+
+        If the edge already exists, its properties will be updated.
+
+        Parameters
+        ----------
+        start_id : str
+            ID of the source node
+        label : str
+            Type of the relationship
+        end_id : str
+            ID of the destination node
+        properties : dict, optional
+            Properties in the form of key-value pairs (dict).
+            The default is None.
+        """
         edge_tuple = (src_id, label, dst_id)
         if edge_tuple in self.edges:
             self.edges[edge_tuple].update(properties)
@@ -137,10 +299,11 @@ class PropertyGraph:
                     properties=properties
                 )
         # At this point, both src_id and dst_id nodes exist in the graph
-        self.nodes[dst_id].add_incoming(src_id)
         self.nodes[src_id].add_outgoing(dst_id)
+        self.nodes[dst_id].add_incoming(src_id)
 
     def remove_edge(self, src_id, label, dst_id):
+        """Remove an edge"""
         edge_tuple = (src_id, label, dst_id)
         if edge_tuple in self.edges:
             del self.edges[edge_tuple]
@@ -148,6 +311,33 @@ class PropertyGraph:
             self.nodes[dst_id].remove_incoming(src_id)
 
     def transfer_edge(self, src_id, label, dst_id, new_src=None, new_dst=None):
+        """
+        Transfer an edge to a new source OR destination.
+
+        Exactly one of `new_src` or `new_dst` must be provided.
+        If none are provided, no action will be performed.
+        If both are provided, `new_dst` argument will be ignored.
+
+        Parameters
+        ----------
+        src_id : str
+            ID of the source node of the edge to be transferred
+        label : TYPE
+            Label of the edge to be transferred
+        dst_id : str
+            ID of the destination node of the edge to be transferred
+        new_src : str, optional
+            ID of the new source node.
+            The default is None.
+        new_dst : str, optional
+            ID of the new source node.
+            The default is None.
+
+        Returns
+        -------
+        bool
+            Success of the transfer operation
+        """
         if new_src not in self.nodes and new_dst not in self.nodes:
             return False
 
@@ -161,10 +351,11 @@ class PropertyGraph:
         if new_dst in self.nodes:
             self.remove_edge(src_id, label, dst_id)
             self.add_edge(src_id, label, new_dst, properties)
+            return True
 
     def get_transitive_closure(self, node_id, relations=None):
         """
-        Get transitive closure of a node with respect to specific relations
+        Get transitive closure of a node with respect to specific relations.
         """
         closure = set()
         current_nodes = {node_id}
@@ -191,6 +382,13 @@ class PropertyGraph:
         return closure
 
     def to_jsonl(self):
+        """
+        Return a JSONL representation of the graph compatible with neo4j.
+
+        JSONL corresponds to JSON-Lines, wherein every line is a valid JSON.
+        All the nodes will appear first, followed by all the relationships.
+        """
+
         jsonl = []
         for node_id, node in self.nodes.items():
             jsonl.append(node.to_json())
@@ -203,7 +401,21 @@ class PropertyGraph:
 
     def infer(self, src_id, label, dst_id, properties):
         """
-        Infer label and properties of src and dst nodes
+        Stub to infer label and properties of src and dst nodes.
+
+        Recommended to implement a suitable domain-relevant mechanism to infer
+        the labels and  properties of source and destination nodes
+
+        Returns
+        -------
+        src_labels : list
+            List of inferred labels for the source node.
+        dst_labels : list
+            List of inferred labels for the destination node.
+        src_properties : dict
+            Inferred properties for the source node.
+        dst_properties : dict
+            Inferred properties for the destination node.
         """
         src_labels = []
         dst_labels = []
