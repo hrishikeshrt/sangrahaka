@@ -305,18 +305,19 @@ def build_graph():
         labels = [node.label.label]
         properties = {
             'lemma': node.lemma.lemma,
-            'annotator': [node.annotator.id],
-            'line_id': [node.line_id]
+            'annotator': node.annotator.id,
+            'line_id': node.line_id
         }
         graph.add_node(node_id=node_id, labels=labels, properties=properties)
 
     for relationship in relationships:
         label = relationship.label.label
         properties = {
-            'detail': [relationship.detail] if relationship.detail else [],
-            'annotator': [relationship.annotator.id],
-            'line_id': [relationship.line_id]
+            'annotator': relationship.annotator.id,
+            'line_id': relationship.line_id
         }
+        if relationship.detail:
+            properties['detail'] = relationship.detail
         src_id = relationship.src_id
         dst_id = relationship.dst_id
         graph.add_edge(src_id, label, dst_id, properties=properties)
