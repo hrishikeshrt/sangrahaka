@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Mar 09 23:59:05 2021
+Query Representation
 
 @author: Hrishikesh Terdalkar
 """
@@ -21,6 +21,11 @@ class Input:
 
 @dataclass
 class Query:
+    """
+    Query Object
+
+    Primary function of the class is to provide a data structure for a query
+    """
     gid: str
     groups: Dict[str, str]
     texts: Dict[str, str]
@@ -44,6 +49,25 @@ class Query:
         return self.from_dict(json.loads(json_text))
 
     def to_dict(self, prefix='__', suffix='__', debug=False):
+        """Give a dictionary representation of query
+
+        Placeholder variables such as `{0}`, `{1}`, etc. are replaced
+        by their front-end variable names with prefixes and suffixes
+
+        Parameters
+        ----------
+        prefix : str, optional
+            Prefix for input variables, by default '__'
+        suffix : str, optional
+            Suffix for input variables, by default '__'
+        debug : bool, optional
+            If True input type is also added, by default False
+
+        Returns
+        -------
+        dict
+            Dictionary representation of a Query
+        """
         result = {}
         replace_in_text = tuple([
             (f"({prefix}{i.id}{suffix}:{i.type})"
@@ -72,6 +96,18 @@ class Query:
 
 
 def load_queries(query_file):
+    """Load queries from a JSON query file
+
+    Parameters
+    ----------
+    query_file : str
+        Path to a valid JSON query file
+
+    Returns
+    -------
+    list
+        List of Query objects
+    """
     with open(query_file) as f:
         queries = json.load(f)
     return [Query.from_dict(q) for q in queries]

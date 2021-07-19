@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar 10 13:27:53 2021
+Connection to Neo4j Graph Database
+
+A thin wrapper on top of py2neo.Graph object.
+py2neo Reference: https://py2neo.org/2021.1/workflow.html#py2neo.Graph
 
 @author: Hrishikesh Terdalkar
 """
@@ -9,6 +12,11 @@ Created on Wed Mar 10 13:27:53 2021
 import json
 import py2neo
 import logging
+
+###############################################################################
+
+PREFIX_N = "N:"
+PREFIX_R = "R:"
 
 ###############################################################################
 
@@ -27,6 +35,8 @@ def find_entity_type(entities, entity_type):
 
 
 class Graph:
+    """Connection to Neo4j Graph Database"""
+
     def __init__(self, server, username, password):
         self.__username = username
         self.__password = password
@@ -39,6 +49,7 @@ class Graph:
         self.__logger = logging.getLogger(self.__class__.__name__)
 
     def run_query(self, query):
+        """Execute a Cypher query"""
         result = self.graph.run(query)
         matches = result.data()
         nodes = set()
@@ -70,15 +81,16 @@ class Graph:
         """
         Return a representation of an entity
 
-        For Node and Relationship, the `identity' of it is returned, which
-        can be used in combination with the formatted node and edge objects
+        For Node and Relationship, the `identity' is returned (with
+        an appropriate prefix), which can be used in combination
+        with the formatted node and edge objects
 
-        For other types, some kind of string representation for direct display
+        For other types, a string representation for direct display
         """
         if isinstance(entity, py2neo.data.Node):
-            return f"N:{entity.identity}"
+            return f"{PREFIX_N}{entity.identity}"
         if isinstance(entity, py2neo.data.Relationship):
-            return f"R:{entity.identity}"
+            return f"{PREFIX_R}{entity.identity}"
         if isinstance(entity, py2neo.data.Path):
             return (self.repr_entity(entity.start_node),
                     self.repr_entity(entity.relationships),
