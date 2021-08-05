@@ -42,15 +42,17 @@ class Graph:
         self.__password = password
         self.__server = server
         self.graph = py2neo.Graph(
-            self.__server + '/data/',
-            username=self.__username,
+            self.__server,
+            user=self.__username,
             password=self.__password
         )
         self.__logger = logging.getLogger(self.__class__.__name__)
 
     def run_query(self, query):
         """Execute a Cypher query"""
-        result = self.graph.run(query)
+        # py2neo.run() - Read/Write Query
+        # py2neo.query() - Read-only Query
+        result = self.graph.query(query)
         matches = result.data()
         nodes = set()
         edges = set()

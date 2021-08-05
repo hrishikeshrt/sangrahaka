@@ -7,8 +7,8 @@ Flask_Migrate==2.7.0
 Flask_BabelEx==0.9.4
 Flask_Limiter==1.4
 SQLAlchemy==1.4.20
-py2neo==2021.0.1
-indic_transliteration==2.1.0
+py2neo==2021.1.5
+indic_transliteration==2.2.4
 # PythonAnywhere Support
-requests==2.25.1
-GitPython==3.1.14
+requests==2.26.0
+GitPython==3.1.18
