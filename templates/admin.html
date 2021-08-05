@@ -1,6 +1,6 @@
 {% set active_page = "admin" %}
 {% include "header.html" %}
-<div class="container py-3">
+<div id="acp" class="container py-3">
     <div class="card">
         <div class="card-header lead">
             Users
@@ -130,6 +130,56 @@
                                 <button type="submit" name="action" value="chapter_add" class="btn btn-success disabled m-1">
                                     Add
                                 </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-header collapsed" data-toggle="collapse" data-target="#download_container"
+                        aria-expanded="false" aria-controls="download_container">
+                        Download Annotations
+                    </div>
+                    <div id="download_container" role="tabpanel" class="collapse" data-parent="#manage_data">
+                        <div class="card-body">
+                            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                                <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+
+                                        <label for="annotator">User</label>
+                                        <select class="lead m-1 selectpicker" name="annotator" id="annotator"
+                                            data-container="body"
+                                            data-width="25%"
+                                            data-live-search="true"
+                                            data-actions-box="true"
+                                            data-select-all-text="All"
+                                            data-deselect-all-text="None"
+                                            data-selected-text-format="count"
+                                            multiple>
+                                            {% for user in data.users %}
+                                            <option value="{{user}}">{{user}}</option>
+                                            {% endfor %}
+                                        </select>
+
+                                        <label for="corpus_id">Chapter</label>
+                                        <select class="lead m-1 selectpicker" name="chapter_id" id="annotator_chapter_id"
+                                            data-container="body"
+                                            data-width="50%"
+                                            data-live-search="true"
+                                            data-actions-box="true"
+                                            data-select-all-text="All"
+                                            data-deselect-all-text="None"
+                                            data-selected-text-format="count"
+                                            multiple>
+                                            {% for corpus in data.corpus_list %}
+                                            {% for chapter in corpus.chapters %}
+                                            <option value="{{chapter.id}}">{{corpus.name}} - {{chapter.name}}</option>
+                                            {% endfor %}
+                                            {% endfor %}
+                                        </select>
+
+                                        <button type="submit" name="action" value="annotation_download" class="btn btn-secondary disabled">
+                                            <i class="fa fa-download"></i>
+                                        </button>
+
                             </form>
                         </div>
                     </div>

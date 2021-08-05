@@ -421,23 +421,24 @@ def api():
     # ----------------------------------------------------------------------- #
     # Action Authorization
 
-    common_actions = ['query']
-    admin_actions = []
-    annotator_actions = ['update_entity', 'update_relation']
-    valid_actions = common_actions + admin_actions + annotator_actions
+    role_actions = {
+        'admin': [],
+        'annotator': ['update_entity', 'update_relation'],
+        'curator': [],
+        'querier': ['query']
+    }
+    valid_actions = [
+        action for actions in role_actions.values() for action in actions
+    ]
 
     if action not in valid_actions:
         api_response['message'] = "Invalid action."
         return jsonify(api_response)
 
-    if (
-        (action in admin_actions and
-         not current_user.has_role('admin')) or
-        (action in annotator_actions and
-         not current_user.has_role('annotator'))
-    ):
-        api_response['message'] = "Insufficient permissions."
-        return jsonify(api_response)
+    for role, actions in role_actions.items():
+        if action in actions and not current_user.has_role(role):
+            api_response['message'] = "Insufficient permissions."
+            return jsonify(api_response)
 
     # ----------------------------------------------------------------------- #
 
@@ -750,37 +751,40 @@ def action():
     # ----------------------------------------------------------------------- #
     # Admin Actions
 
-    owner_actions = [
-        'application_info', 'application_update', 'application_reload'
+    role_actions = {
+        'owner': [
+            'application_info', 'application_update', 'application_reload'
+        ],
+        'admin': [
+            'user_role_add', 'user_role_remove',
+
+            # Ontology
+            'node_type_add', 'node_type_remove',
+            'relation_type_add', 'relation_type_remove',
+
+            # Data
+            'corpus_add', 'chapter_add',
+            'annotation_download'
+        ],
+        'annotator': [],
+        'curator': []
+    }
+    valid_actions = [
+        action for actions in role_actions.values() for action in actions
     ]
 
-    admin_actions = [
-        'user_role_add', 'user_role_remove',
-
-        # Ontology
-        'node_type_add', 'node_type_remove',
-        'relation_type_add', 'relation_type_remove',
-
-        # Data
-        'corpus_add', 'chapter_add'
-    ]
-
-    annotator_actions = []
-
-    if action in owner_actions and not current_user.has_role('owner'):
-        flash("You are not authorized to perform that action.", "danger")
+    if action not in valid_actions:
+        flash("Invalid action.")
         return redirect(request.referrer)
 
-    if action in admin_actions and not current_user.has_role('admin'):
-        flash("You are not authorized to perform that action.", "danger")
-        return redirect(request.referrer)
-
-    if action in annotator_actions and not current_user.has_role('annotator'):
-        flash("You are not authorized to perform that action.", "danger")
-        return redirect(request.referrer)
+    for role, actions in role_actions.items():
+        if action in actions and not current_user.has_role(role):
+            flash("You are not authorized to perform that action.", "danger")
+            return redirect(request.referrer)
 
     # ----------------------------------------------------------------------- #
     # Show Application Information
+
     if action in [
         'application_info', 'application_update', 'application_reload'
     ] and not app.pa_enabled:
@@ -976,6 +980,7 @@ def action():
         return redirect(request.referrer)
 
     # ----------------------------------------------------------------------- #
+    # Corpus Add
 
     if action in ['corpus_add']:
         corpus_name = request.form['corpus_name']
@@ -1073,6 +1078,126 @@ def action():
         else:
             flash("Invalid file or file extension.")
 
+        return redirect(request.referrer)
+
+    # ----------------------------------------------------------------------- #
+    # Corpus Download
+
+    if action in ["annotation_download"]:
+        usernames = request.form.getlist('annotator')
+        chapters = request.form.getlist('chapter_id')
+        try:
+            User = user_datastore.user_model
+            _chapters = set(str(chapter.id) for chapter in Chapter.query.all())
+            _usernames = set(user.username for user in User.query.all())
+
+            # Conditions for query-optimization
+            all_chapters = set(chapters) == _chapters
+            all_users = set(usernames) == _usernames
+            logging.info(f"{all_chapters=}, {all_users=}")
+
+            # Node and Relation Queries
+            # NOTE: 'elif' is important
+            if all_chapters and all_users:
+                # no condition
+                node_query = Node.query.filter(
+                    Node.is_deleted == False  # noqa
+                )
+                relation_query = Relation.query.filter(
+                    Relation.is_deleted == False  # noqa
+                )
+            elif all_users:
+                # only chapter condition
+                node_query = (
+                    Node.query.join(Line).join(Verse).filter(
+                        and_(
+                            Verse.chapter_id.in_(chapters),
+                            Node.is_deleted == False  # noqa
+                        )
+                    )
+                )
+                relation_query = (
+                    Relation.query.join(Line).join(Verse).filter(
+                        and_(
+                            Verse.chapter_id.in_(chapters),
+                            Relation.is_deleted == False  # noqa
+                        )
+                    )
+                )
+            elif all_chapters:
+                # only user condition
+                node_query = (
+                    Node.query.join(User).filter(
+                        and_(
+                            User.username.in_(usernames),
+                            Node.is_deleted == False  # noqa
+                        )
+                    )
+                )
+                relation_query = (
+                    Relation.query.join(User).filter(
+                        and_(
+                            User.username.in_(usernames),
+                            Relation.is_deleted == False  # noqa
+                        )
+                    )
+                )
+            else:
+                # both user and chapter conditions
+                node_query = (
+                    Node.query.join(User).join(Line).join(Verse).filter(
+                        and_(
+                            User.username.in_(usernames),
+                            Verse.chapter_id.in_(chapters),
+                            Node.is_deleted == False  # noqa
+                        )
+                    )
+                )
+                relation_query = (
+                    Relation.query.join(User).join(Line).join(Verse).filter(
+                        and_(
+                            User.username.in_(usernames),
+                            Verse.chapter_id.in_(chapters),
+                            Relation.is_deleted == False  # noqa
+                        )
+                    )
+                )
+
+            annotations = {
+                'nodes': [
+                    {
+                        'line_id': node.line_id,
+                        'annotator_id': node.annotator_id,
+                        'lemma': node.lemma.lemma,
+                        'label': node.label.label
+                    }
+                    for node in node_query.all()
+                ],
+                'relations': [
+                    {
+                        'line_id': relation.line_id,
+                        'annotator_id': relation.annotator_id,
+                        'source': relation.src_lemma.lemma,
+                        'relation': relation.label.label,
+                        'detail': relation.detail,
+                        'target': relation.dst_lemma.lemma
+                    }
+                    for relation in relation_query.all()
+                ]
+            }
+
+            filename = 'annotations.json'
+            content = json.dumps(annotations, ensure_ascii=False)
+            return Response(
+                content,
+                mimetype='application/json',
+                headers={
+                    'Content-Disposition': f'attachment;filename={filename}'
+                }
+            )
+        except Exception as e:
+            print(e)
+            flash("Failed to get annotations.", "danger")
         return redirect(request.referrer)
 
     # ----------------------------------------------------------------------- #
