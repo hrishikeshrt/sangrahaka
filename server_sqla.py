@@ -1,9 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Mar 07 13:11:26 2021
+Annotation Server
 
-@author: Hrishikesh Terdalkar
+Deployment
+----------
+
+1. Using Flask-Run
+
+```
+$ export FLASK_APP="server:webapp"
+$ flask run
+```
+
+2. Using gunicorn
+
+```
+$ gunicorn -b host:port server:webapp
+```
+
+3. Direct (dev only)
+
+```
+$ python server.py
+```
 """
 
 __author__ = "Hrishikesh Terdalkar"
@@ -84,6 +104,7 @@ webapp.config['JSON_AS_ASCII'] = False
 webapp.config['JSON_SORT_KEYS'] = False
 
 # SQLAlchemy Config
+webapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 webapp.config['SQLALCHEMY_DATABASE_URI'] = app.sqla['database_uri']
 webapp.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_pre_ping": True,
@@ -349,7 +370,7 @@ def show_query():
 
     data['query_groups'] = list(query_groups.values())
     data['initial_query'] = (
-        'MATCH (node_1)-[edge]-(node_2) RETURN *'
+        'MATCH (node_1)-[edge]->(node_2) RETURN *'
     )
     return render_template('query.html', data=data)
 
