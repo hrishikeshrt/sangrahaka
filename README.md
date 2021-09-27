@@ -2,6 +2,8 @@
 
 An easy and robust web-based distributed **Annotation and Querying Framework**.
 
+This work has been accepted in ESEC/FSE 2021.
+
 ## Instructions
 
 * Clone repository
@@ -13,6 +15,32 @@ An easy and robust web-based distributed **Annotation and Querying Framework**.
 * Run application server `python server.py`
 
 **Note**: `examples` directory contains sample files for corpus creation, query template and graph building.
+
+## Demo
+
+* Presentation: https://hrishikeshrt.github.io/publication/fse2021/presentation.mp4
+
+
+## Cite
+
+```
+@inproceedings{terdalkar2021sangrahaka,
+author = {Terdalkar, Hrishikesh and Bhattacharya, Arnab},
+title = {Sangrahaka: A Tool for Annotating and Querying Knowledge Graphs},
+year = {2021},
+isbn = {9781450385626},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3468264.3473113},
+doi = {10.1145/3468264.3473113},
+booktitle = {Proceedings of the 29th ACM Joint Meeting on European Software Engineering Conference and Symposium on the Foundations of Software Engineering},
+pages = {1520–1524},
+numpages = {5},
+keywords = {Querying Tool, Knowledge Graph, Annotation Tool},
+location = {Athens, Greece},
+series = {ESEC/FSE 2021}
+}
+```
 
 ## Structure
 
