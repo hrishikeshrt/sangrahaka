@@ -40,7 +40,12 @@ APPLICATION_CONFIG = {
     'show_split': False,
     'line_detail_formatter': 'generic',
     'query_languages': ['english'],
-    'default_query_language': 'english'
+    'default_query_language': 'english',
+    'graph_templates': [
+        # TODO: Consider moving to a file
+        {'name': 'Blank', 'nodes': [], 'edges': []},
+        {'name': 'Single Edge', 'nodes': [1, 2], 'edges': [(1, 2)]}
+    ]
 }
 
 # --------------------------------------------------------------------------- #

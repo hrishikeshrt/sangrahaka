@@ -1,0 +1,201 @@
+{% set active_page = "builder" %}
+{% include "header.html" %}
+
+<div class="container-fluid p-3">
+    <!-- Node Input -->
+    <div class="card" id="node-popup">
+        <div id="node-operation" class="card-header">
+            Add Node
+        </div>
+        <div class="card-body">
+            <div class="form">
+                <div class="form-group row">
+                    <label for="node-label" class="col-sm-4">Lemma</label>
+                    <input id="node-label" type="text" class="form-control col-sm-8" placeholder="Label"
+                        data-url="{{url_for('suggest')}}" autocomplete="off">
+                </div>
+                <div class="form-group row">
+                    <label for="node-type" class="col-sm-4">Type</label>
+                    <select id="node-type" title="Select node type" class="form-control selectpicker col-sm-8"
+                        data-live-search="true">
+                        {% for _id, _label, _description in constants.node_labels %}
+                        <option value="{{_label}}">{{_description}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group row">
+                    <label for="node-query" class="col-sm-4">Query?</label>
+                    <input type="checkbox" id="node-query"
+                        data-toggle="toggle" data-size="sm"
+                        data-on="Yes" data-off="No"
+                        data-onstyle="primary" data-offstyle="secondary">
+                </div>
+                <div class="form-group row float-right">
+                    <button class="btn btn-sm btn-success mx-1" id="node-save-button">
+                        Save
+                    </button>
+                    <button class="btn btn-sm btn-danger mx-1" id="node-cancel-button">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edge Input -->
+    <div class="card" id="edge-popup">
+        <div id="edge-operation" class="card-header">
+            Add Edge
+        </div>
+        <div class="card-body">
+            <div class="form">
+                <div class="form-group row">
+                    <label for="edge-label" class="col-sm-4">Relation</label>
+                    <select id="edge-label" title="Select relation" class="form-control selectpicker col-sm-8"
+                        data-live-search="true">
+                        {% for _id, _label, _description in constants.relation_labels %}
+                        <option value="{{_label}}">{{_description}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group row">
+                    <label for="edge-query" class="col-sm-4">Query?</label>
+                    <input type="checkbox" id="edge-query"
+                        data-toggle="toggle" data-size="sm"
+                        data-on="Yes" data-off="No"
+                        data-onstyle="primary" data-offstyle="secondary">
+                </div>
+                <div class="form-group row float-right">
+                    <button class="btn btn-sm btn-success mx-1" id="edge-save-button">
+                        Save
+                    </button>
+                    <button class="btn btn-sm btn-danger mx-1" id="edge-cancel-button">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    Graph Query Builder
+                    <button id="graph-query" title="Build Query" class="btn btn-sm btn-secondary float-right">
+                        <i class="fa fa-cogs"></i>
+                    </button>
+                </div>
+                <div class="card-header">
+                    <select name="graph-template" id="graph-template"
+                        title="Graph Template" class="form-control selectpicker"
+                        data-live-search="true">
+                        {% for template in data.templates %}
+                        <option value="{{template|tojson|urlencode}}">{{template.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="card-body p-0">
+                    <div id="graph-builder" style="height: 64vh;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-header">Cypher Query</div>
+                <div class="card-body">
+                    <textarea class="form-control text-info" id="cypher-query" name="cypher-query"
+                        cols="60" rows="2" readonly>
+                    </textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manipulation interface appearance can be customized -->
+    <!--
+    <div id="graph-builder">
+        <div class="vis-network" style="position: relative; overflow: hidden; touch-action: pan-y; user-select: none; width: 100%; height: 100%;" tabindex="0">
+            <canvas style="position: relative; touch-action: none; user-select: none; width: 100%; height: 100%;" width="800" height="600"></canvas>
+            <div class="vis-manipulation" style="display: none;"></div>
+            <div class="vis-edit-mode" style="display: block;">
+                <button class="vis-button vis-edit vis-edit-mode" style="touch-action: pan-y; user-select: none;">
+                    <div class="vis-label">Edit</div>
+                </button>
+            </div>
+            <button class="vis-close" aria-label="Close" style="display: none;"></button>
+        </div>
+    </div>
+    -->
+
+</div>
+
+<script src="{{url_for('static', filename='plugins/js/vis-network.min.js')}}"></script>
+<script src="{{url_for('static', filename='custom/js/builder/builder.js')}}"></script>
+<script>
+    const $graph_query_button = $("#graph-query");
+    const $graph_template_select = $("#graph-template");
+
+    $graph_template_select.change(function() {
+        const builder_data = JSON.parse(decodeURIComponent($(this).val()));
+        console.log(builder_data);
+
+        builder_network_data.nodes = new vis.DataSet();
+        builder_network_data.edges = new vis.DataSet();
+
+        for (const node of builder_data.nodes) {
+            builder_network_data.nodes.add({
+                id: node,
+                label: '?'
+            });
+        }
+        for (const edge of builder_data.edges) {
+            builder_network_data.edges.add({
+                from: edge[0],
+                to: edge[1],
+            });
+        }
+        builder_draw();
+    });
+
+    $graph_query_button.click(function(e) {
+        // e.preventDefault();
+        $.post("{{url_for('api')}}", {
+                action: "graph_query",
+                data: JSON.stringify(exportData()),
+            },
+            function (response) {
+                if (response.success) {
+                    $.notify({
+                        message: response.message
+                    }, {
+                        type: "success"
+                    });
+                    $("#cypher-query").text(response.cypher);
+                } else {
+                    console.log(response.message);
+                    $.notify({
+                        message: response.message
+                    }, {
+                        type: "danger"
+                    });
+                }
+                if (response.warning) {
+                    console.log(response.warning);
+                    $.notify({
+                        message: response.warning
+                    }, {
+                        type: "warning"
+                    })
+                }
+            },
+            'json');
+    });
+
+    $(document).ready(function () {
+        builder_init();
+        // Setup Auto-complete
+        $node_label.autoComplete();
+    });
+</script>
+{% include "footer.html" %}

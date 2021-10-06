@@ -51,6 +51,14 @@
     <link rel="stylesheet" href="{{url_for('static', filename='plugins/css/bootstrap4-toggle.min.css')}}">
     <script src="{{url_for('static', filename='plugins/js/bootstrap4-toggle.min.js')}}"></script>
 
+    {% if active_page == "builder" %}
+    <!-- Graph Builder CSS -->
+    <link rel="stylesheet" href="{{url_for('static', filename='custom/css/builder/builder.css')}}">
+
+    <!-- Graph Manipulation Menu Customization -->
+    <!-- <link rel="stylesheet" href="{{url_for('static', filename='custom/css/builder/vis-manipulation.css')}}"> -->
+    {% endif %}
+
     <!-- Bootstrap Table -->
     <link rel="stylesheet" href="{{url_for('static', filename='plugins/bootstrap-table/bootstrap-table.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='plugins/bootstrap-table/extensions/sticky-header/bootstrap-table-sticky-header.css')}}">

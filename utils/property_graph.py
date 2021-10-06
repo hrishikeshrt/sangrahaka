@@ -233,6 +233,11 @@ class PropertyGraph:
             Properties in the form of key-value pairs (dict).
             The default is None.
         """
+        if labels is None:
+            labels = []
+        if properties is None:
+            properties = {}
+
         if node_id in self.nodes:
             self.nodes[node_id].update(labels, properties)
         else:
@@ -273,6 +278,9 @@ class PropertyGraph:
             Properties in the form of key-value pairs (dict).
             The default is None.
         """
+        if properties is None:
+            properties = {}
+
         edge_tuple = (src_id, label, dst_id)
         if edge_tuple in self.edges:
             self.edges[edge_tuple].update(properties)

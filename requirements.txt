@@ -1,14 +1,21 @@
-Flask==2.0.1
-Flask_Security_Too==4.0.1
-Flask_SQLAlchemy==2.5.1
-Flask_Mail==0.9.1
-Flask_WTF==0.14.3
-Flask_Migrate==2.7.0
-Flask_BabelEx==0.9.4
-Flask_Limiter==1.4
-SQLAlchemy==1.4.20
-py2neo==2021.1.5
-indic_transliteration==2.2.4
+# Flask Server Related
+Flask>=2.0.1
+Flask_Security_Too>=4.0.1
+Flask_SQLAlchemy>=2.5.1
+Flask_Mail>=0.9.1
+Flask_WTF>=0.14.3
+Flask_Migrate>=2.7.0
+Flask_BabelEx>=0.9.4
+Flask_Limiter>=1.4
+SQLAlchemy>=1.4.25
+
+# Extra
+indic_transliteration>=2.2.4
+
+# Neo4j
+py2neo>=2021.1.5
+python_cypher==0.18.1
+
 # PythonAnywhere Support
-requests==2.26.0
-GitPython==3.1.18
+requests>=2.26.0
+GitPython>=3.1.18

@@ -65,8 +65,10 @@ from models_sqla import (db, user_datastore,
                          Lexicon, NodeLabel, RelationLabel, Node, Relation)
 from settings import app
 from utils.graph import Graph
+from utils.property_graph import PropertyGraph
 from utils.reverseproxied import ReverseProxied
 from utils.query import load_queries
+from utils.cypher_utils import graph_to_cypher
 
 ###############################################################################
 
@@ -379,6 +381,13 @@ def show_query():
     return render_template('query.html', data=data)
 
 
+@webapp.route("/query/builder", strict_slashes=False)
+def show_builder():
+    data = {'title': 'Graph Query Builder'}
+    data['templates'] = app.config['graph_templates']
+    return render_template('builder.html', data=data)
+
+
 @webapp.route("/terms", strict_slashes=False)
 def show_terms():
     data = {'title': 'Terms of Use'}
@@ -450,7 +459,7 @@ def api():
         'admin': [],
         'annotator': ['update_entity', 'update_relation'],
         'curator': [],
-        'querier': ['query']
+        'querier': ['query', 'graph_query']
     }
     valid_actions = [
         action for actions in role_actions.values() for action in actions
@@ -661,6 +670,37 @@ def api():
             api_response['success'] = False
             api_response['message'] = f'Something went wrong. ({e})'
 
+        return jsonify(api_response)
+
+    if action == 'graph_query':
+        graph_data = json.loads(request.form['data'])
+        graph = PropertyGraph()
+        for node in graph_data['nodes']:
+            graph.add_node(
+                node_id=node['id'],
+                labels=[node['label']] if node['label'] else [],
+                properties=node['properties']
+            )
+        for edge in graph_data['edges']:
+            graph.add_edge(
+                src_id=edge['source'],
+                label=edge['label'],
+                dst_id=edge['target'],
+                properties=edge['properties']
+            )
+
+        non_conditionals = {
+            'lemma': ["?", ""],
+            'query': [True, False, None],
+        }
+        cypher_query = graph_to_cypher(
+            graph=graph,
+            non_conditionals=non_conditionals
+        )
+
+        api_response['success'] = True
+        api_response['message'] = 'Query built successfully.'
+        api_response['cypher'] = cypher_query
         return jsonify(api_response)
 
     if action == 'custom_action':
