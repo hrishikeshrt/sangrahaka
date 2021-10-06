@@ -36,7 +36,6 @@ import os
 import re
 import glob
 import json
-import random
 import logging
 import datetime
 
@@ -126,6 +125,10 @@ webapp.config['SECURITY_USER_IDENTITY_ATTRIBUTES'] = [
 webapp.config['SECURITY_RECOVERABLE'] = app.smtp_enabled
 webapp.config['SECURITY_CHANGEABLE'] = True
 webapp.config['SECURITY_TRACKABLE'] = True
+# NOTE: SECURITY_USERNAME_ still buggy in Flask-Security-Too
+# Exercise caution before enabling the following two options
+# webapp.config['SECURITY_USERNAME_ENABLE'] = True
+# webapp.config['SECURITY_USERNAME_REQUIRED'] = True
 webapp.config['SECURITY_POST_LOGIN_VIEW'] = 'show_home'
 webapp.config['SECURITY_POST_LOGOUT_VIEW'] = 'show_home'
 
@@ -166,13 +169,13 @@ limiter = Limiter(
 # Neo4j Graph
 
 try:
-    graph = Graph(
+    GRAPH = Graph(
         server=app.neo4j['server'],
         username=app.neo4j['username'],
         password=app.neo4j['password']
     )
 except Exception as e:
-    graph = None
+    GRAPH = None
     logging.error(f"Graph Database connection failed. ({e})")
 
 ###############################################################################
@@ -372,6 +375,7 @@ def show_query():
     data['initial_query'] = (
         'MATCH (node_1)-[edge]->(node_2) RETURN *'
     )
+    data['initial_output'] = ['node_1', 'edge', 'node_2']
     return render_template('query.html', data=data)
 
 
@@ -595,7 +599,7 @@ def api():
     # ----------------------------------------------------------------------- #
 
     if action == 'query':
-        if graph is None:
+        if GRAPH is None:
             api_response['success'] = False
             api_response['message'] = 'Graph Database is not connected.'
             return jsonify(api_response)
@@ -646,7 +650,7 @@ def api():
 
         try:
             logging.debug(cypher_query)
-            matches, nodes, edges = graph.run_query(cypher_query)
+            matches, nodes, edges = GRAPH.run_query(cypher_query)
             api_response['matches'] = matches
             api_response['nodes'] = nodes
             api_response['edges'] = edges

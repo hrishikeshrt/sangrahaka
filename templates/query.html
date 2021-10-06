@@ -146,7 +146,8 @@
     });
 
     $(document).ready(function () {
-        $cypher_input.val("{{data.initial_query}}");
+        $cypher_input.val('{{data.initial_query | safe}}');
+        $result_table.data('output-order', JSON.parse('{{data.initial_output|tojson|safe}}'));
         $submit_button.click();
     });
 </script>
