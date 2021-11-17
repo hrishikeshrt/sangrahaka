@@ -418,7 +418,10 @@ def show_contact():
 
 @webapp.route("/about", strict_slashes=False)
 def show_about():
-    data = {'title': 'About'}
+    data = {
+        'title': 'About',
+        'about': app.about
+    }
     return render_template('about.html', data=data)
 
 

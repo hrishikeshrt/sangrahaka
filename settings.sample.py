@@ -60,6 +60,14 @@ CONTACTS = [
 ]
 
 # --------------------------------------------------------------------------- #
+# HTML About
+
+ABOUT = """
+"Saṅgrāhaka" is a framework for annotating nodes and entities towards
+construction and subsequent querying of knowledge graphs.
+"""
+
+# --------------------------------------------------------------------------- #
 # Security
 
 # Generate a nice key using secrets.token_urlsafe()
@@ -191,6 +199,7 @@ app.debug = DEBUG
 
 # Config
 app.config = APPLICATION_CONFIG
+app.about = ABOUT
 
 # Paths
 app.dir = APP_DIR
