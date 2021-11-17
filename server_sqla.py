@@ -260,8 +260,8 @@ def inject_global_constants():
     theme_js_files = glob.glob(
         os.path.join(app.dir, 'static', 'themes', 'js', 'bootstrap.*.min.js')
     )
-    themes = sorted([os.path.basename(theme).split('.')[1]
-                     for theme in theme_files])
+    themes = ['default'] + sorted([os.path.basename(theme).split('.')[1]
+                                   for theme in theme_files])
     themes_js = sorted([os.path.basename(theme).split('.')[1]
                         for theme in theme_js_files])
 
