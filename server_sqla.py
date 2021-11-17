@@ -831,8 +831,9 @@ def action():
             'corpus_add', 'chapter_add',
             'annotation_download'
         ],
+        'curator': [],
         'annotator': [],
-        'curator': []
+        'member': ['update_settings']
     }
     valid_actions = [
         action for actions in role_actions.values() for action in actions

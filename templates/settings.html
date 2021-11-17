@@ -38,7 +38,7 @@
                                     if (theme == "default") {
                                         return "{{url_for('static', filename='bootstrap/css/bootstrap.min.css')}}";
                                     } else {
-                                        return `/static/themes/css/bootstrap.${theme}.min.css`
+                                        return "{{url_for('static', filename='themes/css/bootstrap._THEME_.min.css')}}".replace("_THEME_", theme);
                                     }
 
                                 }
