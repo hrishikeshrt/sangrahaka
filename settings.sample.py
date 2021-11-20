@@ -68,6 +68,21 @@ construction and subsequent querying of knowledge graphs.
 """
 
 # --------------------------------------------------------------------------- #
+# Custom Pages
+# * Page under the key "custom" will be served at "/custom"
+# * "title" will be used in <head> tag within <title>
+# * "card_header" and "card_body" will appear as page content within a card
+# * CAUTION: Only safe HTML content should be added.
+
+CUSTOM_PAGES = {
+    "custom": {
+        "title": "Custom Title",
+        "card_header": "Custom Header",
+        "card_body": """This is a cusotm page with HTML content."""
+    }
+}
+
+# --------------------------------------------------------------------------- #
 # Security
 
 # Generate a nice key using secrets.token_urlsafe()
@@ -200,6 +215,7 @@ app.debug = DEBUG
 # Config
 app.config = APPLICATION_CONFIG
 app.about = ABOUT
+app.custom_pages = CUSTOM_PAGES
 
 # Paths
 app.dir = APP_DIR

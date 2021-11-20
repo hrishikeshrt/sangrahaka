@@ -1,0 +1,17 @@
+{% if data.active_page %}
+{% set active_page = data.active_page %}
+{% else %}
+{% set active_page = "pages" %}
+{% endif %}
+{% include "header.html" %}
+<div class="container p-3">
+    <div class="card">
+        <div class="card-header">
+            {{data.card_header | safe}}
+        </div>
+        <div class="card-body">
+            {{data.card_body | safe}}
+        </div>
+    </div>
+</div>
+{% include "footer.html" %}

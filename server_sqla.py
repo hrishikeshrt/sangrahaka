@@ -42,7 +42,7 @@ import datetime
 import git
 import requests
 from flask import (Flask, render_template, redirect, jsonify, url_for,
-                   request, flash, session, Response)
+                   request, flash, session, Response, abort)
 from flask_security import (Security, auth_required, permissions_required,
                             hash_password, current_user, user_registered,
                             user_authenticated)
@@ -423,6 +423,20 @@ def show_about():
         'about': app.about
     }
     return render_template('about.html', data=data)
+
+
+@webapp.route("/<page>", strict_slashes=False)
+def show_custom_page(page):
+    if page in app.custom_pages:
+        page_data = app.custom_pages[page]
+        data = {
+            'title': page_data['title'],
+            'card_header': page_data['card_header'],
+            'card_body': page_data['card_body']
+        }
+        return render_template('pages.html', data=data)
+    else:
+        abort(404)
 
 
 @webapp.route("/", strict_slashes=False)
