@@ -267,15 +267,15 @@ def inject_global_constants():
 
     CONSTANTS = {
         'node_labels': NodeLabel.query.filter(
-            NodeLabel.is_deleted == False  # noqa
+            NodeLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
             NodeLabel.id, NodeLabel.label, NodeLabel.description
-        ).all(),
+        ).order_by(NodeLabel.label).all(),
         'relation_labels': RelationLabel.query.filter(
-            RelationLabel.is_deleted == False  # noqa
+            RelationLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
             RelationLabel.id, RelationLabel.label, RelationLabel.description
-        ).all()
+        ).order_by(RelationLabel.label).all()
     }
     return {
         'title': app.title,
