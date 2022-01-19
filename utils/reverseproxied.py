@@ -12,6 +12,8 @@ Created on Tue Sep 10 13:56:54 2019
 # https://blog.macuyiko.com/post/2016/fixing-flask-url_for-when-behind-mod_proxy.html
 """
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 ###############################################################################
 
 
@@ -20,6 +22,10 @@ class ReverseProxied(object):
     front-end server to add these headers, to let you quietly bind
     this to a URL other than / and to an HTTP scheme that is
     different than what is used locally.
+
+    App is first wrapped in ProxyFix() middleware so that it gets a correct
+    IP address of the requester
+
     In nginx:
     location /myprefix {
         proxy_pass http://127.0.0.1:5001;
@@ -31,7 +37,7 @@ class ReverseProxied(object):
     :param app: the WSGI application
     '''
     def __init__(self, app, script_name=None, scheme=None, server=None, mounts=None):
-        self.app = app
+        self.app = ProxyFix(app)
         self.script_name = script_name
         self.scheme = scheme
         self.server = server
