@@ -229,12 +229,16 @@ class AyurvedaGraph(PropertyGraph):
         answer = []
         for group in groups:
             answer.append(
-                sorted(group, key=lambda x: (x[1], max(x[2])), reverse=True)
+                sorted(
+                    group,
+                    key=lambda x: (x[1], max(x[2]) if isinstance(x[2], list) else x[2]),
+                    reverse=True
+                )
             )
         return answer
 
     def add_synonym_edges(self):
-        groups = self.get_groups('IS_SYNONYM_OF')
+        groups = self.get_groups(['IS_SYNONYM_OF'])
         for group in groups:
             main_substance = group[0][0]
             synonyms = [x[0] for x in group[1:]]
