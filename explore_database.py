@@ -44,8 +44,36 @@ for model in [User, Role, Corpus, Chapter, Verse, Line, Analysis,
 
 
 def model_to_dict(
-    obj, max_depth=1, visited_children=None, back_relationships=None,
+    obj,
+    max_depth: int = 1,
+    visited_children: set = None,
+    back_relationships: set = None,
 ):
+    """SQLAlchmey objects as python `dict`
+
+    Parameters
+    ----------
+    obj : SQLAlchemy model object
+        Similar to an instance returned by declarative_base()
+    max_depth : int, optional
+        Maximum depth for recursion on relationships.
+        The default is 1.
+    visited_children : set, optional
+        Set of children already visited.
+        The default is None.
+        Primary use of this attribute is for recursive calls, and a user
+        usually does not explicitly set this.
+    back_relationships : set, optional
+        Set of back relationships already explored.
+        The default is None.
+        Primary use of this attribute is for recursive calls, and a user
+        usually does not explicitly set this.
+
+    Returns
+    -------
+    dict
+        Python `dict` representation of the SQLAlchemy object
+    """
     if visited_children is None:
         visited_children = set()
     if back_relationships is None:
@@ -72,9 +100,11 @@ def model_to_dict(
             if relationship_children is not None:
                 if relation.uselist:
                     children = []
-                    _children = [c for c in relationship_children
-                                 if c not in visited_children]
-                    for child in _children:
+                    for child in (
+                        c
+                        for c in relationship_children
+                        if c not in visited_children
+                    ):
                         visited_children.add(child)
                         children.append(model_to_dict(
                             child,
@@ -96,7 +126,7 @@ def model_to_dict(
 ###############################################################################
 
 
-def define_getter(model_name):
+def define_getter(model_name: str):
     def model_getter(model_id, as_dict=False, max_depth=1):
         f'Get {model_name}'
         result = MODELS.get(model_name).query.get(model_id)
