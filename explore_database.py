@@ -142,3 +142,35 @@ globals().update({
 
 
 ###############################################################################
+
+
+def inspect_node_label_instances(node_label_id: int or str):
+    """Quickly find instances of `Node`s with a specified label_id"""
+    return [
+        (
+            n,
+            n.lemma.lemma,
+            n.label.label,
+            n.line.text,
+            n.line.analyses[0].parsed[0]['Sanskrit']
+        )
+        for n in Node.query.where(Node.label_id == node_label_id).all()
+    ]
+
+
+def inspect_relation_label_instances(relation_label_id: int or str):
+    """Quickly find instances of `Relation`s with a specified label_id"""
+    return [
+        (
+            r,
+            r.src_lemma.lemma,
+            r.detail or "",
+            r.label.label,
+            r.dst_lemma.lemma,
+            r.line.text,
+            r.line.analyses[0].parsed[0]['Sanskrit']
+        )
+        for r in Relation.query.where(
+            Relation.label_id == relation_label_id
+        ).all()
+    ]
