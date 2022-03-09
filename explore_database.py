@@ -144,33 +144,79 @@ globals().update({
 ###############################################################################
 
 
-def inspect_node_label_instances(node_label_id: int or str):
-    """Quickly find instances of `Node`s with a specified label_id"""
-    return [
-        (
-            n,
-            n.lemma.lemma,
-            n.label.label,
-            n.line.text,
-            n.line.analyses[0].parsed[0]['Sanskrit']
-        )
-        for n in Node.query.where(Node.label_id == node_label_id).all()
-    ]
+def to_dict(model):
+    if isinstance(model, Node):
+        return {
+            "id": model.id,
+            "lemma": model.lemma.lemma,
+            "line": {
+                "id": model.line_id,
+                "english": model.line.text,
+                "sanskrit": model.line.analyses[0].parsed[0]['Sanskrit']
+            },
+            "annotator": {
+                "id": model.annotator_id,
+                "username": model.annotator.username
+            }
+        }
+
+    if isinstance(model, Relation):
+        return {
+            "id": model.id,
+            "source": model.src_lemma.lemma,
+            "relation_label": {
+                "id": model.label.id,
+                "label": model.label.label
+            },
+            "relation_detail": model.detail or "",
+            "target": model.dst_lemma.lemma,
+            "line": {
+                "id": model.line_id,
+                "english": model.line.text,
+                "sanskrit": model.line.analyses[0].parsed[0]['Sanskrit']
+            },
+            "annotator": {
+                "id": model.annotator_id,
+                "username": model.annotator.username
+            }
+        }
 
 
-def inspect_relation_label_instances(relation_label_id: int or str):
-    """Quickly find instances of `Relation`s with a specified label_id"""
-    return [
-        (
-            r,
-            r.src_lemma.lemma,
-            r.detail or "",
-            r.label.label,
-            r.dst_lemma.lemma,
-            r.line.text,
-            r.line.analyses[0].parsed[0]['Sanskrit']
-        )
-        for r in Relation.query.where(
-            Relation.label_id == relation_label_id
-        ).all()
-    ]
+def search_node(
+    label: str = "%",
+    lemma: str = "%",
+    line_id: str = "%",
+    annotator: str = "%",
+    offset: int = 0,
+    limit: int = 30
+) -> list:
+    """Search node annotations"""
+    node_query = Node.query.filter(
+        Node.label.has(NodeLabel.label.ilike(label)),
+        Node.lemma.has(Lexicon.lemma.ilike(lemma)),
+        Node.line.has(Line.id.ilike(line_id)),
+        Node.annotator.has(User.username.ilike(annotator))
+    )
+    return [to_dict(n) for n in node_query.offset(offset).limit(limit)]
+
+
+def search_relation(
+    src_lemma: str = "%",
+    label: str = "%",
+    detail: str = "%",
+    dst_lemma: str = "%",
+    line_id: str = "%",
+    annotator: str = "%",
+    offset: int = 0,
+    limit: int = 30,
+) -> list:
+    """Search relation annotations"""
+    relation_query = Relation.query.filter(
+        Relation.src_lemma.has(Lexicon.lemma.ilike(src_lemma)),
+        Relation.label.has(RelationLabel.label.ilike(label)),
+        Relation.dst_lemma.has(Lexicon.lemma.ilike(dst_lemma)),
+        Relation.detail.ilike(detail),
+        Relation.line.has(Line.id.ilike(line_id)),
+        Relation.annotator.has(User.username.ilike(annotator))
+    )
+    return [to_dict(n) for n in relation_query.offset(offset).limit(limit)]
