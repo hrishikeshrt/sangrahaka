@@ -6,6 +6,7 @@ Query Representation
 @author: Hrishikesh Terdalkar
 """
 
+import os
 import json
 from dataclasses import dataclass
 from typing import List, Dict
@@ -108,6 +109,9 @@ def load_queries(query_file):
     list
         List of Query objects
     """
+    if not os.path.isfile(query_file):
+        return []
+
     with open(query_file) as f:
         queries = json.load(f)
     return [Query.from_dict(q) for q in queries]
