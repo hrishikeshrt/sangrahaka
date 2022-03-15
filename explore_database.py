@@ -20,6 +20,8 @@ from models_sqla import Lexicon, NodeLabel, RelationLabel, Node, Relation
 
 from settings import app
 
+from utils.database import search_node, search_relation
+
 ###############################################################################
 
 webapp = Flask(__name__)
@@ -142,81 +144,3 @@ globals().update({
 
 
 ###############################################################################
-
-
-def to_dict(model):
-    if isinstance(model, Node):
-        return {
-            "id": model.id,
-            "lemma": model.lemma.lemma,
-            "line": {
-                "id": model.line_id,
-                "english": model.line.text,
-                "sanskrit": model.line.analyses[0].parsed[0]['Sanskrit']
-            },
-            "annotator": {
-                "id": model.annotator_id,
-                "username": model.annotator.username
-            }
-        }
-
-    if isinstance(model, Relation):
-        return {
-            "id": model.id,
-            "source": model.src_lemma.lemma,
-            "relation_label": {
-                "id": model.label.id,
-                "label": model.label.label
-            },
-            "relation_detail": model.detail or "",
-            "target": model.dst_lemma.lemma,
-            "line": {
-                "id": model.line_id,
-                "english": model.line.text,
-                "sanskrit": model.line.analyses[0].parsed[0]['Sanskrit']
-            },
-            "annotator": {
-                "id": model.annotator_id,
-                "username": model.annotator.username
-            }
-        }
-
-
-def search_node(
-    label: str = "%",
-    lemma: str = "%",
-    line_id: str = "%",
-    annotator: str = "%",
-    offset: int = 0,
-    limit: int = 30
-) -> list:
-    """Search node annotations"""
-    node_query = Node.query.filter(
-        Node.label.has(NodeLabel.label.ilike(label)),
-        Node.lemma.has(Lexicon.lemma.ilike(lemma)),
-        Node.line.has(Line.id.ilike(line_id)),
-        Node.annotator.has(User.username.ilike(annotator))
-    )
-    return [to_dict(n) for n in node_query.offset(offset).limit(limit)]
-
-
-def search_relation(
-    src_lemma: str = "%",
-    label: str = "%",
-    detail: str = "%",
-    dst_lemma: str = "%",
-    line_id: str = "%",
-    annotator: str = "%",
-    offset: int = 0,
-    limit: int = 30,
-) -> list:
-    """Search relation annotations"""
-    relation_query = Relation.query.filter(
-        Relation.src_lemma.has(Lexicon.lemma.ilike(src_lemma)),
-        Relation.label.has(RelationLabel.label.ilike(label)),
-        Relation.dst_lemma.has(Lexicon.lemma.ilike(dst_lemma)),
-        Relation.detail.ilike(detail),
-        Relation.line.has(Line.id.ilike(line_id)),
-        Relation.annotator.has(User.username.ilike(annotator))
-    )
-    return [to_dict(n) for n in relation_query.offset(offset).limit(limit)]

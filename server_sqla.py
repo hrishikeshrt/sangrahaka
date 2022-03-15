@@ -64,9 +64,10 @@ from models_sqla import (db, user_datastore,
                          Corpus, Chapter, Verse, Line, Analysis,
                          Lexicon, NodeLabel, RelationLabel, Node, Relation)
 from settings import app
+from utils.reverseproxied import ReverseProxied
+from utils.database import get_line_data, get_chapter_data
 from utils.graph import Graph
 from utils.property_graph import PropertyGraph
-from utils.reverseproxied import ReverseProxied
 from utils.query import load_queries
 from utils.cypher_utils import graph_to_cypher
 
@@ -184,7 +185,7 @@ except Exception as e:
 # Database Utlity Functions
 
 
-def get_or_create_lexicon(lemma):
+def get_or_create_lexicon(lemma) -> int:
     lexicon = Lexicon.query.filter(Lexicon.lemma == lemma).first()
     if lexicon:
         return lexicon.id
@@ -735,59 +736,7 @@ def api_corpus(chapter_id):
             'data': []
         })
 
-    data = {line.id: {
-        'line_id': line.id,
-        'verse_id': line.verse_id,
-        'line': line.text,
-        'split': line.split,
-        'analysis': line.analyses.first().parsed,
-        'entity': [],
-        'relation': [],
-        'marked': False
-    } for verse in chapter.verses.all() for line in verse.lines.all()}
-
-    node_query = None
-    if current_user.has_role('annotator') or current_user.has_role('admin'):
-        if current_user.has_role('annotator'):
-            node_query = (
-                current_user.nodes.join(Line).join(Verse)
-                .filter(Verse.chapter_id == chapter_id)
-            )
-            relation_query = (
-                current_user.relations.join(Line).join(Verse)
-                .filter(Verse.chapter_id == chapter_id)
-            )
-
-        # Curator can see annotations by others
-        if current_user.has_permission('curate'):
-            node_query = Node.query.join(Line).join(Verse).filter(
-                Verse.chapter_id == chapter_id
-            )
-            relation_query = Relation.query.join(Line).join(Verse).filter(
-                Verse.chapter_id == chapter_id
-            )
-
-        for node in node_query.all():
-            data[node.line_id]['entity'].append({
-                'id': node.id,
-                'root': node.lemma.lemma,
-                'type': node.label.label,
-                'annotator': node.annotator.username,
-                'is_deleted': node.is_deleted
-            })
-            data[node.line_id]['marked'] = True
-        for relation in relation_query.all():
-            data[relation.line_id]['relation'].append({
-                'id': relation.id,
-                'source': relation.src_lemma.lemma,
-                'target': relation.dst_lemma.lemma,
-                'label': relation.label.label,
-                'detail': relation.detail,
-                'annotator': relation.annotator.username,
-                'is_deleted': relation.is_deleted
-            })
-            data[relation.line_id]['marked'] = True
-
+    data = get_chapter_data(chapter_id, current_user)
     response = {
         'title': f"{chapter.corpus.name} - {chapter.name}",
         'data': list(data.values())
