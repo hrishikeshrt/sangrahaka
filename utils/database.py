@@ -60,18 +60,21 @@ def search_node(
     lemma: str = "%",
     line_id: str = "%",
     annotator: str = "%",
+    is_deleted: bool = False,
     offset: int = 0,
-    limit: int = 30
+    limit: int = 30,
+    convert_to_dict: bool = True
 ) -> list:
     """Search node annotations"""
     node_query = Node.query.filter(
         Node.label.has(NodeLabel.label.ilike(label)),
         Node.lemma.has(Lexicon.lemma.ilike(lemma)),
         Node.line.has(Line.id.ilike(line_id)),
-        Node.annotator.has(User.username.ilike(annotator))
+        Node.annotator.has(User.username.ilike(annotator)),
+        Node.is_deleted == is_deleted
     )
     return [
-        annotation_to_dict(n)
+        annotation_to_dict(n) if convert_to_dict else n
         for n in node_query.offset(offset).limit(limit)
     ]
 
@@ -83,8 +86,10 @@ def search_relation(
     dst_lemma: str = "%",
     line_id: str = "%",
     annotator: str = "%",
+    is_deleted: bool = False,
     offset: int = 0,
     limit: int = 30,
+    convert_to_dict: bool = True
 ) -> list:
     """Search relation annotations"""
     relation_query = Relation.query.filter(
@@ -93,10 +98,11 @@ def search_relation(
         Relation.dst_lemma.has(Lexicon.lemma.ilike(dst_lemma)),
         Relation.detail.ilike(detail),
         Relation.line.has(Line.id.ilike(line_id)),
-        Relation.annotator.has(User.username.ilike(annotator))
+        Relation.annotator.has(User.username.ilike(annotator)),
+        Relation.is_deleted == is_deleted
     )
     return [
-        annotation_to_dict(r)
+        annotation_to_dict(r) if convert_to_dict else r
         for r in relation_query.offset(offset).limit(limit)
     ]
 
