@@ -6,11 +6,19 @@ Database Utility Functions
 
 ###############################################################################
 
+import logging
 from typing import List
+
+from sqlalchemy.orm.properties import ColumnProperty
+from sqlalchemy.orm.relationships import RelationshipProperty
 
 from models_sqla import User, Role
 from models_sqla import Corpus, Chapter, Verse, Line, Analysis
 from models_sqla import Lexicon, NodeLabel, RelationLabel, Node, Relation
+
+###############################################################################
+
+LOGGER = logging.getLogger(__name__)
 
 ###############################################################################
 
@@ -51,6 +59,31 @@ def annotation_to_dict(model: Node or Relation) -> dict:
                 "username": model.annotator.username
             }
         }
+
+###############################################################################
+
+
+def search_model(
+    model,
+    offset: int = 0,
+    limit: int = 30,
+    **property_arguments
+):
+    """Search generic SQLAlchemy models"""
+    conditions = []
+    for property_name, property_value in property_arguments.items():
+        if hasattr(model, property_name):
+            attribute = getattr(model, property_name)
+            if isinstance(attribute.property, ColumnProperty):
+                if attribute.type.python_type is str:
+                    conditions.append(attribute.ilike(property_value))
+                else:
+                    conditions.append(attribute == property_value)
+            elif isinstance(attribute.property, RelationshipProperty):
+                LOGGER.info(f"'{property_name}' is a 'RelationshipProperty'.")
+
+    return model.query.filter(*conditions).offset(offset).limit(limit)
+
 
 ###############################################################################
 

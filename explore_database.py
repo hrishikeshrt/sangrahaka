@@ -20,7 +20,7 @@ from models_sqla import Lexicon, NodeLabel, RelationLabel, Node, Relation
 
 from settings import app
 
-from utils.database import search_node, search_relation
+from utils.database import search_node, search_relation, search_model
 
 ###############################################################################
 
