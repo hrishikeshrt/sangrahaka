@@ -56,23 +56,30 @@ def annotation_to_dict(model: Node or Relation) -> dict:
 
 
 def search_node(
-    label: str = "%",
-    lemma: str = "%",
-    line_id: str = "%",
-    annotator: str = "%",
+    label: str = None,
+    lemma: str = None,
+    line_id: str = None,
+    annotator: str = None,
     is_deleted: bool = False,
     offset: int = 0,
     limit: int = 30,
     convert_to_dict: bool = True
 ) -> list:
     """Search node annotations"""
-    node_query = Node.query.filter(
-        Node.label.has(NodeLabel.label.ilike(label)),
-        Node.lemma.has(Lexicon.lemma.ilike(lemma)),
-        Node.line.has(Line.id.ilike(line_id)),
-        Node.annotator.has(User.username.ilike(annotator)),
-        Node.is_deleted == is_deleted
-    )
+    filters = []
+    if label is not None:
+        filters.append(Node.label.has(NodeLabel.label.ilike(label)))
+    if lemma is not None:
+        filters.append(Node.lemma.has(Lexicon.lemma.ilike(lemma)))
+    if line_id is not None:
+        filters.append(Node.line_id.ilike(line_id))
+    if annotator is not None:
+        filters.append(Node.annotator.has(User.username.ilike(annotator)))
+    if is_deleted is not None:
+        filters.append(Node.is_deleted == is_deleted)
+
+    node_query = Node.query.filter(*filters)
+
     return [
         annotation_to_dict(n) if convert_to_dict else n
         for n in node_query.offset(offset).limit(limit)
@@ -80,27 +87,35 @@ def search_node(
 
 
 def search_relation(
-    src_lemma: str = "%",
-    label: str = "%",
-    detail: str = "%",
-    dst_lemma: str = "%",
-    line_id: str = "%",
-    annotator: str = "%",
+    src_lemma: str = None,
+    label: str = None,
+    detail: str = None,
+    dst_lemma: str = None,
+    line_id: str = None,
+    annotator: str = None,
     is_deleted: bool = False,
     offset: int = 0,
     limit: int = 30,
     convert_to_dict: bool = True
 ) -> list:
     """Search relation annotations"""
-    relation_query = Relation.query.filter(
-        Relation.src_lemma.has(Lexicon.lemma.ilike(src_lemma)),
-        Relation.label.has(RelationLabel.label.ilike(label)),
-        Relation.dst_lemma.has(Lexicon.lemma.ilike(dst_lemma)),
-        Relation.detail.ilike(detail),
-        Relation.line.has(Line.id.ilike(line_id)),
-        Relation.annotator.has(User.username.ilike(annotator)),
-        Relation.is_deleted == is_deleted
-    )
+    filters = []
+    if src_lemma is not None:
+        filters.append(Relation.src_lemma.has(Lexicon.lemma.ilike(src_lemma)))
+    if label is not None:
+        filters.append(Relation.label.has(RelationLabel.label.ilike(label)))
+    if detail is not None:
+        filters.append(Relation.detail.ilike(detail))
+    if dst_lemma is not None:
+        filters.append(Relation.dst_lemma.has(Lexicon.lemma.ilike(dst_lemma)))
+    if line_id is not None:
+        filters.append(Relation.line_id.ilike(line_id))
+    if annotator is not None:
+        filters.append(Relation.annotator.has(User.username.ilike(annotator)))
+    if is_deleted is not None:
+        filters.append(Relation.is_deleted == is_deleted)
+
+    relation_query = Relation.query.filter(*filters)
     return [
         annotation_to_dict(r) if convert_to_dict else r
         for r in relation_query.offset(offset).limit(limit)
