@@ -361,11 +361,12 @@ class PropertyGraph:
             self.add_edge(src_id, label, new_dst, properties)
             return True
 
-    def get_transitive_closure(self, node_id, relations=None):
+    def get_connected_nodes(self, node_id, relations=None):
         """
-        Get transitive closure of a node with respect to specific relations.
+        Get all nodes connected to the specified node by paths only containing
+        the relations belonging to specified relations.
         """
-        closure = set()
+        connected_nodes = set()
         current_nodes = {node_id}
         if relations is None:
             relations = []
@@ -373,12 +374,12 @@ class PropertyGraph:
         while True:
             next_nodes = set()
             for _node_id in current_nodes:
-                closure.add(_node_id)
+                connected_nodes.add(_node_id)
                 neighbours = set(self.nodes[_node_id].incoming).union(
                     set(self.nodes[_node_id].outgoing)
                 )
                 for neighbour in neighbours:
-                    if neighbour in closure:
+                    if neighbour in connected_nodes:
                         continue
                     for relation in relations:
                         if ((neighbour, relation, _node_id) in self.edges or
@@ -387,7 +388,7 @@ class PropertyGraph:
             current_nodes = next_nodes
             if not current_nodes:
                 break
-        return closure
+        return connected_nodes
 
     def to_jsonl(self):
         """

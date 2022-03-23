@@ -215,23 +215,29 @@ class AyurvedaGraph(PropertyGraph):
         for node_id in self.nodes:
             if node_id in handled:
                 continue
-            closure = self.get_transitive_closure(node_id, relations=relations)
-            if len(closure) > 1:
+            connected_nodes = self.get_connected_nodes(
+                node_id, relations=relations
+            )
+            if len(connected_nodes) > 1:
                 groups.append([
                     (self.nodes[_id],
                      sum(self.nodes[_id].incoming.values()) +
                      sum(self.nodes[_id].outgoing.values()),
                      self.nodes[_id].properties['line_id'])
-                    for _id in closure
+                    for _id in connected_nodes
                 ])
-                handled.update(closure)
+                handled.update(connected_nodes)
 
         answer = []
         for group in groups:
             answer.append(
                 sorted(
                     group,
-                    key=lambda x: (x[1], max(x[2]) if isinstance(x[2], list) else x[2]),
+                    key=lambda x: (
+                        x[1], max(x[2])
+                        if isinstance(x[2], list)
+                        else x[2]
+                    ),
                     reverse=True
                 )
             )
