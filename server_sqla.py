@@ -292,8 +292,8 @@ def inject_global_constants():
 
 
 @webapp.route("/admin", strict_slashes=False)
-@permissions_required('view_acp')
 @auth_required()
+@permissions_required('view_acp')
 def show_admin():
     data = {}
     data['title'] = 'Admin'
@@ -331,8 +331,8 @@ def show_admin():
 
 
 @webapp.route("/settings", strict_slashes=False)
-@permissions_required('view_ucp')
 @auth_required()
+@permissions_required('view_ucp')
 def show_settings():
     data = {}
     data['title'] = 'Settings'
@@ -341,8 +341,8 @@ def show_settings():
 
 @webapp.route("/corpus", strict_slashes=False)
 @webapp.route("/corpus/<string:chapter_id>", strict_slashes=False)
-@permissions_required('view_corpus')
 @auth_required()
+@permissions_required('view_corpus')
 def show_corpus(chapter_id=None):
     if chapter_id is None:
         flash("Please select a corpus to view.")
@@ -355,8 +355,8 @@ def show_corpus(chapter_id=None):
 
 
 @webapp.route("/query", strict_slashes=False)
-@permissions_required('query')
 @auth_required()
+@permissions_required('query')
 def show_query():
     data = {}
     data['title'] = 'Query'
