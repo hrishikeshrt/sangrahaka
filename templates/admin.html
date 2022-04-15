@@ -268,6 +268,87 @@
             </div>
         </div>
     </div>
+    <div class="card mt-2">
+        <div class="card-header lead">
+            Actions
+        </div>
+        <div class="card-body p-0">
+            <div class="card-group">
+                <div class="card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-header">
+                        Action
+                    </div>
+                    <div class="card-body">
+                        <form class="form" method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                            <div class="form-group">
+                                <label for="action_label_text">Label</label>
+                                <input class="form-control" type="text" name="action_label" id="action_label_text" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="action_label_desc">Description</label>
+                                <input class="form-control" type="text" name="action_label_description" id="action_label_desc" required>
+                            </div>
+                            <button type="submit" name="action" value="action_type_add" class="btn btn-success disabled m-1">
+                                Add
+                            </button>
+                        </form>
+                        <hr>
+                        <form class="form" method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                            <div class="form-group">
+                                <label for="action_label">Label</label>
+                                <select class="lead m-1 selectpicker" name="action_label" id="action_label" data-live-search="true" required>
+                                    {% for _id, _label, _description in constants.action_labels %}
+                                    <option value="{{_label}}">{{_description}}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" name="action" value="action_type_remove" class="btn btn-danger disabled m-1">
+                                    Remove
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-header">
+                        Actor
+                    </div>
+                    <div class="card-body">
+                        <form class="form" method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                            <div class="form-group">
+                                <label for="actor_label_text">Label</label>
+                                <input class="form-control" type="text" name="actor_label" id="actor_label_text" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="actor_label_desc">Description</label>
+                                <input class="form-control" type="text" name="actor_label_description" id="actor_label_desc" required>
+                            </div>
+                            <button type="submit" name="action" value="actor_type_add" class="btn btn-success disabled m-1">
+                                Add
+                            </button>
+                        </form>
+                        <hr>
+                        <form class="form" method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                            <div class="form-group">
+                                <label for="actor_label">Label</label>
+                                <select class="lead m-1 selectpicker" name="actor_label" id="actor_label" data-live-search="true" required>
+                                    {% for _id, _label, _description in constants.actor_labels %}
+                                    <option value="{{_label}}">{{_description}}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" name="action" value="actor_type_remove" class="btn btn-danger disabled m-1">
+                                    Remove
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     {% if current_user.has_role('owner') %}
     <!-- PythonAnywhere -->
     <div class="card mt-2">

@@ -62,7 +62,9 @@ from indic_transliteration.sanscript import transliterate
 from models_sqla import (db, user_datastore,
                          CustomLoginForm, CustomRegisterForm,
                          Corpus, Chapter, Verse, Line, Analysis,
-                         Lexicon, NodeLabel, RelationLabel, Node, Relation)
+                         Lexicon,
+                         NodeLabel, RelationLabel, Node, Relation,
+                         ActionLabel, ActorLabel, Action)
 from settings import app
 from utils.reverseproxied import ReverseProxied
 from utils.database import get_line_data, get_chapter_data
@@ -185,24 +187,30 @@ except Exception as e:
 # Database Utlity Functions
 
 
-def get_or_create_lexicon(lemma) -> int:
-    lexicon = Lexicon.query.filter(Lexicon.lemma == lemma).first()
+def get_lexicon(lemma: str) -> int:
+    lexicon = Lexicon.query.filter(Lexicon.lemma == lemma).one_or_none()
     if lexicon:
         return lexicon.id
-    else:
-        transliterations = [
-            f"##{transliterate(lemma, 'devanagari', scheme)}"
-            if not lemma.startswith(app.config['unnamed_prefix']) else ''
-            for scheme in app.config['schemes']
-        ]
-        transliteration = ''.join(transliterations)
-        lexicon = Lexicon()
-        lexicon.lemma = lemma
-        if transliteration:
-            lexicon.transliteration = transliteration
-        db.session.add(lexicon)
-        db.session.flush()
-        return lexicon.id
+
+
+def create_lexicon(lemma: str) -> int:
+    transliterations = [
+        f"##{transliterate(lemma, 'devanagari', scheme)}"
+        if not lemma.startswith(app.config['unnamed_prefix']) else ''
+        for scheme in app.config['schemes']
+    ]
+    transliteration = ''.join(transliterations)
+    lexicon = Lexicon()
+    lexicon.lemma = lemma
+    if transliteration:
+        lexicon.transliteration = transliteration
+    db.session.add(lexicon)
+    db.session.flush()
+    return lexicon.id
+
+
+def get_or_create_lexicon(lemma: str) -> int:
+    return get_lexicon(lemma) or create_lexicon(lemma)
 
 ###############################################################################
 # Hooks
@@ -276,7 +284,17 @@ def inject_global_constants():
             RelationLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
             RelationLabel.id, RelationLabel.label, RelationLabel.description
-        ).order_by(RelationLabel.label).all()
+        ).order_by(RelationLabel.label).all(),
+        'action_labels': ActionLabel.query.filter(
+            ActionLabel.is_deleted == False  # noqa # '== False' is required
+        ).with_entities(
+            ActionLabel.id, ActionLabel.label, ActionLabel.description
+        ).order_by(ActionLabel.label).all(),
+        'actor_labels': ActorLabel.query.filter(
+            ActorLabel.is_deleted == False  # noqa # '== False' is required
+        ).with_entities(
+            ActorLabel.id, ActorLabel.label, ActorLabel.description
+        ).all()
     }
     return {
         'title': app.title,
@@ -475,7 +493,7 @@ def api():
 
     role_actions = {
         'admin': [],
-        'annotator': ['update_entity', 'update_relation'],
+        'annotator': ['update_entity', 'update_relation', 'update_action'],
         'curator': [],
         'querier': ['query', 'graph_query']
     }
@@ -498,11 +516,13 @@ def api():
 
     # ----------------------------------------------------------------------- #
 
-    if action in ['update_entity', 'update_relation']:
+    if action in ['update_entity', 'update_relation', 'update_action']:
         line_id = request.form['line_id']
         annotator_id = current_user.id
 
         objects_to_update = []
+
+        # ------------------------------------------------------------------- #
 
         if action == 'update_entity':
             entities_add = request.form['entity_add'].split('##')
@@ -552,6 +572,8 @@ def api():
                     n.is_deleted = (entity in entities_del)
                     objects_to_update.append(n)
 
+        # ------------------------------------------------------------------- #
+
         if action == 'update_relation':
             relations_add = request.form['relation_add'].split('##')
             relations_del = request.form['relation_delete'].split('##')
@@ -559,10 +581,16 @@ def api():
                 if '$' not in relation:
                     continue
                 parts = relation.split('$')
-                _src_id = get_or_create_lexicon(parts[0])
+                _src_id = get_lexicon(parts[0])
                 _detail = parts[3] if parts[3].strip() else None
-                _dst_id = get_or_create_lexicon(parts[2])
+                _dst_id = get_lexicon(parts[2])
 
+                if _src_id is None or _dst_id is None:
+                    api_response['success'] = False
+                    api_response['message'] = (
+                        'Source or Destination entity does not exist.'
+                    )
+                    return jsonify(api_response)
                 label_query = RelationLabel.query.filter(
                     RelationLabel.label == parts[1]
                 )
@@ -607,6 +635,79 @@ def api():
                 else:
                     r.is_deleted = (relation in relations_del)
                     objects_to_update.append(r)
+
+        # ------------------------------------------------------------------- #
+
+        if action == 'update_action':
+            actions_add = request.form['action_add'].split('##')
+            actions_del = request.form['action_delete'].split('##')
+            for action in actions_add + actions_del:
+                if '$' not in action:
+                    continue
+                parts = action.split('$')
+                _actor_id = get_lexicon(parts[2])
+
+                if _actor_id is None:
+                    api_response['success'] = False
+                    api_response['message'] = (
+                        'Actor entity does not exist.'
+                    )
+                    return jsonify(api_response)
+
+                label_query = ActionLabel.query.filter(
+                    ActionLabel.label == parts[0]
+                )
+                _label = label_query.first()
+                if _label is None:
+                    api_response['success'] = False
+                    api_response['message'] = 'Invalid action type.'
+                    return jsonify(api_response)
+
+                actor_label_query = ActorLabel.query.filter(
+                    ActorLabel.label == parts[1]
+                )
+                _actor_label = actor_label_query.first()
+                if _actor_label is None:
+                    api_response['success'] = False
+                    api_response['message'] = 'Invalid actor type.'
+                    return jsonify(api_response)
+
+                _label_id = _label.id
+                _actor_label_id = _actor_label.id
+
+                action_query = Action.query.filter(and_(
+                    Action.line_id == line_id,
+                    Action.label_id == _label_id,
+                    Action.annotator_id == annotator_id,
+                    Action.actor_label_id == _actor_label_id,
+                    Action.actor_id == _actor_id,
+                ))
+
+                # Curator can edit annotations by others
+                # i.e. (no annotator_id check)
+                if current_user.has_permission('curate'):
+                    action_query = Action.query.filter(and_(
+                        Action.line_id == line_id,
+                        Action.label_id == _label_id,
+                        Action.actor_label_id == _actor_label_id,
+                        Action.actor_id == _actor_id,
+                    ))
+                a = action_query.first()
+
+                if a is None:
+                    if action in actions_add:
+                        a = Action()
+                        a.line_id = line_id
+                        a.annotator_id = annotator_id
+                        a.label_id = _label_id
+                        a.actor_id = _actor_id
+                        a.actor_label_id = _actor_label_id
+                        objects_to_update.append(a)
+                else:
+                    a.is_deleted = (action in actions_del)
+                    objects_to_update.append(a)
+
+        # ------------------------------------------------------------------- #
 
         try:
             if objects_to_update:
@@ -793,6 +894,10 @@ def action():
             'node_type_add', 'node_type_remove',
             'relation_type_add', 'relation_type_remove',
 
+            # Action
+            'action_type_add', 'action_type_remove',
+            'actor_type_add', 'actor_type_remove',
+
             # Data
             'corpus_add', 'chapter_add',
             'annotation_download'
@@ -909,100 +1014,64 @@ def action():
     # ----------------------------------------------------------------------- #
     # Ontology
 
-    if action in ['node_type_add', 'node_type_remove']:
-        node_label = request.form['node_label']
-        node_label_desc = request.form.get('node_label_description')
-        target_action = action.split('_')[-1]
+    if action in [
+        'node_type_add', 'node_type_remove',
+        'relation_type_add', 'relation_type_remove',
+        'action_type_add', 'action_type_remove',
+        'actor_type_add', 'actor_type_remove',
+    ]:
+        action_parts = action.split('_')
 
-        _node_label = NodeLabel.query.filter(
-            NodeLabel.label == node_label
+        object_name = action_parts[0]
+        target_action = action_parts[-1]
+
+        object_label = request.form[f'{object_name}_label']
+        object_label_desc = request.form.get(f'{object_name}_label_description')
+
+        MODELS = {
+            'node': (NodeLabel, Node, 'label_id'),
+            'relation': (RelationLabel, Relation, 'label_id'),
+            'action': (ActionLabel, Action, 'label_id'),
+            'actor': (ActorLabel, Action, 'actor_label_id')
+        }
+        (
+            _object_model, _annotation, _annotation_attribute
+        ) = MODELS[object_name]
+        _object_label = _object_model.query.filter(
+            _object_model.label == object_label
         ).first()
 
         if target_action == 'add':
-            message = f"Added Node label '{node_label}'."
-            if _node_label is None:
-                _node_label = NodeLabel()
-                _node_label.label = node_label
-                _node_label.description = node_label_desc
-                _node_label.is_deleted = False
+            message = f"Added {object_name.title()} label '{object_label}'."
+            if _object_label is None:
+                _object_label = _object_model()
+                _object_label.label = object_label
+                _object_label.description = object_label_desc
+                _object_label.is_deleted = False
                 status = True
-                db.session.add(_node_label)
+                db.session.add(_object_label)
             else:
-                if _node_label.is_deleted:
-                    _node_label.is_deleted = False
+                if _object_label.is_deleted:
+                    _object_label.is_deleted = False
                     status = True
-                    db.session.add(_node_label)
+                    db.session.add(_object_label)
                 else:
-                    message = f"Node label '{node_label}' already exists."
+                    message = f"{object_name.title()} label '{object_label}' already exists."
 
         if target_action == 'remove':
-            message = f"Node label '{node_label}' does not exists."
-            if _node_label is not None and not _node_label.is_deleted:
-                nodes_with_given_label = [
-                    node
-                    for node in _node_label.nodes
-                    if not node.is_deleted
-                ]
-                if nodes_with_given_label:
-                    message = f"Node label '{node_label}' is being used."
+            message = f"{object_name.title()} label '{object_label}' does not exists."
+            if _object_label is not None and not _object_label.is_deleted:
+                objects_with_given_label = _annotation.query.filter(
+                    getattr(_annotation, _annotation_attribute) == _object_label.id,
+                    _annotation.is_deleted == False  # noqa
+                ).all()
+                if objects_with_given_label:
+                    message = f"{object_name.title()} label '{object_label}' is being used in annotations."
                 else:
-                    _node_label.is_deleted = True
-                    db.session.add(_node_label)
+                    _object_label.is_deleted = True
+                    db.session.add(_object_label)
                     status = True
-                    message = f"Removed node label '{node_label}'."
-
-        if status:
-            db.session.commit()
-            flash(message, "info")
-        else:
-            flash(message)
-        return redirect(request.referrer)
-
-    if action in ['relation_type_add', 'relation_type_remove']:
-        relation_label = request.form['relation_label']
-        relation_label_desc = request.form.get('relation_label_description')
-        target_action = action.split('_')[-1]
-
-        _relation_label = RelationLabel.query.filter(
-            RelationLabel.label == relation_label
-        ).first()
-
-        if target_action == 'add':
-            message = f"Added relation label '{relation_label}'."
-            if _relation_label is None:
-                _relation_label = RelationLabel()
-                _relation_label.label = relation_label
-                _relation_label.description = relation_label_desc
-                _relation_label.is_deleted = False
-                status = True
-                db.session.add(_relation_label)
-            else:
-                if _relation_label.is_deleted:
-                    _relation_label.is_deleted = False
-                    status = True
-                    db.session.add(_relation_label)
-                else:
-                    message = (
-                        f"Relation label '{relation_label}' already exists."
-                    )
-
-        if target_action == 'remove':
-            message = f"Relation label '{relation_label}' does not exists."
-            if _relation_label is not None and not _relation_label.is_deleted:
-                relations_with_given_label = [
-                    relation
-                    for relation in _relation_label.relations
-                    if not relation.is_deleted
-                ]
-                if relations_with_given_label:
-                    message = (
-                        f"Relation label '{relation_label}' is being used."
-                    )
-                else:
-                    _relation_label.is_deleted = True
-                    db.session.add(_relation_label)
-                    status = True
-                    message = f"Removed relation label '{relation_label}'."
+                    message = f"Removed {object_name} label '{object_label}'."
 
         if status:
             db.session.commit()

@@ -15,6 +15,7 @@ from sqlalchemy.orm.relationships import RelationshipProperty
 from models_sqla import User, Role
 from models_sqla import Corpus, Chapter, Verse, Line, Analysis
 from models_sqla import Lexicon, NodeLabel, RelationLabel, Node, Relation
+from models_sqla import ActionLabel, ActorLabel, Action
 
 ###############################################################################
 
@@ -28,6 +29,10 @@ def annotation_to_dict(model: Node or Relation) -> dict:
         return {
             "id": model.id,
             "lemma": model.lemma.lemma,
+            "node_label": {
+                "id": model.label_id,
+                "label": model.label.label
+            },
             "line": {
                 "id": model.line_id,
                 "english": model.line.text,
@@ -36,7 +41,8 @@ def annotation_to_dict(model: Node or Relation) -> dict:
             "annotator": {
                 "id": model.annotator_id,
                 "username": model.annotator.username
-            }
+            },
+            "is_deleted": model.is_deleted
         }
 
     if isinstance(model, Relation):
@@ -44,7 +50,7 @@ def annotation_to_dict(model: Node or Relation) -> dict:
             "id": model.id,
             "source": model.src_lemma.lemma,
             "relation_label": {
-                "id": model.label.id,
+                "id": model.label_id,
                 "label": model.label.label
             },
             "relation_detail": model.detail or "",
@@ -57,7 +63,32 @@ def annotation_to_dict(model: Node or Relation) -> dict:
             "annotator": {
                 "id": model.annotator_id,
                 "username": model.annotator.username
-            }
+            },
+            "is_deleted": model.is_deleted
+        }
+
+    if isinstance(model, Action):
+        return {
+            "id": model.id,
+            "action_label": {
+                "id": model.label_id,
+                "label": model.label.label
+            },
+            "actor_label": {
+                "id": model.actor_label_id,
+                "label": model.actor_label.label
+            },
+            "actor": model.actor_lemma.lemma,
+            "line": {
+                "id": model.line_id,
+                "english": model.line.text,
+                "sanskrit": model.line.analyses[0].parsed[0]['Sanskrit']
+            },
+            "annotator": {
+                "id": model.annotator_id,
+                "username": model.annotator.username
+            },
+            "is_deleted": model.is_deleted
         }
 
 ###############################################################################
@@ -155,6 +186,8 @@ def search_relation(
     ]
 
 
+# TODO: Add search_action() in a similar manner
+
 ###############################################################################
 
 
@@ -187,19 +220,23 @@ def get_chapter_data(chapter_id: int, user: User) -> dict:
     annotator_ids = []
     fetch_nodes = False
     fetch_relations = False
+    fetch_actions = False
     if user.has_permission('annotate'):
         annotator_ids = [user.id]
         fetch_nodes = True
         fetch_relations = True
+        fetch_actions = True
     if user.has_permission('curate') or user.has_role('admin'):
         annotator_ids = None
         fetch_nodes = True
         fetch_relations = True
+        fetch_actions = True
     return get_line_data(
         line_ids,
         annotator_ids=annotator_ids,
         fetch_nodes=fetch_nodes,
-        fetch_relations=fetch_relations
+        fetch_relations=fetch_relations,
+        fetch_actions=fetch_actions
     )
 
 
@@ -207,7 +244,8 @@ def get_line_data(
     line_ids: List[int],
     annotator_ids: List[int] = None,
     fetch_nodes: bool = False,
-    fetch_relations: bool = False
+    fetch_relations: bool = False,
+    fetch_actions: bool = False
 ) -> dict:
     """Get Line Data
 
@@ -227,6 +265,9 @@ def get_line_data(
     fetch_relations : bool, optional
         Fetch relationship annotations
         The default is False.
+    fetch_actions : bool, optional
+        Fetch action annotations
+        The default is False.
 
     Returns
     -------
@@ -243,6 +284,7 @@ def get_line_data(
             'analysis': line.analyses.first().parsed,
             'entity': [],
             'relation': [],
+            'action': [],
             'marked': False
         }
         for line in line_object_query.all()
@@ -255,6 +297,9 @@ def get_line_data(
         relation_query = Relation.query.filter(
             Relation.line_id.in_(line_ids)
         )
+        action_query = Action.query.filter(
+            Action.line_id.in_(line_ids)
+        )
     else:
         node_query = Node.query.filter(
             Node.line_id.in_(line_ids),
@@ -263,6 +308,10 @@ def get_line_data(
         relation_query = Relation.query.filter(
             Relation.line_id.in_(line_ids),
             Relation.annotator_id.in_(annotator_ids)
+        )
+        action_query = Action.query.filter(
+            Action.line_id.in_(line_ids),
+            Action.annotator_id.in_(annotator_ids)
         )
 
     if fetch_nodes:
@@ -288,5 +337,17 @@ def get_line_data(
                 'is_deleted': relation.is_deleted
             })
             data[relation.line_id]['marked'] = True
+
+    if fetch_actions:
+        for action in action_query.all():
+            data[action.line_id]['action'].append({
+                'id': action.id,
+                'label': action.label.label,
+                'actor_label': action.actor_label.label,
+                'actor': action.actor_lemma.lemma,
+                'annotator': action.annotator.username,
+                'is_deleted': action.is_deleted
+            })
+            data[action.line_id]['marked'] = True
 
     return data
