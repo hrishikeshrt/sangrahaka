@@ -80,7 +80,7 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
 
     $.each(row.action, function (index, action) {
         if (!action.is_deleted) {
-            action_html = action_formatter(action.label, action.actor_label, action.actor, "list-group-item-warning", action.annotator);
+            action_html = action_formatter(action.label, action.actor_label, action.actor, "", action.annotator);
             action_list_html.push(action_html);
         }
     });
