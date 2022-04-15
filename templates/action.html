@@ -1,0 +1,55 @@
+<!-- <div class="sticky-top"> -->
+    <div class="card">
+        <div class="card-header lead">
+            Prepare
+        </div>
+        <div class="card-body">
+            <form id="form_prepare_action">
+                <div class="form">
+                    <div class="form-group row">
+                        <label for="line_id_action" class="col-sm-4">Line</label>
+                        <input type="text" id="line_id_action" class="form-control col-sm-8" readonly>
+                    </div>
+                    <div class="form-group row">
+                        <label for="input_action_label" class="col-sm-4">Action</label>
+                        <select id="input_action_label" title="None" class="form-control col-sm-8 selectpicker" data-live-search="true" required>
+                            {% for _id, _label, _description in constants.action_labels %}
+                            <option value="{{_label}}">{{_description}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="form-group row">
+                        <label for="input_action_actor_label" class="col-sm-4">Actor Label</label>
+                        <select id="input_action_actor_label" title="None" class="form-control col-sm-8 selectpicker" data-live-search="true" required>
+                            {% for _id, _label, _description in constants.actor_labels %}
+                            <option value="{{_label}}">{{_description}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group row">
+                        <label for="input_action_actor" class="col-sm-4">Actor</label>
+                        <input type="text" id="input_action_actor" class="form-control col-sm-8" data-url="{{url_for('suggest')}}" autocomplete="off" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" id="add_action" class="btn btn-primary float-right">
+                            Prepare
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card mt-2">
+        <div class="card-header lead">
+            Actions
+            <button id="confirm_action_list" class="btn btn-primary float-right">
+                Confirm
+            </button>
+        </div>
+        <div class="card-body scroll-small p-0">
+            <ul id="action_list" class="list-group list-group-flush">
+            </ul>
+        </div>
+    </div>
+<!-- </div> -->
