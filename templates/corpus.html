@@ -282,6 +282,103 @@
         'json');
     });
 
+    $add_action_button.on('click', function(e) {
+        if ($form_prepare_action[0].checkValidity() && $line_id_action.val() != "") {
+
+            var _label = $action_label.val().trim();
+            var _actor_label = $action_actor_label.val().trim();
+            var _actor = unnamed_formatter($line_id_action.val(), $action_actor.val().trim());
+
+            var action_html = action_formatter(_label, _actor_label, _actor, "list-group-item-warning", "{{current_user.username}}");
+            $action_list.append(action_html);
+            $('[name="action"]').bootstrapToggle();
+
+            // update local unconfirmed storage
+            var unconfirmed_actions = storage.getItem($line_id_action.val() + '_actions');
+            if (unconfirmed_actions === null) {
+                unconfirmed_actions = '[]';
+            }
+            unconfirmed_actions = JSON.parse(unconfirmed_actions);
+            unconfirmed_actions.push({
+                'label': _label,
+                'actor_label': _actor_label,
+                'actor': _actor,
+                'annotator': "{{current_user.username}}",
+                'is_deleted': false
+            });
+            storage.setItem($line_id_action.val() + '_actions', JSON.stringify(unconfirmed_actions));
+        } else {
+            $form_prepare_action[0].reportValidity();
+        }
+    });
+
+    $confirm_action_button.on('click', function(e) {
+        var action_add = [];
+        var action_delete = [];
+        $.each($action_list.find('[name="action"]'), function () {
+            if ($(this).closest("li").hasClass("list-group-item-warning") && $(this).is(":checked")) {
+                action_add.push($(this).val());
+            }
+            if (!$(this).closest("li").hasClass("list-group-item-warning") && !$(this).is(":checked")) {
+                action_delete.push($(this).val());
+            }
+        });
+        $.post("{{url_for('api')}}", {
+            action: "update_action",
+            chapter_id: "{{data.chapter_id}}",
+            line_id: $line_id_action.val(),
+            action_add: action_add.join("##"),
+            action_delete: action_delete.join("##")
+        },
+        function (response) {
+            if (response.success) {
+                $.notify({
+                    message: "Successfully updated!"
+                }, {
+                    type: "success"
+                });
+                var action_objects = [];
+                // clear out the unconfirmed storage
+                storage.removeItem($line_id_action.val() + '_actions');
+
+                // update local action list
+                $.each($action_list.find('[name="action"]'), function () {
+                    if ($(this).is(":checked")) {
+                        $(this).closest('li').removeClass("list-group-item-warning");
+                        var action_values = $(this).val().split('$');
+                        action_objects.push({
+                            'label': action_values[0],
+                            'actor_label': action_values[1],
+                            'actor': action_values[2],
+                            'annotator': "{{current_user.username}}",
+                            'is_deleted': false
+                        });
+                        // all_roots.add("<option>" + action_values[0] + "</option>");
+                        // all_roots.add("<option>" + action_values[2] + "</option>");
+                    } else {
+                        $(this).closest('li').detach();
+                    }
+                });
+                // update local table
+                var current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_action.val());
+                current_row.marked = true;
+                current_row.action = action_objects;
+
+                $corpus_table.bootstrapTable('updateByUniqueId', {
+                    line_id: current_row.line_id,
+                    row: current_row
+                });
+            } else {
+                $.notify({
+                    message: "Something went wrong!"
+                }, {
+                    type: "danger"
+                });
+            }
+        },
+        'json');
+    });
+
 </script>
 
 {% include "footer.html" %}
