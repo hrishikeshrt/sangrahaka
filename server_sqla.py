@@ -1014,201 +1014,64 @@ def action():
     # ----------------------------------------------------------------------- #
     # Ontology
 
-    # TODO: Generic Add/Remove for All Labels
-    # TODO: Remove individual blocks after inclusion of generic add-remove code
+    if action in [
+        'node_type_add', 'node_type_remove',
+        'relation_type_add', 'relation_type_remove',
+        'action_type_add', 'action_type_remove',
+        'actor_type_add', 'actor_type_remove',
+    ]:
+        action_parts = action.split('_')
 
-    if action in ['node_type_add', 'node_type_remove']:
-        node_label = request.form['node_label']
-        node_label_desc = request.form.get('node_label_description')
-        target_action = action.split('_')[-1]
+        object_name = action_parts[0]
+        target_action = action_parts[-1]
 
-        _node_label = NodeLabel.query.filter(
-            NodeLabel.label == node_label
+        object_label = request.form[f'{object_name}_label']
+        object_label_desc = request.form.get(f'{object_name}_label_description')
+
+        MODELS = {
+            'node': (NodeLabel, Node, 'label_id'),
+            'relation': (RelationLabel, Relation, 'label_id'),
+            'action': (ActionLabel, Action, 'label_id'),
+            'actor': (ActorLabel, Action, 'actor_label_id')
+        }
+        (
+            _object_model, _annotation, _annotation_attribute
+        ) = MODELS[object_name]
+        _object_label = _object_model.query.filter(
+            _object_model.label == object_label
         ).first()
 
         if target_action == 'add':
-            message = f"Added Node label '{node_label}'."
-            if _node_label is None:
-                _node_label = NodeLabel()
-                _node_label.label = node_label
-                _node_label.description = node_label_desc
-                _node_label.is_deleted = False
+            message = f"Added {object_name.title()} label '{object_label}'."
+            if _object_label is None:
+                _object_label = _object_model()
+                _object_label.label = object_label
+                _object_label.description = object_label_desc
+                _object_label.is_deleted = False
                 status = True
-                db.session.add(_node_label)
+                db.session.add(_object_label)
             else:
-                if _node_label.is_deleted:
-                    _node_label.is_deleted = False
+                if _object_label.is_deleted:
+                    _object_label.is_deleted = False
                     status = True
-                    db.session.add(_node_label)
+                    db.session.add(_object_label)
                 else:
-                    message = f"Node label '{node_label}' already exists."
+                    message = f"{object_name.title()} label '{object_label}' already exists."
 
         if target_action == 'remove':
-            message = f"Node label '{node_label}' does not exists."
-            if _node_label is not None and not _node_label.is_deleted:
-                nodes_with_given_label = [
-                    node
-                    for node in _node_label.nodes
-                    if not node.is_deleted
-                ]
-                if nodes_with_given_label:
-                    message = f"Node label '{node_label}' is being used."
-                else:
-                    _node_label.is_deleted = True
-                    db.session.add(_node_label)
-                    status = True
-                    message = f"Removed node label '{node_label}'."
-
-        if status:
-            db.session.commit()
-            flash(message, "info")
-        else:
-            flash(message)
-        return redirect(request.referrer)
-
-    if action in ['relation_type_add', 'relation_type_remove']:
-        relation_label = request.form['relation_label']
-        relation_label_desc = request.form.get('relation_label_description')
-        target_action = action.split('_')[-1]
-
-        _relation_label = RelationLabel.query.filter(
-            RelationLabel.label == relation_label
-        ).first()
-
-        if target_action == 'add':
-            message = f"Added relation label '{relation_label}'."
-            if _relation_label is None:
-                _relation_label = RelationLabel()
-                _relation_label.label = relation_label
-                _relation_label.description = relation_label_desc
-                _relation_label.is_deleted = False
-                status = True
-                db.session.add(_relation_label)
-            else:
-                if _relation_label.is_deleted:
-                    _relation_label.is_deleted = False
-                    status = True
-                    db.session.add(_relation_label)
-                else:
-                    message = (
-                        f"Relation label '{relation_label}' already exists."
-                    )
-
-        if target_action == 'remove':
-            message = f"Relation label '{relation_label}' does not exists."
-            if _relation_label is not None and not _relation_label.is_deleted:
-                relations_with_given_label = [
-                    relation
-                    for relation in _relation_label.relations
-                    if not relation.is_deleted
-                ]
-                if relations_with_given_label:
-                    message = (
-                        f"Relation label '{relation_label}' is being used."
-                    )
-                else:
-                    _relation_label.is_deleted = True
-                    db.session.add(_relation_label)
-                    status = True
-                    message = f"Removed relation label '{relation_label}'."
-
-        if status:
-            db.session.commit()
-            flash(message, "info")
-        else:
-            flash(message)
-        return redirect(request.referrer)
-
-    if action in ['action_type_add', 'action_type_remove']:
-        action_label = request.form['action_label']
-        action_label_desc = request.form.get('action_label_description')
-        target_action = action.split('_')[-1]
-
-        _action_label = ActionLabel.query.filter(
-            ActionLabel.label == action_label
-        ).first()
-
-        if target_action == 'add':
-            message = f"Added Action label '{action_label}'."
-            if _action_label is None:
-                _action_label = ActionLabel()
-                _action_label.label = action_label
-                _action_label.description = action_label_desc
-                _action_label.is_deleted = False
-                status = True
-                db.session.add(_action_label)
-            else:
-                if _action_label.is_deleted:
-                    _action_label.is_deleted = False
-                    status = True
-                    db.session.add(_action_label)
-                else:
-                    message = f"Action label '{action_label}' already exists."
-
-        if target_action == 'remove':
-            message = f"Action label '{action_label}' does not exists."
-            if _action_label is not None and not _action_label.is_deleted:
-                actions_with_given_label = [
-                    action
-                    for action in _action_label.actions
-                    if not action.is_deleted
-                ]
-                if actions_with_given_label:
-                    message = f"Action label '{action_label}' is being used."
-                else:
-                    _action_label.is_deleted = True
-                    db.session.add(_action_label)
-                    status = True
-                    message = f"Removed action label '{action_label}'."
-
-        if status:
-            db.session.commit()
-            flash(message, "info")
-        else:
-            flash(message)
-        return redirect(request.referrer)
-
-    if action in ['actor_type_add', 'actor_type_remove']:
-        actor_label = request.form['actor_label']
-        actor_label_desc = request.form.get('actor_label_description')
-        target_action = action.split('_')[-1]
-
-        _actor_label = ActorLabel.query.filter(
-            ActorLabel.label == actor_label
-        ).first()
-
-        if target_action == 'add':
-            message = f"Added Actor label '{actor_label}'."
-            if _actor_label is None:
-                _actor_label = ActorLabel()
-                _actor_label.label = actor_label
-                _actor_label.description = actor_label_desc
-                _actor_label.is_deleted = False
-                status = True
-                db.session.add(_actor_label)
-            else:
-                if _actor_label.is_deleted:
-                    _actor_label.is_deleted = False
-                    status = True
-                    db.session.add(_actor_label)
-                else:
-                    message = f"Actor label '{actor_label}' already exists."
-
-        if target_action == 'remove':
-            message = f"Actor label '{actor_label}' does not exists."
-            if _actor_label is not None and not _actor_label.is_deleted:
-                actions_with_given_actor_label = Action.query.filter(
-                    Action.actor_label_id == _actor_label.id,
-                    Action.is_deleted == False
+            message = f"{object_name.title()} label '{object_label}' does not exists."
+            if _object_label is not None and not _object_label.is_deleted:
+                objects_with_given_label = _annotation.query.filter(
+                    getattr(_annotation, _annotation_attribute) == _object_label.id,
+                    _annotation.is_deleted == False  # noqa
                 ).all()
-
-                if actions_with_given_actor_label:
-                    message = f"Actor label '{actor_label}' is being used."
+                if objects_with_given_label:
+                    message = f"{object_name.title()} label '{object_label}' is being used in annotations."
                 else:
-                    _actor_label.is_deleted = True
-                    db.session.add(_actor_label)
+                    _object_label.is_deleted = True
+                    db.session.add(_object_label)
                     status = True
-                    message = f"Removed Actor label '{actor_label}'."
+                    message = f"Removed {object_name} label '{object_label}'."
 
         if status:
             db.session.commit()
