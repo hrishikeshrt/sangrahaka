@@ -148,6 +148,22 @@ class RelationLabel(db.Model):
     is_deleted = Column(Boolean, default=False, nullable=False)
 
 
+class ActorLabel(db.Model):
+    __tablename__ = 'actor_label'
+    id = Column(Integer, primary_key=True)
+    label = Column(String(255), nullable=False)
+    description = Column(String(255))
+    is_deleted = Column(Boolean, default=False, nullable=False)
+
+
+class ActionLabel(db.Model):
+    __tablename__ = 'action_label'
+    id = Column(Integer, primary_key=True)
+    label = Column(String(255), nullable=False)
+    description = Column(String(255))
+    is_deleted = Column(Boolean, default=False, nullable=False)
+
+
 class Node(db.Model):
     id = Column(Integer, primary_key=True)
     line_id = Column(Integer, ForeignKey('line.id'), nullable=False)
@@ -181,8 +197,9 @@ class Relation(db.Model):
     is_deleted = Column(Boolean, default=False, nullable=False)
     updated_at = Column(DateTime, default=dt.utcnow, onupdate=dt.utcnow)
 
-    annotator = relationship('User',
-                             backref=backref('relations', lazy='dynamic'))
+    annotator = relationship(
+        'User', backref=backref('relations', lazy='dynamic')
+    )
     line = relationship('Line', backref=backref('relations', lazy='dynamic'))
     src_lemma = relationship('Lexicon', foreign_keys=[src_id])
     dst_lemma = relationship('Lexicon', foreign_keys=[dst_id])
@@ -192,6 +209,34 @@ class Relation(db.Model):
         Index('relation_line_id_annotator_id_src_id_dst_id_label_id_detail',
               'line_id', 'annotator_id',
               'src_id', 'dst_id', 'label_id', 'detail', unique=True),
+    )
+
+
+class Action(db.Model):
+    id = Column(Integer, primary_key=True)
+    line_id = Column(Integer, ForeignKey('line.id'), nullable=False)
+    annotator_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    label_id = Column(Integer, ForeignKey('action_label.id'), nullable=False)
+    actor_label_id = Column(
+        Integer, ForeignKey('actor_label.id'), nullable=False
+    )
+    actor_id = Column(Integer, ForeignKey('lexicon.id'), nullable=False)
+
+    is_deleted = Column(Boolean, default=False, nullable=False)
+    updated_at = Column(DateTime, default=dt.utcnow, onupdate=dt.utcnow)
+
+    annotator = relationship(
+        'User', backref=backref('actions', lazy='dynamic')
+    )
+    line = relationship('Line', backref=backref('actions', lazy='dynamic'))
+    label = relationship('ActionLabel', backref=backref('actions'))
+    actor_lemma = relationship('Lexicon', foreign_keys=[actor_id])
+    actor_label = relationship('ActorLabel', foreign_keys=[actor_label_id])
+
+    __table_args__ = (
+        Index('action_line_id_annotator_id_actor_label_id_actor_id_label_id',
+              'line_id', 'annotator_id',
+              'actor_label_id', 'actor_id', 'label_id', unique=True),
     )
 
 
