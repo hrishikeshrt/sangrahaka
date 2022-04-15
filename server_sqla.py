@@ -185,24 +185,30 @@ except Exception as e:
 # Database Utlity Functions
 
 
-def get_or_create_lexicon(lemma) -> int:
-    lexicon = Lexicon.query.filter(Lexicon.lemma == lemma).first()
+def get_lexicon(lemma: str) -> int:
+    lexicon = Lexicon.query.filter(Lexicon.lemma == lemma).one_or_none()
     if lexicon:
         return lexicon.id
-    else:
-        transliterations = [
-            f"##{transliterate(lemma, 'devanagari', scheme)}"
-            if not lemma.startswith(app.config['unnamed_prefix']) else ''
-            for scheme in app.config['schemes']
-        ]
-        transliteration = ''.join(transliterations)
-        lexicon = Lexicon()
-        lexicon.lemma = lemma
-        if transliteration:
-            lexicon.transliteration = transliteration
-        db.session.add(lexicon)
-        db.session.flush()
-        return lexicon.id
+
+
+def create_lexicon(lemma: str) -> int:
+    transliterations = [
+        f"##{transliterate(lemma, 'devanagari', scheme)}"
+        if not lemma.startswith(app.config['unnamed_prefix']) else ''
+        for scheme in app.config['schemes']
+    ]
+    transliteration = ''.join(transliterations)
+    lexicon = Lexicon()
+    lexicon.lemma = lemma
+    if transliteration:
+        lexicon.transliteration = transliteration
+    db.session.add(lexicon)
+    db.session.flush()
+    return lexicon.id
+
+
+def get_or_create_lexicon(lemma: str) -> int:
+    return get_lexicon(lemma) or create_lexicon(lemma)
 
 ###############################################################################
 # Hooks
@@ -559,10 +565,16 @@ def api():
                 if '$' not in relation:
                     continue
                 parts = relation.split('$')
-                _src_id = get_or_create_lexicon(parts[0])
+                _src_id = get_lexicon(parts[0])
                 _detail = parts[3] if parts[3].strip() else None
-                _dst_id = get_or_create_lexicon(parts[2])
+                _dst_id = get_lexicon(parts[2])
 
+                if _src_id is None or _dst_id is None:
+                    api_response['success'] = False
+                    api_response['message'] = (
+                        'Source or Destination entity does not exist.'
+                    )
+                    return jsonify(api_response)
                 label_query = RelationLabel.query.filter(
                     RelationLabel.label == parts[1]
                 )
