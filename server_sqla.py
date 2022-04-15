@@ -62,7 +62,9 @@ from indic_transliteration.sanscript import transliterate
 from models_sqla import (db, user_datastore,
                          CustomLoginForm, CustomRegisterForm,
                          Corpus, Chapter, Verse, Line, Analysis,
-                         Lexicon, NodeLabel, RelationLabel, Node, Relation)
+                         Lexicon,
+                         NodeLabel, RelationLabel, Node, Relation,
+                         ActionLabel, ActorLabel, Action)
 from settings import app
 from utils.reverseproxied import ReverseProxied
 from utils.database import get_line_data, get_chapter_data
@@ -282,7 +284,17 @@ def inject_global_constants():
             RelationLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
             RelationLabel.id, RelationLabel.label, RelationLabel.description
-        ).order_by(RelationLabel.label).all()
+        ).order_by(RelationLabel.label).all(),
+        'action_labels': ActionLabel.query.filter(
+            ActionLabel.is_deleted == False  # noqa # '== False' is required
+        ).with_entities(
+            ActionLabel.id, ActionLabel.label, ActionLabel.description
+        ).order_by(ActionLabel.label).all(),
+        'actor_labels': ActorLabel.query.filter(
+            ActorLabel.is_deleted == False  # noqa # '== False' is required
+        ).with_entities(
+            ActorLabel.id, ActorLabel.label, ActorLabel.description
+        ).all()
     }
     return {
         'title': app.title,
@@ -481,7 +493,7 @@ def api():
 
     role_actions = {
         'admin': [],
-        'annotator': ['update_entity', 'update_relation'],
+        'annotator': ['update_entity', 'update_relation', 'update_action'],
         'curator': [],
         'querier': ['query', 'graph_query']
     }
@@ -504,11 +516,13 @@ def api():
 
     # ----------------------------------------------------------------------- #
 
-    if action in ['update_entity', 'update_relation']:
+    if action in ['update_entity', 'update_relation', 'update_action']:
         line_id = request.form['line_id']
         annotator_id = current_user.id
 
         objects_to_update = []
+
+        # ------------------------------------------------------------------- #
 
         if action == 'update_entity':
             entities_add = request.form['entity_add'].split('##')
@@ -557,6 +571,8 @@ def api():
                 else:
                     n.is_deleted = (entity in entities_del)
                     objects_to_update.append(n)
+
+        # ------------------------------------------------------------------- #
 
         if action == 'update_relation':
             relations_add = request.form['relation_add'].split('##')
@@ -619,6 +635,79 @@ def api():
                 else:
                     r.is_deleted = (relation in relations_del)
                     objects_to_update.append(r)
+
+        # ------------------------------------------------------------------- #
+
+        if action == 'update_action':
+            actions_add = request.form['action_add'].split('##')
+            actions_del = request.form['action_delete'].split('##')
+            for action in actions_add + actions_del:
+                if '$' not in action:
+                    continue
+                parts = action.split('$')
+                _actor_id = get_lexicon(parts[2])
+
+                if _actor_id is None:
+                    api_response['success'] = False
+                    api_response['message'] = (
+                        'Actor entity does not exist.'
+                    )
+                    return jsonify(api_response)
+
+                label_query = ActionLabel.query.filter(
+                    ActionLabel.label == parts[0]
+                )
+                _label = label_query.first()
+                if _label is None:
+                    api_response['success'] = False
+                    api_response['message'] = 'Invalid action type.'
+                    return jsonify(api_response)
+
+                actor_label_query = ActorLabel.query.filter(
+                    ActorLabel.label == parts[1]
+                )
+                _actor_label = actor_label_query.first()
+                if _actor_label is None:
+                    api_response['success'] = False
+                    api_response['message'] = 'Invalid actor type.'
+                    return jsonify(api_response)
+
+                _label_id = _label.id
+                _actor_label_id = _actor_label.id
+
+                action_query = Action.query.filter(and_(
+                    Action.line_id == line_id,
+                    Action.label_id == _label_id,
+                    Action.annotator_id == annotator_id,
+                    Action.actor_label_id == _actor_label_id,
+                    Action.actor_id == _actor_id,
+                ))
+
+                # Curator can edit annotations by others
+                # i.e. (no annotator_id check)
+                if current_user.has_permission('curate'):
+                    action_query = Action.query.filter(and_(
+                        Action.line_id == line_id,
+                        Action.label_id == _label_id,
+                        Action.actor_label_id == _actor_label_id,
+                        Action.actor_id == _actor_id,
+                    ))
+                a = action_query.first()
+
+                if a is None:
+                    if action in actions_add:
+                        a = Action()
+                        a.line_id = line_id
+                        a.annotator_id = annotator_id
+                        a.label_id = _label_id
+                        a.actor_id = _actor_id
+                        a.actor_label_id = _actor_label_id
+                        objects_to_update.append(a)
+                else:
+                    a.is_deleted = (action in actions_del)
+                    objects_to_update.append(a)
+
+        # ------------------------------------------------------------------- #
 
         try:
             if objects_to_update:
