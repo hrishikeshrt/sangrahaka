@@ -100,6 +100,7 @@ def uia_username_mapper(identity):
 webapp = Flask(app.name, static_folder='static')
 webapp.config['DEBUG'] = app.debug
 webapp.wsgi_app = ReverseProxied(webapp.wsgi_app)
+webapp.url_map.strict_slashes = False
 
 
 webapp.config['SECRET_KEY'] = app.secret_key
@@ -309,7 +310,7 @@ def inject_global_constants():
 # Views
 
 
-@webapp.route("/admin", strict_slashes=False)
+@webapp.route("/admin")
 @auth_required()
 @permissions_required('view_acp')
 def show_admin():
@@ -348,7 +349,7 @@ def show_admin():
     return render_template('admin.html', data=data)
 
 
-@webapp.route("/settings", strict_slashes=False)
+@webapp.route("/settings")
 @auth_required()
 @permissions_required('view_ucp')
 def show_settings():
@@ -357,8 +358,8 @@ def show_settings():
     return render_template('settings.html', data=data)
 
 
-@webapp.route("/corpus", strict_slashes=False)
-@webapp.route("/corpus/<string:chapter_id>", strict_slashes=False)
+@webapp.route("/corpus")
+@webapp.route("/corpus/<string:chapter_id>")
 @auth_required()
 @permissions_required('view_corpus')
 def show_corpus(chapter_id=None):
@@ -372,7 +373,7 @@ def show_corpus(chapter_id=None):
     return render_template('corpus.html', data=data)
 
 
-@webapp.route("/query", strict_slashes=False)
+@webapp.route("/query")
 @auth_required()
 @permissions_required('query')
 def show_query():
@@ -400,20 +401,20 @@ def show_query():
     return render_template('query.html', data=data)
 
 
-@webapp.route("/query/builder", strict_slashes=False)
+@webapp.route("/query/builder")
 def show_builder():
     data = {'title': 'Graph Query Builder'}
     data['templates'] = app.config['graph_templates']
     return render_template('builder.html', data=data)
 
 
-@webapp.route("/terms", strict_slashes=False)
+@webapp.route("/terms")
 def show_terms():
     data = {'title': 'Terms of Use'}
     return render_template('terms.html', data=data)
 
 
-@webapp.route("/contact", strict_slashes=False)
+@webapp.route("/contact")
 def show_contact():
     data = {'title': 'Contact Us'}
     contacts = []
@@ -435,7 +436,7 @@ def show_contact():
     return render_template('contact.html', data=data)
 
 
-@webapp.route("/about", strict_slashes=False)
+@webapp.route("/about")
 def show_about():
     data = {
         'title': 'About',
@@ -444,7 +445,7 @@ def show_about():
     return render_template('about.html', data=data)
 
 
-@webapp.route("/<page>", strict_slashes=False)
+@webapp.route("/<page>")
 def show_custom_page(page):
     if page in app.custom_pages:
         page_data = app.custom_pages[page]
@@ -458,7 +459,7 @@ def show_custom_page(page):
         abort(404)
 
 
-@webapp.route("/", strict_slashes=False)
+@webapp.route("/")
 @auth_required()
 def show_home():
     data = {}
@@ -477,7 +478,7 @@ def show_home():
 # Action Endpoints
 
 
-@webapp.route("/api", methods=["POST"], strict_slashes=False)
+@webapp.route("/api", methods=["POST"])
 @auth_required()
 def api():
     api_response = {}
@@ -827,7 +828,7 @@ def api():
         return jsonify(api_response)
 
 
-@webapp.route("/api/corpus/<int:chapter_id>", strict_slashes=False)
+@webapp.route("/api/corpus/<int:chapter_id>")
 @auth_required()
 def api_corpus(chapter_id):
     chapter = Chapter.query.get(chapter_id)
@@ -847,7 +848,7 @@ def api_corpus(chapter_id):
 # --------------------------------------------------------------------------- #
 
 
-@webapp.route("/api/suggest", strict_slashes=False)
+@webapp.route("/api/suggest")
 @limiter.limit("60 per minute")
 def suggest():
     word = request.args.get('q')
@@ -870,7 +871,7 @@ def suggest():
 ###############################################################################
 
 
-@webapp.route("/action", methods=["POST"], strict_slashes=False)
+@webapp.route("/action", methods=["POST"])
 @auth_required()
 def action():
     status = False
