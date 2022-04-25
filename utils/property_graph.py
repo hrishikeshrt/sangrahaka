@@ -29,6 +29,7 @@ import json
 import logging
 
 from collections import Counter, defaultdict
+from pathlib import Path
 from typing import Dict, List, Tuple
 
 ###############################################################################
@@ -391,12 +392,23 @@ class PropertyGraph:
                 break
         return connected_nodes
 
-    def to_jsonl(self):
+    def to_jsonl(self, path: str or Path = None) -> str:
         """
         Return a JSONL representation of the graph compatible with neo4j.
 
         JSONL corresponds to JSON-Lines, wherein every line is a valid JSON.
         All the nodes will appear first, followed by all the relationships.
+
+        Parameters
+        ----------
+        path : str or Path (optional)
+            If provided, the JSONL will be written to the specified location
+            The default is None.
+
+        Returns
+        -------
+        str
+            Valid JSONL representation of the entire graph
         """
 
         jsonl = []
@@ -405,7 +417,12 @@ class PropertyGraph:
 
         for (start_id, edge_label, end_id), edge in self.edges.items():
             jsonl.append(edge.to_json())
-        return '\n'.join(jsonl)
+
+        jsonl_content = "\n".join(jsonl)
+        if path:
+            return Path(path).write_text(jsonl_content)
+
+        return jsonl_content
 
     # ----------------------------------------------------------------------- #
 
