@@ -432,6 +432,16 @@ class PropertyGraph:
         """
         Return a CSV representation of the graph compatible with neo4j.
 
+        Output can be used with Neo4j's `apoc.import.csv()`
+        Command:
+        ```
+        call apoc.import.csv(
+            [{fileName: 'prefix_nodes.csv', labels: []}],
+            [{fileName: 'prefix_edges.csv', type: null}],
+            {ignoreDuplicateNodes: true, ignoreBlankString: true}
+        )
+        ```
+
         CSV Format:
         https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format/
 
@@ -447,8 +457,8 @@ class PropertyGraph:
         Returns
         -------
         Dict[str, str]
-            Dictionary containing two keys, `nodes` and `edges` with values being
-            the valid CSV strings for nodes and edges.
+            Dictionary containing two keys, `nodes` and `edges` with values
+            being the valid CSV strings for nodes and edges.
         """
         nodes = []
         edges = []
@@ -493,7 +503,6 @@ class PropertyGraph:
 
         return csv_data
 
-
     # ----------------------------------------------------------------------- #
 
     def _to_schema_csv(self) -> Dict[str, List[Tuple[str, str]]]:
@@ -535,7 +544,9 @@ class PropertyGraph:
 
         edge_property_sets = defaultdict(list)
         for (start_id, edge_label, end_id), edge in self.edges.items():
-            edge_property_sets[tuple(edge.properties.keys())].append((start_id, edge_label, end_id))
+            edge_property_sets[tuple(edge.properties.keys())].append(
+                (start_id, edge_label, end_id)
+            )
 
         for header, edge_ids in edge_property_sets.items():
             csv_header = ",".join([":START_ID", ":END_ID", ":TYPE", *header])
@@ -573,6 +584,8 @@ class PropertyGraph:
         Write Several CSV Files, one for every unique property schema
 
         Generated using `.to_schema_csv()`
+
+        Can be used with neo4j-admin import tool.
         """
         base_path = Path(path)
         base_path.mkdir(parents=True, exist_ok=True)
