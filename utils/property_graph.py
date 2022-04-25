@@ -28,7 +28,8 @@ Primary classes provided here are,
 import json
 import logging
 
-from collections import Counter
+from collections import Counter, defaultdict
+from typing import Dict, List, Tuple
 
 ###############################################################################
 
@@ -405,6 +406,73 @@ class PropertyGraph:
         for (start_id, edge_label, end_id), edge in self.edges.items():
             jsonl.append(edge.to_json())
         return '\n'.join(jsonl)
+
+    # ----------------------------------------------------------------------- #
+
+    def _to_schema_csv(self) -> Dict[str, List[Tuple[str, str]]]:
+        """
+        Return a CSV representation of the graph compatible with neo4j.
+
+        Several CSV files are generated, one for every unique property schema
+
+        CSV Format:
+        https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format/
+        """
+        node_csv = []
+        edge_csv = []
+
+        node_property_sets = defaultdict(list)
+        for node_id, node in self.nodes.items():
+            property_set = tuple(node.properties.keys())
+            node_property_sets[property_set].append(node_id)
+
+        for header, node_ids in node_property_sets.items():
+            csv_header = ",".join([":ID", ":LABEL", *header])
+            csv_body_list = []
+            for node_id in node_ids:
+                csv_row_list = [
+                    node_id,
+                    ";".join(self.nodes[node_id].labels),
+                ]
+                for k, v in self.nodes[node_id].properties.items():
+                    if isinstance(v, list):
+                        val = ";".join(map(str, v))
+                    else:
+                        val = v
+                    csv_row_list.append(f'"{val}"')
+
+                csv_row = ",".join(csv_row_list)
+                csv_body_list.append(csv_row)
+            csv_body = "\n".join(csv_body_list)
+            node_csv.append((csv_header, csv_body))
+
+        edge_property_sets = defaultdict(list)
+        for (start_id, edge_label, end_id), edge in self.edges.items():
+            edge_property_sets[tuple(edge.properties.keys())].append((start_id, edge_label, end_id))
+
+        for header, edge_ids in edge_property_sets.items():
+            csv_header = ",".join([":START_ID", ":END_ID", ":TYPE", *header])
+            csv_body_list = []
+            for edge_id in edge_ids:
+                start_id, edge_type, end_id = edge_id
+                csv_row_list = [
+                    start_id,
+                    end_id,
+                    edge_type
+                ]
+                for k, v in self.edges[edge_id].properties.items():
+                    if isinstance(v, list):
+                        val = ";".join(map(str, v))
+                    else:
+                        val = v
+                    csv_row_list.append(f'"{val}"')
+
+                csv_row = ",".join(csv_row_list)
+                csv_body_list.append(csv_row)
+            csv_body = "\n".join(csv_body_list)
+            edge_csv.append((csv_header, csv_body))
+
+        return {"nodes": node_csv, "edges": edge_csv}
 
     # ----------------------------------------------------------------------- #
 
