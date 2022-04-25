@@ -32,6 +32,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import pandas as pd
+
 ###############################################################################
 
 logger = logging.getLogger(__name__)
@@ -423,6 +425,74 @@ class PropertyGraph:
             return Path(path).write_text(jsonl_content)
 
         return jsonl_content
+
+    # ----------------------------------------------------------------------- #
+
+    def to_csv(self, prefix: str = None) -> Dict[str, str]:
+        """
+        Return a CSV representation of the graph compatible with neo4j.
+
+        CSV Format:
+        https://neo4j.com/docs/operations-manual/current/tools/neo4j-admin/neo4j-admin-import/#import-tool-header-format/
+
+        Parameters
+        ----------
+
+        prefix : str (optional)
+            If provided, two CSV Files can be written, `prefix`_nodes.csv and
+            `prefix`_edges.csv
+            The prefix should include absolute parent path, in case the desired
+            location is not the current directory.
+
+        Returns
+        -------
+        Dict[str, str]
+            Dictionary containing two keys, `nodes` and `edges` with values being
+            the valid CSV strings for nodes and edges.
+        """
+        nodes = []
+        edges = []
+        for node_id, node in self.nodes.items():
+            node_row = {
+                ":ID": node_id,
+                ":LABEL": ";".join(node.labels),
+            }
+            for k, v in node.properties.items():
+                if isinstance(v, list):
+                    val = ";".join(map(str, v))
+                else:
+                    val = v
+                node_row[k] = val
+            nodes.append(node_row)
+
+        for (start_id, edge_label, end_id), edge in self.edges.items():
+            edge_row = {
+                ":START_ID": start_id,
+                ":TYPE": edge_label,
+                ":END_ID": end_id,
+            }
+            for k, v in edge.properties.items():
+                if isinstance(v, list):
+                    val = ";".join(map(str, v))
+                else:
+                    val = v
+                edge_row[k] = val
+            edges.append(edge_row)
+
+        nodes_data = pd.DataFrame(nodes)
+        edges_data = pd.DataFrame(edges)
+
+        csv_data = {
+            "nodes": nodes_data.to_csv(index=False),
+            "edges": edges_data.to_csv(index=False)
+        }
+
+        if prefix:
+            nodes_data.to_csv(f"{prefix}_nodes.csv", index=False)
+            edges_data.to_csv(f"{prefix}_edges.csv", index=False)
+
+        return csv_data
+
 
     # ----------------------------------------------------------------------- #
 
