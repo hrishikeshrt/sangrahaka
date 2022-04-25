@@ -491,6 +491,45 @@ class PropertyGraph:
 
         return {"nodes": node_csv, "edges": edge_csv}
 
+    def _write_schema_csv(
+        self,
+        path: str or Path = ".",
+        header_prefix: str = "header",
+        content_prefix: str = "content",
+        node_prefix: str = "node",
+        edge_prefix: str = "edge"
+    ):
+        """
+        Write Several CSV Files, one for every unique property schema
+
+        Generated using `.to_schema_csv()`
+        """
+        base_path = Path(path)
+        base_path.mkdir(parents=True, exist_ok=True)
+
+        csv_data = self._to_schema_csv()
+        for content_type, csv_content in csv_data.items():
+            if content_type == "nodes":
+                prefix = node_prefix
+            if content_type == "edges":
+                prefix = edge_prefix
+
+            for idx, (header, content) in enumerate(csv_content):
+                header_file = (
+                    base_path / f"{prefix}_{header_prefix}_{idx}.csv"
+                )
+                without_header_content_file = (
+                    base_path / f"{prefix}_{content_prefix}_{idx}.csv"
+                )
+                with_header_content_file = (
+                    base_path / f"{prefix}_{idx}.csv"
+                )
+                (header_file).write_text(header)
+                (without_header_content_file).write_text(content)
+                (with_header_content_file).write_text(f"{header}\n{content}")
+
+            logger.info(f"Written {len(csv_content)} {content_type} tables.")
+
     # ----------------------------------------------------------------------- #
 
     def infer(self, src_id, label, dst_id, properties):
