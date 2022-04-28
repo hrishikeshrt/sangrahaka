@@ -38,15 +38,21 @@ function prepare_network_data(nodes, relationships) {
             node_labels.push(node.labels[0]);
             group_id = node_labels.length;
         }
+        var title = [
+            `Labels: ${node.labels.join(", ")}`
+        ];
+        for (const [prop_name, prop_val] of Object.entries(node.properties)) {
+            if (!prop_name.startsWith("__") && prop_val) {
+                var prop_display_name = prop_name.indexOf("_") > -1 ? prop_name : toTitleCase(prop_name);
+                var prop_display_val = prop_val.indexOf(";") > -1 ? prop_val.split(";").join(", ") : prop_val;
+                title.push(`${prop_display_name}: ${prop_display_val}`);
+            }
+        }
+
         dataset.nodes.push({
             id: node.id,
             label: node.properties.lemma,
-            title: [
-                "Lemma: " + node.properties.lemma,
-                "Type: " + node.labels[0],
-                "Line: " + node.properties.line_id,
-                "Annotator: " + node.properties.annotator
-            ].join("\n"),
+            title: title.join("\n"),
             value: 3,
             pagerank: 1,
             group: group_id
@@ -58,17 +64,23 @@ function prepare_network_data(nodes, relationships) {
             edge_labels.push(relationship.label);
             group_id = edge_labels.length;
         }
+        var title = [
+            `Relation: ${relationship.label}`,
+        ];
+        for (const [prop_name, prop_val] of Object.entries(relationship.properties)) {
+            if (!prop_name.startsWith("__") && prop_val) {
+                var prop_display_name = prop_name.indexOf("_") > -1 ? prop_name : toTitleCase(prop_name);
+                var prop_display_val = prop_val.indexOf(";") > -1 ? prop_val.split(";").join(", ") : prop_val;
+                title.push(`${prop_display_name}: ${prop_display_val}`);
+            }
+        }
+
         dataset.edges.push({
             id: relationship.id,
             from: relationship.start.id,
             to: relationship.end.id,
             label: relationship.label,
-            title: [
-                `Relation: ${relationship.label}`,
-                (relationship.properties.detail !== null) ? `Detail: ${relationship.properties.detail}` : "",
-                "Line: " + relationship.properties.line_id,
-                "Annotator: " + relationship.properties.annotator
-            ].join("\n"),
+            title: title.join("\n"),
             arrows: {
                 to: {
                     enabled: true
@@ -83,6 +95,12 @@ function prepare_network_data(nodes, relationships) {
 
     edges_dataset.clear()
     edges_dataset.update(dataset.edges);
+}
+
+function toTitleCase(str) {
+    return str.replace(/(?:^|\s)\w/g, function(match) {
+        return match.toUpperCase();
+    });
 }
 
 function draw() {

@@ -111,11 +111,7 @@ class Graph:
             'id': self.repr_entity(node),
             'type': 'node',
             'labels': list(node._labels),
-            'properties': {
-                'lemma': node.get('lemma'),
-                'line_id': node.get('line_id'),
-                'annotator': node.get('annotator')
-            }
+            'properties': dict(node.items())
         }
         return (
             json.dumps(node_dict, ensure_ascii=False)
@@ -134,11 +130,7 @@ class Graph:
             'end': {
                 'id': self.repr_entity(edge.end_node)
             },
-            'properties': {
-                'line_id': edge.get('line_id'),
-                'annotator': edge.get('annotator'),
-                'detail': edge.get('detail')
-            }
+            'properties': dict(edge.items())
         }
         return (
             json.dumps(edge_dict, ensure_ascii=False)
