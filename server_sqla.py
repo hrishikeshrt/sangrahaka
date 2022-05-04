@@ -1156,6 +1156,8 @@ def action():
                     for _line in _verse:
                         _analysis = _line.get('analysis', {})
                         line = Line()
+                        if _line.get('id'):
+                            line.id = _line.get('id')
                         line.verse = verse
                         line.text = _line.get('text', '')
                         line.split = _line.get('split', '')
