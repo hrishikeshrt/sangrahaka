@@ -252,8 +252,8 @@ $query_select.on("changed.bs.select", function (event, index, is_selected, old_v
     $edit_button.prop('disabled', false);
 });
 
-$result_table.on('click-cell.bs.table', function (field, value, row, $element) {
-    var target = $element.ids[value];
+$result_table.on('click-cell.bs.table', function (event, field, value, row, $element) {
+    var target = row.ids[field];
     // not the same as params when an actual click is performed
     // only nodes and edges properties are required for neighbourhood_highlight
     var params = {
