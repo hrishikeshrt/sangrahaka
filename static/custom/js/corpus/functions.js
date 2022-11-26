@@ -95,10 +95,7 @@ function entity_formatter(root, type, li_classes = "", annotator = "") {
     return entity_html.join("");
 }
 
-function unnamed_formatter(line_id, text) {
-    // 'unnamed_prefix' is a global constant
-    // It must be set before running this function
-    // It is set in corpus.html
+function unnamed_formatter(line_id, text, unnamed_prefix) {
     var upper_text = text.toUpperCase();
     var pattern = new RegExp('^'+ unnamed_prefix +'[0-9]$');
     if (upper_text.match(pattern)) {

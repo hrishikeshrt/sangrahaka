@@ -83,7 +83,12 @@
     </div>
 </div>
 <script>
-    const unnamed_prefix = "{{config.unnamed_prefix}}";
+    // Global Constants
+    // These may used in JS files
+    const UNNAMED_PREFIX = "{{config.unnamed_prefix}}";
+    const API_URL = "{{url_for('api')}}";
+    const CHAPTER_ID = "{{data.chapter_id}}";
+    const CURRENT_USERNAME = "{{current_user.username}}";
 </script>
 <script src="{{url_for('static', filename='custom/js/corpus/elements.js')}}"></script>
 <script src="{{url_for('static', filename='custom/js/corpus/events.js')}}"></script>
@@ -92,10 +97,10 @@
     $add_entity_button.on('click', function(e) {
         if ($form_prepare_entity[0].checkValidity() && $line_id_entity.val() != "") {
 
-            var _root = unnamed_formatter($line_id_entity.val(), $entity_root.val().trim());
+            var _root = unnamed_formatter($line_id_entity.val(), $entity_root.val().trim(), UNNAMED_PREFIX);
             var _type = $entity_type.val().trim();
 
-            var entity_html = entity_formatter(_root, _type, "list-group-item-warning", "{{current_user.username}}");
+            var entity_html = entity_formatter(_root, _type, "list-group-item-warning", CURRENT_USERNAME);
             $entity_list.append(entity_html);
             $('[name="entity"]').bootstrapToggle();
 
@@ -108,7 +113,7 @@
             unconfirmed.push({
                 'root': _root,
                 'type': _type,
-                'annotator': "{{current_user.username}}",
+                'annotator': CURRENT_USERNAME,
                 'is_deleted': false
             });
             storage.setItem($line_id_entity.val(), JSON.stringify(unconfirmed));
@@ -128,9 +133,9 @@
                 entity_delete.push($(this).val());
             }
         });
-        $.post("{{url_for('api')}}", {
+        $.post(API_URL, {
             action: "update_entity",
-            chapter_id: "{{data.chapter_id}}",
+            chapter_id: CHAPTER_ID,
             line_id: $line_id_entity.val(),
             entity_add: entity_add.join("##"),
             entity_delete: entity_delete.join("##")
@@ -154,7 +159,7 @@
                         entity_objects.push({
                             'root': entity_values[0],
                             'type': entity_values[1],
-                            'annotator': "{{current_user.username}}",
+                            'annotator': CURRENT_USERNAME,
                             'is_deleted': false
                         });
                         // all_roots.add("<option>" + entity_values[0] + "</option>");
@@ -185,12 +190,12 @@
     $add_relation_button.on('click', function(e) {
         if ($form_prepare_relation[0].checkValidity() && $line_id_relation.val() != "") {
 
-            var _source = unnamed_formatter($line_id_relation.val(), $relation_source.val().trim());
+            var _source = unnamed_formatter($line_id_relation.val(), $relation_source.val().trim(), UNNAMED_PREFIX);
             var _detail = $relation_detail.val().trim();
             var _label = $relation_label.val().trim();
-            var _target = unnamed_formatter($line_id_relation.val(), $relation_target.val().trim());
+            var _target = unnamed_formatter($line_id_relation.val(), $relation_target.val().trim(), UNNAMED_PREFIX);
 
-            var relation_html = relation_formatter(_source, _label, _target, _detail, "list-group-item-warning", "{{current_user.username}}");
+            var relation_html = relation_formatter(_source, _label, _target, _detail, "list-group-item-warning", CURRENT_USERNAME);
             $relation_list.append(relation_html);
             $('[name="relation"]').bootstrapToggle();
 
@@ -205,7 +210,7 @@
                 'label': _label,
                 'detail': _detail,
                 'target': _target,
-                'annotator': "{{current_user.username}}",
+                'annotator': CURRENT_USERNAME,
                 'is_deleted': false
             });
             storage.setItem($line_id_relation.val() + '_relations', JSON.stringify(unconfirmed_relations));
@@ -225,9 +230,9 @@
                 relation_delete.push($(this).val());
             }
         });
-        $.post("{{url_for('api')}}", {
+        $.post(API_URL, {
             action: "update_relation",
-            chapter_id: "{{data.chapter_id}}",
+            chapter_id: CHAPTER_ID,
             line_id: $line_id_relation.val(),
             relation_add: relation_add.join("##"),
             relation_delete: relation_delete.join("##")
@@ -253,7 +258,7 @@
                             'label': relation_values[1],
                             'target': relation_values[2],
                             'detail': relation_values[3],
-                            'annotator': "{{current_user.username}}",
+                            'annotator': CURRENT_USERNAME,
                             'is_deleted': false
                         });
                         // all_roots.add("<option>" + relation_values[0] + "</option>");
@@ -287,9 +292,9 @@
 
             var _label = $action_label.val().trim();
             var _actor_label = $action_actor_label.val().trim();
-            var _actor = unnamed_formatter($line_id_action.val(), $action_actor.val().trim());
+            var _actor = unnamed_formatter($line_id_action.val(), $action_actor.val().trim(), UNNAMED_PREFIX);
 
-            var action_html = action_formatter(_label, _actor_label, _actor, "list-group-item-warning", "{{current_user.username}}");
+            var action_html = action_formatter(_label, _actor_label, _actor, "list-group-item-warning", CURRENT_USERNAME);
             $action_list.append(action_html);
             $('[name="action"]').bootstrapToggle();
 
@@ -303,7 +308,7 @@
                 'label': _label,
                 'actor_label': _actor_label,
                 'actor': _actor,
-                'annotator': "{{current_user.username}}",
+                'annotator': CURRENT_USERNAME,
                 'is_deleted': false
             });
             storage.setItem($line_id_action.val() + '_actions', JSON.stringify(unconfirmed_actions));
@@ -323,9 +328,9 @@
                 action_delete.push($(this).val());
             }
         });
-        $.post("{{url_for('api')}}", {
+        $.post(API_URL, {
             action: "update_action",
-            chapter_id: "{{data.chapter_id}}",
+            chapter_id: CHAPTER_ID,
             line_id: $line_id_action.val(),
             action_add: action_add.join("##"),
             action_delete: action_delete.join("##")
@@ -350,7 +355,7 @@
                             'label': action_values[0],
                             'actor_label': action_values[1],
                             'actor': action_values[2],
-                            'annotator': "{{current_user.username}}",
+                            'annotator': CURRENT_USERNAME,
                             'is_deleted': false
                         });
                         // all_roots.add("<option>" + action_values[0] + "</option>");
