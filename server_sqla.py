@@ -848,9 +848,43 @@ def api_corpus(chapter_id):
 # --------------------------------------------------------------------------- #
 
 
-@webapp.route("/api/suggest")
+@webapp.route("/api/suggest-node")
 @limiter.limit("60 per minute")
-def suggest():
+def suggest_node():
+    # TODO: Currently a temporary function
+    # Parse q (category search using :CATEGORY)
+    # e.g. Sample q values => "maz", ":SUB", "maz :SUB", ... etc.
+
+    word = request.args.get('q')
+
+    response = []
+    if all([
+        word and len(word) < 3,
+        not word.startswith(app.config['unnamed_prefix'])
+    ]):
+        return jsonify(response)
+
+    search_query = Lexicon.query.with_entities(Lexicon.id, Lexicon.lemma).filter(or_(
+        Lexicon.transliteration.like(f"%##{word}%"),
+        Lexicon.lemma.startswith(word)
+    )).limit(1000)
+    response = [
+        {
+            "value": f"{lex_id}#{lex_lemma}",
+            "text": lex_lemma,
+            "html": (
+                f"<b class='float-left'>{lex_lemma}</b> "
+                f"<small class='text-muted float-right'>{lex_id}</small>"
+            )
+        }
+        for lex_id, lex_lemma in search_query.all()
+    ]
+    return jsonify(response)
+
+
+@webapp.route("/api/suggest-lexicon")
+@limiter.limit("60 per minute")
+def suggest_lexicon():
     word = request.args.get('q')
 
     response = []

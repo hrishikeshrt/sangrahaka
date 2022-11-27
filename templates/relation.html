@@ -12,7 +12,8 @@
                     </div>
                     <div class="form-group row">
                         <label for="input_relation_source" class="col-sm-4">Source</label>
-                        <input type="text" id="input_relation_source" class="form-control col-sm-8" data-url="{{url_for('suggest')}}" required>
+                        <!-- <input type="text" id="input_relation_source" class="form-control col-sm-8" data-url="{{url_for('suggest_lexicon')}}" required> -->
+                        <select id="input_relation_source" class="form-control col-sm-8" name="input_relation_source" placeholder="Source" data-url="{{url_for('suggest_node')}}" autocomplete="off" required></select>
                     </div>
                     <hr>
                     <div class="form-group row">
@@ -30,7 +31,8 @@
                     <hr>
                     <div class="form-group row">
                         <label for="input_relation_target" class="col-sm-4">Target</label>
-                        <input type="text" id="input_relation_target" class="form-control col-sm-8" data-url="{{url_for('suggest')}}" required>
+                        <!-- <input type="text" id="input_relation_target" class="form-control col-sm-8" data-url="{{url_for('suggest_lexicon')}}" required> -->
+                        <select id="input_relation_target" class="form-control col-sm-8" name="input_relation_target" placeholder="Target" data-url="{{url_for('suggest_node')}}" autocomplete="off" required></select>
                     </div>
                     <div class="form-group">
                         <button type="button" id="add_relation" class="btn btn-primary float-right">

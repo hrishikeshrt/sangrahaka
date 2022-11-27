@@ -17,14 +17,15 @@ $(document).ready(function () {
     $relation_source.addClass('custom-auto-complete');
     $relation_target.addClass('custom-auto-complete');
     $action_actor.addClass('custom-auto-complete');
-    $('.custom-auto-complete').autoComplete({
-        events: {
-            searchPost: function (server_results) {
-                var current_roots = $corpus_table.data('current_roots');
-                return [...current_roots, ...server_results];
-            }
-        }
-    });
+    $('.custom-auto-complete').autoComplete();
+    // $('.custom-auto-complete').autoComplete({
+    //     events: {
+    //         searchPost: function (server_results) {
+    //             var current_roots = $corpus_table.data('current_roots');
+    //             return [...current_roots, ...server_results];
+    //         }
+    //     }
+    // });
 });
 
 $corpus_table.on('check.bs.table', function (e, row, $element, field) {

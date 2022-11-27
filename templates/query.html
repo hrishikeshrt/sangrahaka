@@ -36,7 +36,7 @@
                     <div id="query-input-container" class="row mt-2"></div>
                 </div>
                 <div id="sample-input" hidden="true">
-                    <input id="sample-entity" type="text" class="form-control" placeholder="Enter {}" data-url="{{url_for('suggest')}}" autocomplete="off">
+                    <input id="sample-entity" type="text" class="form-control" placeholder="Enter {}" data-url="{{url_for('suggest_lexicon')}}" autocomplete="off">
                     <select id="sample-entity-type" title="Select {}" class="form-control" data-live-search="true">
                         {% for _id, _label, _description in constants.node_labels %}
                         <option value="{{_label}}">{{_description}}</option>

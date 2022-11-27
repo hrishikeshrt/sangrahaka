@@ -1,4 +1,5 @@
 // Annotation Event Handlers
+// Note: Constants in CAPITAL letters are declared in corpus.html
 
 /* ******************** Entity Annotation - BEGIN ******************** */
 
@@ -101,11 +102,20 @@ $confirm_entity_button.on('click', function(e) {
 
 $add_relation_button.on('click', function(e) {
     if ($form_prepare_relation[0].checkValidity() && $line_id_relation.val() != "") {
+        const form_prepare_relation = Object.values($form_prepare_relation[0]).reduce(function (obj,field) {
+            obj[field.name] = field.value;
+            return obj
+        }, {});
 
-        var _source = unnamed_formatter($line_id_relation.val(), $relation_source.val().trim(), UNNAMED_PREFIX);
+        const relation_source_value = form_prepare_relation["input_relation_source"];
+        const relation_source_text = form_prepare_relation["input_relation_source_text"];
+        const relation_target_value = form_prepare_relation["input_relation_target"];
+        const relation_target_text = form_prepare_relation["input_relation_target_text"];
+
+        var _source = unnamed_formatter($line_id_relation.val(), relation_source_text.trim(), UNNAMED_PREFIX);
         var _detail = $relation_detail.val().trim();
         var _label = $relation_label.val().trim();
-        var _target = unnamed_formatter($line_id_relation.val(), $relation_target.val().trim(), UNNAMED_PREFIX);
+        var _target = unnamed_formatter($line_id_relation.val(), relation_target_text.trim(), UNNAMED_PREFIX);
 
         var relation_html = relation_formatter(_source, _label, _target, _detail, "list-group-item-warning", CURRENT_USERNAME);
         $relation_list.append(relation_html);
