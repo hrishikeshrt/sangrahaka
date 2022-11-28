@@ -163,6 +163,22 @@ class ActionLabel(db.Model):
     description = Column(String(255))
     is_deleted = Column(Boolean, default=False, nullable=False)
 
+###############################################################################
+
+
+# class Entity(db.Model):
+#     id = Column(Integer, primary_key=True)
+#     lexicon_id = Column(Integer, ForeignKey('lexicon.id'), nullable=False)
+#     label_id = Column(Integer, ForeignKey('node_label.id'), nullable=False)
+
+#     lemma = relationship('Lexicon', backref=backref('entities'))
+#     label = relationship('NodeLabel', backref=backref('entities'))
+
+#     __table_args__ = (
+#         Index('entity_lexicon_id_label_id', 'lexicon_id', 'label_id',
+#               unique=True),
+#     )
+
 
 class Node(db.Model):
     id = Column(Integer, primary_key=True)
@@ -189,8 +205,10 @@ class Relation(db.Model):
     id = Column(Integer, primary_key=True)
     line_id = Column(Integer, ForeignKey('line.id'), nullable=False)
     annotator_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    src_id = Column(Integer, ForeignKey('lexicon.id'), nullable=False)
-    dst_id = Column(Integer, ForeignKey('lexicon.id'), nullable=False)
+    # src_id = Column(Integer, ForeignKey('lexicon.id'), nullable=False)
+    # dst_id = Column(Integer, ForeignKey('lexicon.id'), nullable=False)
+    src_id = Column(Integer, ForeignKey('node.id'), nullable=False)
+    dst_id = Column(Integer, ForeignKey('node.id'), nullable=False)
     label_id = Column(Integer, ForeignKey('relation_label.id'), nullable=False)
     detail = Column(String(255))
 
@@ -201,8 +219,10 @@ class Relation(db.Model):
         'User', backref=backref('relations', lazy='dynamic')
     )
     line = relationship('Line', backref=backref('relations', lazy='dynamic'))
-    src_lemma = relationship('Lexicon', foreign_keys=[src_id])
-    dst_lemma = relationship('Lexicon', foreign_keys=[dst_id])
+    # src_lemma = relationship('Lexicon', foreign_keys=[src_id])
+    # dst_lemma = relationship('Lexicon', foreign_keys=[dst_id])
+    src_node = relationship('Node', foreign_keys=[src_id])
+    dst_node = relationship('Node', foreign_keys=[dst_id])
     label = relationship('RelationLabel', backref=backref('relations'))
 
     __table_args__ = (
