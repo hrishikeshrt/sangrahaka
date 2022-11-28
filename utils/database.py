@@ -48,13 +48,21 @@ def annotation_to_dict(model: Node or Relation) -> dict:
     if isinstance(model, Relation):
         return {
             "id": model.id,
-            "source": model.src_lemma.lemma,
+            "source": {
+                "id": model.src_id,
+                "lemma": model.src_node.lemma.lemma,
+                "label": model.src_node.label.label
+            },
             "relation_label": {
                 "id": model.label_id,
                 "label": model.label.label
             },
             "relation_detail": model.detail or "",
-            "target": model.dst_lemma.lemma,
+            "target": {
+                "id": model.dst_id,
+                "lemma": model.dst_node.lemma.lemma,
+                "label": model.dst_node.label.label
+            },
             "line": {
                 "id": model.line_id,
                 "english": model.line.text,
@@ -165,13 +173,21 @@ def search_relation(
     """Search relation annotations"""
     filters = []
     if src_lemma is not None:
-        filters.append(Relation.src_lemma.has(Lexicon.lemma.ilike(src_lemma)))
+        filters.append(
+            Relation.src_node.lemma.has(
+                Lexicon.lemma.ilike(src_lemma)
+            )
+        )
     if label is not None:
         filters.append(Relation.label.has(RelationLabel.label.ilike(label)))
     if detail is not None:
         filters.append(Relation.detail.ilike(detail))
     if dst_lemma is not None:
-        filters.append(Relation.dst_lemma.has(Lexicon.lemma.ilike(dst_lemma)))
+        filters.append(
+            Relation.dst_node.lemma.has(
+                Lexicon.lemma.ilike(dst_lemma)
+            )
+        )
     if line_id is not None:
         filters.append(Relation.line_id.ilike(line_id))
     if annotator is not None:
@@ -329,11 +345,25 @@ def get_line_data(
         for relation in relation_query.all():
             data[relation.line_id]['relation'].append({
                 'id': relation.id,
-                'source': relation.src_lemma.lemma,
-                'target': relation.dst_lemma.lemma,
-                'label': relation.label.label,
+                'source': {
+                    'id': relation.src_id,
+                    'lemma': relation.src_node.lemma.lemma,
+                    'label': relation.src_node.label.label
+                },
+                'label': {
+                    'id': relation.label_id,
+                    'label': relation.label.label
+                },
                 'detail': relation.detail,
-                'annotator': relation.annotator.username,
+                'target': {
+                    'id': relation.dst_id,
+                    'lemma': relation.dst_node.lemma.lemma,
+                    'label': relation.dst_node.label.label
+                },
+                'annotator': {
+                    'id': relation.annotator_id,
+                    'username': relation.annotator.username
+                },
                 'is_deleted': relation.is_deleted
             })
             data[relation.line_id]['marked'] = True
