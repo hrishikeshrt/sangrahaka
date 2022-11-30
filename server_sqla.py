@@ -47,7 +47,7 @@ from flask_security import (Security, auth_required, permissions_required,
                             hash_password, current_user, user_registered,
                             user_authenticated)
 from flask_security.utils import uia_email_mapper
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -62,8 +62,8 @@ from indic_transliteration.sanscript import transliterate
 from models_sqla import (db, user_datastore,
                          CustomLoginForm, CustomRegisterForm,
                          Corpus, Chapter, Verse, Line, Analysis,
-                         Lexicon,
-                         NodeLabel, RelationLabel, Node, Relation,
+                         Lexicon, NodeLabel, Node,
+                         RelationLabel, Relation,
                          ActionLabel, ActorLabel, Action)
 from settings import app
 from utils.reverseproxied import ReverseProxied
@@ -851,33 +851,46 @@ def api_corpus(chapter_id):
 @webapp.route("/api/suggest-node")
 @limiter.limit("60 per minute")
 def suggest_node():
-    # TODO: Currently a temporary function
-    # Parse q (category search using :CATEGORY)
+    # Parse q (category search starting ':')
     # e.g. Sample q values => "maz", ":SUB", "maz :SUB", ... etc.
 
-    word = request.args.get('q')
+    query = request.args.get('q')
+    words = query.split(':')
+
+    lexicon_query_term = words[0].strip()
+    node_label_query_term = words[1].strip() if len(words) > 1 else ""
 
     response = []
     if all([
-        word and len(word) < 3,
-        not word.startswith(app.config['unnamed_prefix'])
+        lexicon_query_term and len(lexicon_query_term) < 3,
+        not lexicon_query_term.startswith(app.config['unnamed_prefix'])
     ]):
         return jsonify(response)
 
-    search_query = Lexicon.query.with_entities(Lexicon.id, Lexicon.lemma).filter(or_(
-        Lexicon.transliteration.like(f"%##{word}%"),
-        Lexicon.lemma.startswith(word)
-    )).limit(1000)
+    search_query = Node.query.join(Lexicon, NodeLabel).with_entities(
+        func.min(Node.id), Lexicon.lemma, NodeLabel.label
+    ).filter(
+        or_(
+            Lexicon.transliteration.like(f"%##{lexicon_query_term}%"),
+            Lexicon.lemma.startswith(lexicon_query_term)
+        ),
+        NodeLabel.label.like(f"{node_label_query_term}%")
+    ).group_by(
+        Node.lexicon_id, Node.label_id
+    ).order_by(
+        func.count(Node.id).desc()
+    ).limit(1000)
+
     response = [
         {
-            "value": f"{lex_id}#{lex_lemma}",
-            "text": lex_lemma,
+            "value": node_id,
+            "text": f"{node_lemma}::{node_label}",
             "html": (
-                f"<b class='float-left'>{lex_lemma}</b> "
-                f"<small class='text-muted float-right'>{lex_id}</small>"
+                f"<b class='float-left'>{node_lemma}</b> "
+                f"<small class='text-muted float-right'>{node_label}</small>"
             )
         }
-        for lex_id, lex_lemma in search_query.all()
+        for node_id, node_lemma, node_label in search_query.all()
     ]
     return jsonify(response)
 
