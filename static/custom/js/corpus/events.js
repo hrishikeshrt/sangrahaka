@@ -43,13 +43,13 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     $relation_detail.val("");
     $action_actor.val("");
 
-    var row_roots = new Set();
-    $.each(row.analysis, function(index, word) {
-        if (word.is_noun) {
-            row_roots.add(word.root);
-        }
-    });
-    $corpus_table.data('current_roots', row_roots);
+    // var row_roots = new Set();
+    // $.each(row.analysis, function(index, word) {
+    //     if (word.is_noun) {
+    //         row_roots.add(word.root);
+    //     }
+    // });
+    // $corpus_table.data('current_roots', row_roots);
 
     // var suggest_roots = new Set([...row_roots, ...all_roots]);
 
@@ -74,7 +74,13 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
 
     $.each(row.relation, function (index, relation) {
         if (!relation.is_deleted) {
-            relation_html = relation_formatter(relation.source, relation.label, relation.target, relation.detail, "", relation.annotator);
+            relation_html = relation_formatter({
+                "source": relation.source,
+                "label": relation.label,
+                "detail": relation.detail,
+                "target": relation.target,
+                "annotator": relation.annotator,
+            }, "");
             relation_list_html.push(relation_html);
         }
     });
@@ -98,7 +104,13 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     }
     if (unconfirmed_relations !== null) {
         $.each(JSON.parse(unconfirmed_relations), function (index, relation) {
-            relation_html = relation_formatter(relation.source, relation.label, relation.target, relation.detail, "list-group-item-warning", relation.annotator);
+            relation_html = relation_formatter({
+                "source": relation.source,
+                "label": relation.label,
+                "detail": relation.detail,
+                "target": relation.target,
+                "annotator": relation.annotator
+            }, "list-group-item-warning");
             relation_list_html.push(relation_html);
         });
     }

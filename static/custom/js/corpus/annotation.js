@@ -101,41 +101,70 @@ $confirm_entity_button.on('click', function(e) {
 /* ******************** Relation Annotation - BEGIN ******************** */
 
 $add_relation_button.on('click', function(e) {
+    const separator = "::";
+
     if ($form_prepare_relation[0].checkValidity() && $line_id_relation.val() != "") {
         const form_prepare_relation = Object.values($form_prepare_relation[0]).reduce(function (obj,field) {
             obj[field.name] = field.value;
             return obj
         }, {});
 
+        // TODO:
+        // * Can we avoid dependence on `name` parameters?
+        // * Do we need to?
+        const line_id = $line_id_relation.val();
         const relation_source_value = form_prepare_relation["input_relation_source"];
         const relation_source_text = form_prepare_relation["input_relation_source_text"];
         const relation_target_value = form_prepare_relation["input_relation_target"];
         const relation_target_text = form_prepare_relation["input_relation_target_text"];
 
-        var _source = unnamed_formatter($line_id_relation.val(), relation_source_text.trim(), UNNAMED_PREFIX);
-        var _detail = $relation_detail.val().trim();
-        var _label = $relation_label.val().trim();
-        var _target = unnamed_formatter($line_id_relation.val(), relation_target_text.trim(), UNNAMED_PREFIX);
+        const _source_parts = relation_source_text.split(separator);
+        const _target_parts = relation_target_text.split(separator);
 
-        var relation_html = relation_formatter(_source, _label, _target, _detail, "list-group-item-warning", CURRENT_USERNAME);
+        const _source_lemma = unnamed_formatter(line_id, _source_parts[0].trim(), UNNAMED_PREFIX);
+        const _source_label = _source_parts[1].trim();
+        const _source_node_id = relation_source_value;
+
+        const _detail = $relation_detail.val().trim();
+        const _label = $relation_label.val().trim();
+
+        const _target_lemma = unnamed_formatter(line_id, _target_parts[0].trim(), UNNAMED_PREFIX);
+        const _target_label = _target_parts[1].trim();
+        const _target_node_id = relation_target_value;
+
+        const relation_object = {
+            "source": {
+                "id": _source_node_id,
+                "lemma": _source_lemma,
+                "label": _source_label
+            },
+            "label": {
+                "label": _label
+            },
+            "detail": _detail,
+            "target": {
+                "id": _target_node_id,
+                "lemma": _target_lemma,
+                "label": _target_label
+            },
+            "annotator": {
+                "id": CURRENT_USER_ID,
+                "username": CURRENT_USERNAME,
+            },
+            "is_deleted": false
+        };
+        const relation_html = relation_formatter(relation_object, "list-group-item-warning");
         $relation_list.append(relation_html);
         $('[name="relation"]').bootstrapToggle();
 
         // update local unconfirmed storage
-        var unconfirmed_relations = storage.getItem($line_id_relation.val() + '_relations');
+        var unconfirmed_relations = storage.getItem(line_id + '_relations');
         if (unconfirmed_relations === null) {
             unconfirmed_relations = '[]';
         }
         unconfirmed_relations = JSON.parse(unconfirmed_relations);
-        unconfirmed_relations.push({
-            'source': _source,
-            'label': _label,
-            'detail': _detail,
-            'target': _target,
-            'annotator': CURRENT_USERNAME,
-            'is_deleted': false
-        });
-        storage.setItem($line_id_relation.val() + '_relations', JSON.stringify(unconfirmed_relations));
+        unconfirmed_relations.push(relation_object);
+        storage.setItem(line_id + '_relations', JSON.stringify(unconfirmed_relations));
     } else {
         $form_prepare_relation[0].reportValidity();
     }
@@ -176,11 +205,25 @@ $confirm_relation_button.on('click', function(e) {
                     $(this).closest('li').removeClass("list-group-item-warning");
                     var relation_values = $(this).val().split('$');
                     relation_objects.push({
-                        'source': relation_values[0],
-                        'label': relation_values[1],
-                        'target': relation_values[2],
+                        'source': {
+                            'id': relation_values[0],
+                            'lemma': relation_values[4],
+                            'label': relation_values[5]
+                        },
+                        'label': {
+                            'id': relation_values[1],
+                            'label': relation_values[6]
+                        },
+                        'target': {
+                            'id': relation_values[2],
+                            'lemma': relation_values[7],
+                            'label': relation_values[8]
+                        },
                         'detail': relation_values[3],
-                        'annotator': CURRENT_USERNAME,
+                        'annotator': {
+                            'id': CURRENT_USER_ID,
+                            'username': CURRENT_USERNAME
+                        },
                         'is_deleted': false
                     });
                     // all_roots.add("<option>" + relation_values[0] + "</option>");

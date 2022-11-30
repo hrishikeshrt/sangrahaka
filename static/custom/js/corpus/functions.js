@@ -104,22 +104,32 @@ function unnamed_formatter(line_id, text, unnamed_prefix) {
     return text;
 }
 
-function relation_formatter(source, label, target, detail, li_classes = "", annotator = "") {
-    if (detail == null) {
-        detail = "";
+function relation_formatter(relation, li_classes = "") {
+    if (relation.detail == null) {
+        relation.detail = "";
     }
-    var relation_value = [source, label, target, detail].join('$');
+    var relation_value = [
+        relation.source.id,
+        relation.label.id,
+        relation.target.id,
+        relation.detail,
+        relation.source.lemma,
+        relation.source.label,
+        relation.label.label,
+        relation.target.lemma,
+        relation.target.label,
+    ].join('$');
     var li_class = 'list-group-item';
     if (li_classes !== "") {
         li_class += " " + li_classes;
     }
     var relation_html = [
-        annotator ? `<li title="${annotator}" class="${li_class}">` : `<li class="${li_class}">`,
+        relation.annotator ? `<li title="${relation.annotator.username}" class="${li_class}">` : `<li class="${li_class}">`,
         '<div class="row">',
         '<div class="col-sm">',
-        `(${source})`,
-        ` <span class="text-muted">⊢ [${label} (${detail})] →</span> `,
-        `(${target})`,
+        `(${relation.source.lemma})`,
+        ` <span class="text-muted">⊢ [${relation.label.label} (${relation.detail})] →</span> `,
+        `(${relation.target.lemma})`,
         '</div>',
         '<div class="col-sm-3">',
         '<span class="float-right">',
