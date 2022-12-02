@@ -532,10 +532,12 @@ def api():
                 if '$' not in entity:
                     continue
                 parts = entity.split('$')
-                _lexicon_id = get_or_create_lexicon(parts[0])
+                entity_lemma = parts[0]
+                entity_label = parts[1]
+                _lexicon_id = get_or_create_lexicon(entity_lemma)
 
                 label_query = NodeLabel.query.filter(
-                    NodeLabel.label == parts[1]
+                    NodeLabel.label == entity_label
                 )
                 _label = label_query.first()
                 if _label is None:
@@ -582,18 +584,42 @@ def api():
                 if '$' not in relation:
                     continue
                 parts = relation.split('$')
-                _src_id = get_lexicon(parts[0])
-                _detail = parts[3] if parts[3].strip() else None
-                _dst_id = get_lexicon(parts[2])
+                print(parts)
+                try:
+                    _src_node_id = int(parts[0])
+                except Exception:
+                    _src_node_id = None
 
-                if _src_id is None or _dst_id is None:
+                try:
+                    _relation_label_id = int(parts[1])
+                except Exception:
+                    _relation_label_id = None
+
+                try:
+                    _dst_node_id = int(parts[2])
+                except Exception:
+                    _dst_node_id = None
+
+                _detail_text = parts[3]
+                _detail = _detail_text if _detail_text.strip() else None
+
+                _src_lemma = parts[4]
+                _src_label = parts[5]
+                _relation_label = parts[6]
+                _dst_lemma = parts[7]
+                _dst_label = parts[8]
+
+                _src_lexicon_id = get_lexicon(_src_lemma)
+                _dst_lexicon_id = get_lexicon(_dst_lemma)
+
+                if _src_node_id is None or _dst_node_id is None:
                     api_response['success'] = False
                     api_response['message'] = (
                         'Source or Destination entity does not exist.'
                     )
                     return jsonify(api_response)
                 label_query = RelationLabel.query.filter(
-                    RelationLabel.label == parts[1]
+                    RelationLabel.label == _relation_label
                 )
                 _label = label_query.first()
                 if _label is None:
@@ -605,8 +631,8 @@ def api():
                 relation_query = Relation.query.filter(and_(
                     Relation.line_id == line_id,
                     Relation.annotator_id == annotator_id,
-                    Relation.src_id == _src_id,
-                    Relation.dst_id == _dst_id,
+                    Relation.src_id == _src_node_id,
+                    Relation.dst_id == _dst_node_id,
                     Relation.label_id == _label_id,
                     Relation.detail == _detail
                 ))
@@ -616,8 +642,8 @@ def api():
                 if current_user.has_permission('curate'):
                     relation_query = Relation.query.filter(and_(
                         Relation.line_id == line_id,
-                        Relation.src_id == _src_id,
-                        Relation.dst_id == _dst_id,
+                        Relation.src_id == _src_node_id,
+                        Relation.dst_id == _dst_node_id,
                         Relation.label_id == _label_id,
                         Relation.detail == _detail
                     ))
@@ -628,8 +654,8 @@ def api():
                         r = Relation()
                         r.line_id = line_id
                         r.annotator_id = annotator_id
-                        r.src_id = _src_id
-                        r.dst_id = _dst_id
+                        r.src_id = _src_node_id
+                        r.dst_id = _dst_node_id
                         r.label_id = _label_id
                         r.detail = _detail
                         objects_to_update.append(r)
@@ -1328,10 +1354,10 @@ def action():
                     {
                         'line_id': relation.line_id,
                         'annotator_id': relation.annotator_id,
-                        'source': relation.src_lemma.lemma,
+                        'source': relation.src_node.lemma.lemma,
                         'relation': relation.label.label,
                         'detail': relation.detail,
-                        'target': relation.dst_lemma.lemma
+                        'target': relation.dst_node.lemma.lemma
                     }
                     for relation in relation_query.all()
                 ]
