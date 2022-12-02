@@ -44,7 +44,7 @@ function prepare_network_data(nodes, relationships) {
         for (const [prop_name, prop_val] of Object.entries(node.properties)) {
             if (!prop_name.startsWith("__") && prop_val) {
                 var prop_display_name = prop_name.indexOf("_") > -1 ? prop_name : toTitleCase(prop_name);
-                var prop_display_val = prop_val.indexOf(";") > -1 ? prop_val.split(";").join(", ") : prop_val;
+                var prop_display_val = prop_val.toString().indexOf(";") > -1 ? prop_val.split(";").join(", ") : prop_val;
                 title.push(`${prop_display_name}: ${prop_display_val}`);
             }
         }
@@ -70,7 +70,7 @@ function prepare_network_data(nodes, relationships) {
         for (const [prop_name, prop_val] of Object.entries(relationship.properties)) {
             if (!prop_name.startsWith("__") && prop_val) {
                 var prop_display_name = prop_name.indexOf("_") > -1 ? prop_name : toTitleCase(prop_name);
-                var prop_display_val = prop_val.indexOf(";") > -1 ? prop_val.split(";").join(", ") : prop_val;
+                var prop_display_val = prop_val.toString().indexOf(";") > -1 ? prop_val.split(";").join(", ") : prop_val;
                 title.push(`${prop_display_name}: ${prop_display_val}`);
             }
         }
