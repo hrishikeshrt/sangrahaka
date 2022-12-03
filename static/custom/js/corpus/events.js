@@ -13,6 +13,7 @@
 // });
 
 $(document).ready(function () {
+    // Activate Auto-Complete Suggestions
     $entity_root.addClass('custom-auto-complete');
     $relation_source.addClass('custom-auto-complete');
     $relation_target.addClass('custom-auto-complete');
@@ -26,6 +27,26 @@ $(document).ready(function () {
     //         }
     //     }
     // });
+
+    // Split Columns
+    var splitobj = Split(["#corpus-column","#annotation-column"], {
+        elementStyle: function (dimension, size, gutterSize) {
+            $(window).trigger('resize');
+            return {
+                'flex-basis': `calc(${size}% - ${gutterSize}px)`
+            };
+        },
+        gutterStyle: function (dimension, gutterSize) {
+            return {
+                'flex-basis':  `${gutterSize}px`
+            };
+        },
+        sizes: [70, 30],
+        minSize: 300,
+        gutterSize: 10,
+        cursor: 'col-resize'
+    });
+
 });
 
 $corpus_table.on('check.bs.table', function (e, row, $element, field) {

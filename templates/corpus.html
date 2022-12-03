@@ -1,8 +1,8 @@
 {% set active_page = "corpus" %}
 {% include "header.html" %}
 <div class="container-fluid p-3">
-    <div class="row">
-        <div class="col-sm-9">
+    <div class="d-flex flex-row">
+        <div id="corpus-column">
             <span id="corpus-title" class="lead"></span>
             <table id="corpus_viewer" class="table table-bordered table-hover" data-toggle="table"
                 data-url="{{url_for('api_corpus', chapter_id=data.chapter_id)}}"
@@ -50,7 +50,7 @@
                 </thead>
             </table>
         </div>
-        <div class="col-sm-3 sticky-top align-self-start">
+        <div id="annotation-column" class="sticky-top align-self-start">
             <!-- For "sticky-top" to work on a "col" element requires "align-self-start" class as well. -->
             <div class="scroll-large">
             {% if current_user.has_permission('annotate') %}
