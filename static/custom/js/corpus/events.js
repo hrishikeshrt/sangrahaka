@@ -49,11 +49,13 @@ $(document).ready(function () {
 
 });
 
+// Expand Row on Select
 $corpus_table.on('check.bs.table', function (e, row, $element, field) {
     $corpus_table.bootstrapTable('collapseAllRows');
     $corpus_table.bootstrapTable('expandRow', $element.data('index'));
 });
 
+// Row Expand
 $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     $line_id_entity.val(row.line_id);
     $line_id_relation.val(row.line_id);
@@ -151,6 +153,7 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     $('[name="action"]').bootstrapToggle();
 });
 
+// Page Change
 $corpus_table.on('page-change.bs.table', function (e, number, size) {
     $line_id_entity.val("");
     $line_id_relation.val("");
@@ -172,4 +175,10 @@ $corpus_table.on('page-change.bs.table', function (e, number, size) {
     $action_actor_label.selectpicker('refresh');
     $action_actor.val("");
     $action_list.html("");
+});
+
+// Click / Double-Click Cell
+// 'click-cell.bs.table' / 'dbl-click-cell.bs.table'
+$corpus_table.on('dbl-click-cell.bs.table', function (event, field, value, row, $element) {
+
 });
