@@ -295,7 +295,33 @@ def inject_global_constants():
             ActorLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
             ActorLabel.id, ActorLabel.label, ActorLabel.description
-        ).all()
+        ).all(),
+        'admin_labels': [
+            {
+                "name": "entity",
+                "title": "Entity",
+                "is_active": True,
+                "object_name": "entity_labels"
+            },
+            {
+                "name": "relation",
+                "title": "Relation",
+                "is_active": False,
+                "object_name": "relation_labels"
+            },
+            {
+                "name": "action",
+                "title": "Action",
+                "is_active": False,
+                "object_name": "action_labels"
+            },
+            {
+                "name": "actor",
+                "title": "Actor",
+                "is_active": False,
+                "object_name": "actor_labels"
+            },
+        ]
     }
     return {
         'title': app.title,
