@@ -298,10 +298,10 @@ def inject_global_constants():
         ).all(),
         'admin_labels': [
             {
-                "name": "entity",
-                "title": "Entity",
+                "name": "node",
+                "title": "Node",
                 "is_active": True,
-                "object_name": "entity_labels"
+                "object_name": "node_labels"
             },
             {
                 "name": "relation",
@@ -972,7 +972,7 @@ def suggest_lexicon():
 
 @webapp.route("/action", methods=["POST"])
 @auth_required()
-def action():
+def perform_action():
     status = False
     try:
         action = request.form['action']

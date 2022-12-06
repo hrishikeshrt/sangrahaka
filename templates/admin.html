@@ -6,7 +6,7 @@
             Users
         </div>
         <div class="card-body">
-            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+            <form method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                 <input type="hidden" name="csrf_token" value={{csrf_token()}}>
                 <div class="form-group row">
                     <label class="col-sm-1 col-form-label" for="target_user">User</label>
@@ -51,7 +51,7 @@
                     </div>
                     <div id="corpus_container" class="collapse" data-parent="#manage_data">
                         <div class="card-body">
-                            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <form method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                                 <input type="hidden" name="csrf_token" value={{csrf_token()}}>
                                 <div class="form-group row">
                                     <div class="col-sm-3">
@@ -83,7 +83,7 @@
                     </div>
                     <div id="chapter_container" role="tabpanel" class="collapse show" data-parent="#manage_data">
                         <div class="card-body">
-                            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <form method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                                 <input type="hidden" name="csrf_token" value={{csrf_token()}}>
                                 <div class="form-group row">
                                     <div class="col-sm-3">
@@ -141,7 +141,7 @@
                     </div>
                     <div id="download_container" role="tabpanel" class="collapse" data-parent="#manage_data">
                         <div class="card-body">
-                            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+                            <form method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                                 <input type="hidden" name="csrf_token" value={{csrf_token()}}>
 
                                         <label for="annotator">User</label>
@@ -263,7 +263,7 @@
             Application
         </div>
         <div class="card-body">
-            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+            <form method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                 <input type="hidden" name="csrf_token" value={{csrf_token()}}>
                 <button type="submit" name="action" value="application_info" class="btn btn-primary disabled">
                     info
@@ -281,7 +281,7 @@
                     $("#application_reload").click(function () {
                         $.ajax({
                             type: "POST",
-                            url: "{{url_for('action')}}",
+                            url: "{{url_for('perform_action')}}",
                             data: {
                                 "action": "application_reload"
                             },

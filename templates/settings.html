@@ -6,7 +6,7 @@
             Settings
         </div>
         <div class="card-body">
-            <form method=POST enctype=multipart/form-data action="{{url_for('action')}}">
+            <form method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                 <input type="hidden" name="csrf_token" value={{csrf_token()}}>
                 <table class="table">
                     <tr>
