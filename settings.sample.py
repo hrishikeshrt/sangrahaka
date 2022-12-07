@@ -21,12 +21,14 @@ APP_TITLE = 'Saṅgrāhaka'
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 LOG_FILE = os.path.join(APP_DIR, 'sangrahaka.log')
 
+# Paths relative to the APP_DIR
 # DB_DIR is used for specifying directory containing SQLite3 database
 # Query file is placed inside the DATA_DIR
 
 DB_DIR = 'db'
-
 DATA_DIR = 'data'
+TABLES_DIR = os.path.join(DATA_DIR, "tables")
+
 QUERY_FILE = 'query.json'
 
 # --------------------------------------------------------------------------- #
@@ -221,6 +223,7 @@ app.custom_pages = CUSTOM_PAGES
 app.dir = APP_DIR
 app.db_dir = os.path.join(APP_DIR, DB_DIR)
 app.data_dir = os.path.join(APP_DIR, DATA_DIR)
+app.tables_dir = os.path.join(APP_DIR, TABLES_DIR)
 
 app.log_file = LOG_FILE
 app.query_file = os.path.join(app.data_dir, QUERY_FILE)

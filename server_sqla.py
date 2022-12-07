@@ -244,6 +244,37 @@ def init_database():
             roles=['owner', 'admin', 'curator',
                    'annotator', 'querier', 'member']
         )
+
+    # ----------------------------------------------------------------------- #
+    # Populate various tables if empty
+
+    objects = []
+
+    # Labels
+    label_models = [NodeLabel, RelationLabel, ActionLabel, ActorLabel]
+    for label_model in label_models:
+        if not label_model.query.first():
+            table_name = label_model.__tablename__
+            table_data_file = os.path.join(
+                app.tables_dir, f"{table_name}.json"
+            )
+            with open(table_data_file, encoding="utf-8") as f:
+                table_data = json.load(f)
+
+            for idx, label in enumerate(table_data, start=1):
+                lm = label_model()
+                lm.label = label["label"]
+                lm.description = label["description"]
+                objects.append(lm)
+
+            webapp.logger.info(f"Loaded {idx} {table_name}s.")
+
+    # Save
+    if objects:
+        db.session.bulk_save_objects(objects)
+
+    # ----------------------------------------------------------------------- #
+
     db.session.commit()
 
 
