@@ -1,10 +1,14 @@
 *.log
 db/
-data/
+
+data/*
+!data/tables
+
+data/tables/*
+!data/tables/sample
+!data/tables/README.md
+
 output/
 settings.py
-scripts/*.xlsx
-scripts/*.json
-scripts/*.jsonl
 
 **/__pycache__/**
