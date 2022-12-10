@@ -27,8 +27,8 @@ $ python server.py
 """
 
 __author__ = "Hrishikesh Terdalkar"
-__copyright__ = "Copyright (C) 2020-2021 Hrishikesh Terdalkar"
-__version__ = "1.0"
+__copyright__ = "Copyright (C) 2020-2023 Hrishikesh Terdalkar"
+__version__ = "3.0.0"
 
 ###############################################################################
 
