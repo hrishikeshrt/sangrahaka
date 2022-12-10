@@ -1,0 +1,38 @@
+[
+    {
+        "label": "IS_R1_OF",
+        "description": "Relation 1"
+    },
+    {
+        "label": "IS_R2_OF",
+        "description": "Relation 2"
+    },
+    {
+        "label": "IS_R3_OF",
+        "description": "Relation 3"
+    },
+    {
+        "label": "IS_R4_OF",
+        "description": "Relation 4"
+    },
+    {
+        "label": "IS_R5_OF",
+        "description": "Relation 5"
+    },
+    {
+        "label": "IS_R6_OF",
+        "description": "Relation 6"
+    },
+    {
+        "label": "IS_R7_OF",
+        "description": "Relation 7"
+    },
+    {
+        "label": "IS_R8_OF",
+        "description": "Relation 8"
+    },
+    {
+        "label": "IS_R9_OF",
+        "description": "Relation 9"
+    }
+]

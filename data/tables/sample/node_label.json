@@ -1,0 +1,38 @@
+[
+    {
+        "label": "N1",
+        "description": "Node Type 1"
+    },
+    {
+        "label": "N2",
+        "description": "Node Type 2"
+    },
+    {
+        "label": "N3",
+        "description": "Node Type 3"
+    },
+    {
+        "label": "N4",
+        "description": "Node Type 4"
+    },
+    {
+        "label": "N5",
+        "description": "Node Type 5"
+    },
+    {
+        "label": "N6",
+        "description": "Node Type 6"
+    },
+    {
+        "label": "N7",
+        "description": "Node Type 7"
+    },
+    {
+        "label": "N8",
+        "description": "Node Type 8"
+    },
+    {
+        "label": "N9",
+        "description": "Node Type 9"
+    }
+]
