@@ -23,17 +23,26 @@ class ReverseProxied(object):
     this to a URL other than / and to an HTTP scheme that is
     different than what is used locally.
 
-    App is first wrapped in ProxyFix() middleware so that it gets a correct
+    App is first wrapped in `ProxyFix()` middleware so that it gets a correct
     IP address of the requester
 
     In nginx:
     location /myprefix {
         proxy_pass http://127.0.0.1:5001;
+        proxy_redirect off;
+
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Scheme $scheme;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Script-Name /myprefix;
-        }
+
+        # proxy_cookie_path / /myprefix;
+    }
+
+    If you need to run multiple instances of the application under the same
+    domain at different subdomains, uncomment the `proxy_cookie_path` line
+
     :param app: the WSGI application
     '''
     def __init__(self, app, script_name=None, scheme=None, server=None, mounts=None):
