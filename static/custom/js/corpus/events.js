@@ -17,6 +17,7 @@ $(document).ready(function () {
     $entity_root.addClass('custom-auto-complete');
     $relation_source.addClass('custom-auto-complete');
     $relation_target.addClass('custom-auto-complete');
+    $relation_detail.addClass('custom-auto-complete');
     $action_actor.addClass('custom-auto-complete');
     $('.custom-auto-complete').autoComplete();
     // $('.custom-auto-complete').autoComplete({

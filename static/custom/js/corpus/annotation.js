@@ -117,6 +117,8 @@ $add_relation_button.on('click', function(e) {
         const relation_source_text = form_prepare_relation["input_relation_source_text"];
         const relation_target_value = form_prepare_relation["input_relation_target"];
         const relation_target_text = form_prepare_relation["input_relation_target_text"];
+        const relation_detail_value = form_prepare_relation["input_relation_detail"];
+        const relation_detail_text = form_prepare_relation["input_relation_detail_text"];
 
         const _source_parts = relation_source_text.split(separator);
         const _target_parts = relation_target_text.split(separator);
@@ -125,7 +127,14 @@ $add_relation_button.on('click', function(e) {
         const _source_label = _source_parts[1].trim();
         const _source_node_id = relation_source_value;
 
-        const _detail = $relation_detail.val().trim();
+        // NOTE: Currently, direct text is being used for detail, although it (mostly) signifies a node
+        // This is primarily because we do not know yet if we'll require a non-node target ever, and if we don't
+        // with text::category, we can get unique node-id, but in case we do, this saves us full-db change again.
+        // When using <select>, _text is used to get direct text value,
+        // else we can use _value
+        const _detail = relation_detail_value;
+
+
         const _label = $relation_label.val().trim();
 
         const _target_lemma = unnamed_formatter(line_id, _target_parts[0].trim(), UNNAMED_PREFIX);
