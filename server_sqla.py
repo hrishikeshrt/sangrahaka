@@ -186,7 +186,7 @@ except Exception as e:
     logging.error(f"Graph Database connection failed. ({e})")
 
 ###############################################################################
-# Database Utlity Functions
+# Database Utility Functions
 
 
 def get_lexicon(lemma: str) -> int:
@@ -248,6 +248,7 @@ def init_database():
 
     # ----------------------------------------------------------------------- #
     # Populate various tables if empty
+    # NOTE: Refer to `data/tables/README.md` for format of JSON and CSV
 
     objects = []
 
