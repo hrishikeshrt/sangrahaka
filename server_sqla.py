@@ -335,17 +335,17 @@ def inject_global_context():
             NodeLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
             NodeLabel.id, NodeLabel.label, NodeLabel.description
-        ).order_by(NodeLabel.label).all(),
+        ).all(),
         'relation_labels': RelationLabel.query.filter(
             RelationLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
             RelationLabel.id, RelationLabel.label, RelationLabel.description
-        ).order_by(RelationLabel.label).all(),
+        ).all(),
         'action_labels': ActionLabel.query.filter(
             ActionLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
             ActionLabel.id, ActionLabel.label, ActionLabel.description
-        ).order_by(ActionLabel.label).all(),
+        ).all(),
         'actor_labels': ActorLabel.query.filter(
             ActorLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
@@ -1462,10 +1462,12 @@ def perform_action():
 
     if action == 'update_settings':
         display_name = request.form['display_name']
+        sort_labels = bool(request.form.getlist('sort_labels'))
         theme = request.form['theme']
 
         settings = {
             'display_name': display_name,
+            'sort_labels': sort_labels,
             'theme': theme
         }
         current_user.settings = settings

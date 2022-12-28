@@ -8,7 +8,7 @@
                 <div class="row">
                     <div class="col-sm-9 pr-0">
                         <select id="query-select" title="Select a query" class="form-control selectpicker"
-                            data-live-search="true">
+                            data-container="body" data-live-search="true">
                             {% for query_group in data.query_groups %}
                             <optgroup {% for language, groupname in query_group.groups.items() %} data-{{language}}="{{groupname}}"{% endfor %}
                              label="{{query_group.groups[config.default_query_language]}}">
@@ -37,13 +37,13 @@
                 </div>
                 <div id="sample-input" hidden="true">
                     <input id="sample-entity" type="text" class="form-control" placeholder="Enter {}" data-url="{{url_for('suggest_lexicon')}}" autocomplete="off">
-                    <select id="sample-entity-type" title="Select {}" class="form-control" data-live-search="true">
-                        {% for _id, _label, _description in context_labels.node_labels %}
+                    <select id="sample-entity-type" title="Select {}" class="form-control" data-container="body" data-live-search="true">
+                        {% for _id, _label, _description in context_labels.node_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
                         <option value="{{_label}}">{{_description}}</option>
                         {% endfor %}
                     </select>
-                    <select id="sample-relation" title="Select {}" class="form-control" data-live-search="true">
-                        {% for _id, _label, _description in context_labels.relation_labels %}
+                    <select id="sample-relation" title="Select {}" class="form-control" data-container="body" data-live-search="true">
+                        {% for _id, _label, _description in context_labels.relation_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
                         <option value="{{_label}}">{{_description}}</option>
                         {% endfor %}
                     </select>

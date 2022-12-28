@@ -17,8 +17,8 @@
                 <div class="form-group row">
                     <label for="node-type" class="col-sm-4">Type</label>
                     <select id="node-type" title="Select node type" class="form-control selectpicker col-sm-8"
-                        data-live-search="true">
-                        {% for _id, _label, _description in context_labels.node_labels %}
+                        data-container="body" data-live-search="true">
+                        {% for _id, _label, _description in context_labels.node_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
                         <option value="{{_label}}">{{_description}}</option>
                         {% endfor %}
                     </select>
@@ -52,8 +52,8 @@
                 <div class="form-group row">
                     <label for="edge-label" class="col-sm-4">Relation</label>
                     <select id="edge-label" title="Select relation" class="form-control selectpicker col-sm-8"
-                        data-live-search="true">
-                        {% for _id, _label, _description in context_labels.relation_labels %}
+                        data-container="body" data-live-search="true">
+                        {% for _id, _label, _description in context_labels.relation_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
                         <option value="{{_label}}">{{_description}}</option>
                         {% endfor %}
                     </select>
@@ -89,7 +89,7 @@
                 <div class="card-header">
                     <select name="graph-template" id="graph-template"
                         title="Graph Template" class="form-control selectpicker"
-                        data-live-search="true">
+                        data-container="body" data-live-search="true">
                         {% for template in data.templates %}
                         <option value="{{template|tojson|urlencode}}">{{template.name}}</option>
                         {% endfor %}

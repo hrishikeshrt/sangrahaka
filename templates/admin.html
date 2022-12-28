@@ -11,7 +11,7 @@
                 <div class="form-group row">
                     <label class="col-sm-1 col-form-label" for="target_user">User</label>
                     <div class="col-sm-3 my-auto">
-                        <select class="lead m-1 selectpicker" name="target_user" id="target_user" data-live-search="true">
+                        <select class="lead m-1 selectpicker" name="target_user" id="target_user" data-container="body" data-live-search="true">
                             {% for user in data.users %}
                             <option value="{{user}}">{{user}}</option>
                             {% endfor %}
@@ -19,7 +19,7 @@
                     </div>
                     <label class="col-sm-1 col-form-label" for="target_role">Role</label>
                     <div class="col-sm-3 my-auto">
-                        <select class="lead m-1 selectpicker" name="target_role" id="target_role" data-live-search="true">
+                        <select class="lead m-1 selectpicker" name="target_role" id="target_role" data-container="body" data-live-search="true">
                             {% for role in data.roles %}
                             <option value="{{role}}">{{role}}</option>
                             {% endfor %}
@@ -90,7 +90,7 @@
                                         <label for="corpus_select">Corpus</label>
                                     </div>
                                     <div class="col-sm">
-                                        <select class="lead my-auto selectpicker" name="corpus_id" id="corpus_select" data-live-search="true" data-width="auto" required>
+                                        <select class="lead my-auto selectpicker" name="corpus_id" id="corpus_select" data-container="body" data-live-search="true" data-width="auto" required>
                                             {% for corpus in data.corpus_list %}
                                             <option value="{{corpus.id}}">{{corpus.name}}</option>
                                             {% endfor %}
@@ -240,8 +240,8 @@
                             <input type="hidden" name="csrf_token" value={{csrf_token()}}>
                             <div class="form-group">
                                 <label for="{{label.name}}-label-select">Label</label>
-                                <select class="lead m-1 selectpicker" name="{{label.name}}_label_text" id="{{label.name}}-label-select" data-live-search="true" required>
-                                    {% for _id, _label, _description in context_labels[label.object_name] %}
+                                <select class="lead m-1 selectpicker" name="{{label.name}}_label_text" id="{{label.name}}-label-select" data-container="body" data-live-search="true" required>
+                                    {% for _id, _label, _description in context_labels[label.object_name] | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
                                     <option value="{{_label}}">{{_description}}</option>
                                     {% endfor %}
                                 </select>

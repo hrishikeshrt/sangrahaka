@@ -51,6 +51,17 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="lead">
+                            Sort Labels
+                            <i class="fas fa-question-circle text-secondary ml-1" data-toggle="tooltip" data-placement="top" title="Sort labels alphabetically."></i>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_labels" id="sort_labels"
+                            data
+                                {% if current_user.settings.sort_labels %}checked{% endif %} data-toggle="toggle">
+                        </td>
+                    </tr>
+                    <tr>
                         <td colspan="2">
                         </td>
                     </tr>
