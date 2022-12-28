@@ -387,6 +387,39 @@ def inject_global_context():
     }
 
 ###############################################################################
+# Flask-Security-Too Views Context
+
+
+@security.register_context_processor
+def security_register_processor():
+    data = {'title': 'Register'}
+    return {'data': data}
+
+
+@security.login_context_processor
+def security_login_processor():
+    data = {'title': 'Login'}
+    return {'data': data}
+
+
+@security.forgot_password_context_processor
+def security_forgot_password_processor():
+    data = {'title': 'Forgot Password'}
+    return {'data': data}
+
+
+@security.change_password_context_processor
+def security_change_password_processor():
+    data = {'title': 'Change Password'}
+    return {'data': data}
+
+
+@security.reset_password_context_processor
+def security_reset_password_processor():
+    data = {'title': 'Reset Password'}
+    return {'data': data}
+
+###############################################################################
 # Views
 
 
