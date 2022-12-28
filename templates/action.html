@@ -13,7 +13,7 @@
                     <div class="form-group row">
                         <label for="input_action_label" class="col-sm-4">Action</label>
                         <select id="input_action_label" title="None" class="form-control col-sm-8 selectpicker" data-live-search="true" required>
-                            {% for _id, _label, _description in constants.action_labels %}
+                            {% for _id, _label, _description in context_labels.action_labels %}
                             <option value="{{_label}}">{{_description}}</option>
                             {% endfor %}
                         </select>
@@ -22,7 +22,7 @@
                     <div class="form-group row">
                         <label for="input_action_actor_label" class="col-sm-4">Actor Label</label>
                         <select id="input_action_actor_label" title="None" class="form-control col-sm-8 selectpicker" data-live-search="true" required>
-                            {% for _id, _label, _description in constants.actor_labels %}
+                            {% for _id, _label, _description in context_labels.actor_labels %}
                             <option value="{{_label}}">{{_description}}</option>
                             {% endfor %}
                         </select>

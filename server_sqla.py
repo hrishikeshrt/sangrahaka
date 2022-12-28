@@ -312,19 +312,25 @@ def _after_authentication_hook(sender, user, **extra):
 
 
 @webapp.context_processor
-def inject_global_constants():
-    theme_files = glob.glob(
+def inject_global_context():
+    theme_css_files = glob.glob(
         os.path.join(app.dir, 'static', 'themes', 'css', 'bootstrap.*.min.css')
     )
     theme_js_files = glob.glob(
         os.path.join(app.dir, 'static', 'themes', 'js', 'bootstrap.*.min.js')
     )
-    themes = ['default'] + sorted([os.path.basename(theme).split('.')[1]
-                                   for theme in theme_files])
-    themes_js = sorted([os.path.basename(theme).split('.')[1]
-                        for theme in theme_js_files])
+    THEMES = {
+        "with_css": ['default'] + sorted([
+            os.path.basename(theme).split('.')[1]
+            for theme in theme_css_files
+        ]),
+        "with_js": sorted([
+            os.path.basename(theme).split('.')[1]
+            for theme in theme_js_files
+        ])
+    }
 
-    CONSTANTS = {
+    LABELS = {
         'node_labels': NodeLabel.query.filter(
             NodeLabel.is_deleted == False  # noqa # '== False' is required
         ).with_entities(
@@ -375,9 +381,8 @@ def inject_global_constants():
     return {
         'title': app.title,
         'now': datetime.datetime.utcnow(),
-        'constants': CONSTANTS,
-        'themes': themes,
-        'themes_js': themes_js,
+        'context_themes': THEMES,
+        'context_labels': LABELS,
         'config': app.config
     }
 

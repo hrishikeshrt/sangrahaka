@@ -26,7 +26,7 @@
                         </td>
                         <td>
                             <select name="theme" id="theme_picker" class="form-control selectpicker">
-                            {% for theme in themes %}
+                            {% for theme in context_themes.with_css %}
                             <option value="{{theme}}" {% if current_user.settings.theme == theme %}selected{% endif %}>
                                 {{theme.title()}}
                             </option>

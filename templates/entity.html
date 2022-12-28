@@ -17,7 +17,7 @@
                     <div class="form-group row">
                         <label for="input_entity_type" class="col-sm-4">Type</label>
                         <select id="input_entity_type" title="None" class="form-control col-sm-8 selectpicker" data-live-search="true" autocomplete="off" required>
-                            {% for _id, _label, _description in constants.node_labels %}
+                            {% for _id, _label, _description in context_labels.node_labels %}
                             <option value="{{_label}}">{{_description}}</option>
                             {% endfor %}
                         </select>

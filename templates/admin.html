@@ -193,7 +193,7 @@
         </div>
         <div class="card-body p-0">
             <ul class="nav nav-tabs mb-3" id="labels-tab" role="tablist">
-                {% for label in constants.admin_labels %}
+                {% for label in context_labels.admin_labels %}
                 {% if label.is_active %}
                     {% set active_status = "active" %}
                     {% set aria_selected = "true" %}
@@ -207,7 +207,7 @@
                 {% endfor %}
             </ul>
             <div class="tab-content m-3" id="labels-tab-content">
-                {% for label in constants.admin_labels %}
+                {% for label in context_labels.admin_labels %}
                 {% if label.is_active %}
                     {% set active_status = "active" %}
                 {% else %}
@@ -241,7 +241,7 @@
                             <div class="form-group">
                                 <label for="{{label.name}}-label-select">Label</label>
                                 <select class="lead m-1 selectpicker" name="{{label.name}}_label_text" id="{{label.name}}-label-select" data-live-search="true" required>
-                                    {% for _id, _label, _description in constants[label.object_name] %}
+                                    {% for _id, _label, _description in context_labels[label.object_name] %}
                                     <option value="{{_label}}">{{_description}}</option>
                                     {% endfor %}
                                 </select>

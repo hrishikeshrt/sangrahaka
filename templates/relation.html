@@ -19,7 +19,7 @@
                     <div class="form-group row">
                         <label for="input_relation_label" class="col-sm-4">Relation</label>
                         <select id="input_relation_label" title="None" class="form-control col-sm-8 selectpicker" data-live-search="true" required>
-                            {% for _id, _label, _description in constants.relation_labels %}
+                            {% for _id, _label, _description in context_labels.relation_labels %}
                             <option value="{{_label}}">{{_description}}</option>
                             {% endfor %}
                         </select>

@@ -24,7 +24,7 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="{{url_for('static', filename='js/popper.min.js')}}"></script>
     <script src="{{url_for('static', filename='bootstrap/js/bootstrap.min.js')}}"></script>
-    {% if theme_name != "default" and theme_name in themes_js %}
+    {% if theme_name != "default" and theme_name in context_themes.with_js %}
     <script src="{{url_for('static', filename='themes/js/bootstrap.'+ theme_name + '.min.js')}}"></script>
     {% endif %}
 
