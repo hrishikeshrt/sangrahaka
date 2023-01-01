@@ -26,11 +26,11 @@
                         </select>
                     </div>
                     <div class="col-sm my-auto">
-                        <button type="submit" name="action" value="user_role_add" class="btn btn-success disabled m-1">
+                        <button type="submit" name="action" value="user_role_add" class="btn btn-success m-1">
                             Add
                         </button>
                         <button type="submit" name="action" value="user_role_remove"
-                            class="btn btn-danger disabled m-1">
+                            class="btn btn-danger m-1">
                             Remove
                         </button>
                     </div>
@@ -69,7 +69,7 @@
                                         <input type="text" class="form-control"  name="corpus_description" id="corpus_description" placeholder="Enter new corpus description">
                                     </div>
                                 </div>
-                                <button type="submit" name="action" value="corpus_add" class="btn btn-success disabled m-1">
+                                <button type="submit" name="action" value="corpus_add" class="btn btn-success m-1">
                                     Create
                                 </button>
                             </form>
@@ -127,7 +127,7 @@
                                         bsCustomFileInput.init();
                                     })
                                 </script>
-                                <button type="submit" name="action" value="chapter_add" class="btn btn-success disabled m-1">
+                                <button type="submit" name="action" value="chapter_add" class="btn btn-success m-1">
                                     Add
                                 </button>
                             </form>
@@ -176,7 +176,7 @@
                                             {% endfor %}
                                         </select>
 
-                                        <button type="submit" name="action" value="annotation_download" class="btn btn-secondary disabled">
+                                        <button type="submit" name="action" value="annotation_download" class="btn btn-secondary">
                                             <i class="fa fa-download"></i>
                                         </button>
 
@@ -265,14 +265,14 @@
         <div class="card-body">
             <form method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                 <input type="hidden" name="csrf_token" value={{csrf_token()}}>
-                <button type="submit" name="action" value="application_info" class="btn btn-primary disabled">
+                <button type="submit" name="action" value="application_info" class="btn btn-primary">
                     info
                 </button>
-                <button type="submit" name="action" value="application_update" class="btn btn-warning disabled">
+                <button type="submit" name="action" value="application_update" class="btn btn-warning">
                     update
                 </button>
                 <!-- reload button not actually interacting with form -->
-                <button type="button" id="application_reload" class="btn btn-success disabled">
+                <button type="button" id="application_reload" class="btn btn-success">
                     reload
                 </button>
                 <a class="btn btn-dark" href="{{url_for('admin.index')}}">database</a>
