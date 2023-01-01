@@ -50,6 +50,8 @@ from flask_security import (Security, auth_required, permissions_required,
 from flask_security.utils import uia_email_mapper
 from sqlalchemy import or_, and_, func
 
+from flask_admin import Admin, helpers as admin_helpers
+
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -60,12 +62,14 @@ from flask_migrate import Migrate
 
 from indic_transliteration.sanscript import transliterate
 
-from models_sqla import (db, user_datastore,
+from models_sqla import (db, user_datastore, User,
                          CustomLoginForm, CustomRegisterForm,
                          Corpus, Chapter, Verse, Line, Analysis,
                          Lexicon, NodeLabel, Node,
                          RelationLabel, Relation,
                          ActionLabel, ActorLabel, Action)
+from models_admin import (CustomAdminIndexView,
+                          BaseModelView, UserModelView, LabelModelView)
 from settings import app
 from utils.reverseproxied import ReverseProxied
 from utils.database import get_line_data, get_chapter_data
@@ -103,7 +107,6 @@ webapp.config['DEBUG'] = app.debug
 webapp.wsgi_app = ReverseProxied(webapp.wsgi_app)
 webapp.url_map.strict_slashes = False
 
-
 webapp.config['SECRET_KEY'] = app.secret_key
 webapp.config['SECURITY_PASSWORD_SALT'] = app.security_password_salt
 webapp.config['JSON_AS_ASCII'] = False
@@ -115,6 +118,9 @@ webapp.config['SQLALCHEMY_DATABASE_URI'] = app.sqla['database_uri']
 webapp.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_pre_ping": True,
 }
+
+# Flask Admin Theme
+webapp.config["FLASK_ADMIN_SWATCH"] = "united"
 
 # CSRF Token Expiry
 webapp.config['WTF_CSRF_TIME_LIMIT'] = None
@@ -162,6 +168,25 @@ csrf = CSRFProtect(webapp)
 security = Security(webapp, user_datastore,
                     login_form=CustomLoginForm,
                     register_form=CustomRegisterForm)
+
+# flask-admin
+admin = Admin(
+    webapp,
+    name="Admin",
+    url="/admin",
+    index_view=CustomAdminIndexView(
+        name="Database",
+        url="/admin/database"
+    ),
+    template_mode="bootstrap4",
+)
+admin.add_view(UserModelView(User, db.session, category="User"))
+admin.add_view(LabelModelView(NodeLabel, db.session, category="Ontology"))
+admin.add_view(LabelModelView(RelationLabel, db.session, category="Ontology"))
+admin.add_view(BaseModelView(Lexicon, db.session, category="Annotation"))
+admin.add_view(BaseModelView(Node, db.session, category="Annotation"))
+admin.add_view(BaseModelView(Relation, db.session, category="Annotation"))
+
 mail = Mail(webapp)
 migrate = Migrate(webapp, db)
 babel = Babel(webapp)
@@ -385,6 +410,19 @@ def inject_global_context():
         'context_labels': LABELS,
         'config': app.config
     }
+
+###############################################################################
+# Flask-Admin Context for Flask-Security-Too
+
+
+@security.context_processor
+def security_context_processor():
+    return dict(
+        admin_base_template=admin.base_template,
+        admin_view=admin.index_view,
+        h=admin_helpers,
+        get_url=url_for
+    )
 
 ###############################################################################
 # Flask-Security-Too Views Context
