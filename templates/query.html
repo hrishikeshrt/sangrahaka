@@ -39,12 +39,12 @@
                     <input id="sample-entity" type="text" class="form-control" placeholder="Enter {}" data-url="{{url_for('suggest_lexicon')}}" autocomplete="off">
                     <select id="sample-entity-type" title="Select {}" class="form-control" data-container="body" data-live-search="true">
                         {% for _id, _label, _description in context_labels.node_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
-                        <option value="{{_label}}">{{_description}}</option>
+                        <option data-tokens="{{_label}}" value="{{_label}}">{{_description}}</option>
                         {% endfor %}
                     </select>
                     <select id="sample-relation" title="Select {}" class="form-control" data-container="body" data-live-search="true">
                         {% for _id, _label, _description in context_labels.relation_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
-                        <option value="{{_label}}">{{_description}}</option>
+                        <option data-tokens="{{_label}}" value="{{_label}}">{{_description}}</option>
                         {% endfor %}
                     </select>
                     <input id="sample-relation-detail" type="text" class="form-control" placeholder="Enter {}">

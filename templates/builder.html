@@ -19,7 +19,7 @@
                     <select id="node-type" title="Select node type" class="form-control selectpicker col-sm-8"
                         data-container="body" data-live-search="true">
                         {% for _id, _label, _description in context_labels.node_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
-                        <option value="{{_label}}">{{_description}}</option>
+                        <option data-tokens="{{_label}}" value="{{_label}}">{{_description}}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -54,7 +54,7 @@
                     <select id="edge-label" title="Select relation" class="form-control selectpicker col-sm-8"
                         data-container="body" data-live-search="true">
                         {% for _id, _label, _description in context_labels.relation_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
-                        <option value="{{_label}}">{{_description}}</option>
+                        <option data-tokens="{{_label}}" value="{{_label}}">{{_description}}</option>
                         {% endfor %}
                     </select>
                 </div>

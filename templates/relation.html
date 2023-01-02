@@ -20,7 +20,7 @@
                         <label for="input_relation_label" class="col-sm-4">Relation</label>
                         <select id="input_relation_label" title="None" class="form-control col-sm-8 selectpicker" data-container="body" data-live-search="true" required>
                             {% for _id, _label, _description in context_labels.relation_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
-                            <option value="{{_label}}">{{_description}}</option>
+                            <option data-tokens="{{_label}}" value="{{_label}}">{{_description}}</option>
                             {% endfor %}
                         </select>
                     </div>

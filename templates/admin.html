@@ -242,7 +242,7 @@
                                 <label for="{{label.name}}-label-select">Label</label>
                                 <select class="lead m-1 selectpicker" name="{{label.name}}_label_text" id="{{label.name}}-label-select" data-container="body" data-live-search="true" required>
                                     {% for _id, _label, _description in context_labels[label.object_name] | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
-                                    <option value="{{_label}}">{{_description}}</option>
+                                    <option data-tokens="{{_label}}" value="{{_label}}">{{_description}}</option>
                                     {% endfor %}
                                 </select>
                                 <button type="submit" name="action" value="{{label.name}}_type_remove" class="btn btn-danger m-1">
