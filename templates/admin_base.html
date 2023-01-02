@@ -1,0 +1,4 @@
+{% extends 'admin/base.html' %}
+{% block brand %}
+    <a href="{{url_for('show_admin')}}" class="navbar-brand">{{admin_view.admin.name}}</a>
+{% endblock %}

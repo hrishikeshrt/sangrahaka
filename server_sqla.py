@@ -172,13 +172,13 @@ security = Security(webapp, user_datastore,
 # flask-admin
 admin = Admin(
     webapp,
-    name="Admin",
-    url="/admin",
+    name=f"{app.title} Admin",
     index_view=CustomAdminIndexView(
         name="Database",
         url="/admin/database"
     ),
     template_mode="bootstrap4",
+    base_template="admin_base.html",
 )
 admin.add_view(UserModelView(User, db.session, category="User"))
 admin.add_view(LabelModelView(NodeLabel, db.session, category="Ontology"))
