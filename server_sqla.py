@@ -1250,8 +1250,8 @@ def perform_action():
         object_name = action_parts[0]
         target_action = action_parts[-1]
 
-        object_label = request.form[f'{object_name}_label']
-        object_label_desc = request.form.get(f'{object_name}_label_description')
+        _label_text = request.form[f'{object_name}_label_text']
+        _label_description = request.form[f'{object_name}_label_desc']
 
         MODELS = {
             'node': (NodeLabel, Node, 'label_id'),
@@ -1259,44 +1259,44 @@ def perform_action():
             'action': (ActionLabel, Action, 'label_id'),
             'actor': (ActorLabel, Action, 'actor_label_id')
         }
-        (
-            _object_model, _annotation, _annotation_attribute
-        ) = MODELS[object_name]
-        _object_label = _object_model.query.filter(
-            _object_model.label == object_label
-        ).first()
+        _model, _annotation_model, _attribute = MODELS[object_name]
+
+        _instance = _model.query.filter(_model.label == _label_text).first()
+        _model_name = _model.__name__
 
         if target_action == 'add':
-            message = f"Added {object_name.title()} label '{object_label}'."
-            if _object_label is None:
-                _object_label = _object_model()
-                _object_label.label = object_label
-                _object_label.description = object_label_desc
-                _object_label.is_deleted = False
+            message = f"Added {_model_name} '{_label_text}'."
+            if _instance is None:
+                _instance = _model()
+                _instance.label = _label_text
+                _instance.description = _label_description
+                _instance.is_deleted = False
                 status = True
-                db.session.add(_object_label)
+                db.session.add(_instance)
             else:
-                if _object_label.is_deleted:
-                    _object_label.is_deleted = False
+                if _instance.is_deleted:
+                    _instance.is_deleted = False
                     status = True
-                    db.session.add(_object_label)
+                    db.session.add(_instance)
                 else:
-                    message = f"{object_name.title()} label '{object_label}' already exists."
+                    message = f"{_model_name} '{_label_text}' already exists."
 
         if target_action == 'remove':
-            message = f"{object_name.title()} label '{object_label}' does not exists."
-            if _object_label is not None and not _object_label.is_deleted:
-                objects_with_given_label = _annotation.query.filter(
-                    getattr(_annotation, _annotation_attribute) == _object_label.id,
-                    _annotation.is_deleted == False  # noqa
+            message = f"{_model_name} '{_label_text}' does not exists."
+            if _instance is not None and not _instance.is_deleted:
+                objects_with_given_label = _annotation_model.query.filter(
+                    getattr(_annotation_model, _attribute) == _instance.id,
+                    _annotation_model.is_deleted == False  # noqa
                 ).all()
                 if objects_with_given_label:
-                    message = f"{object_name.title()} label '{object_label}' is being used in annotations."
+                    message = (
+                        f"{_model_name} '{_label_text}' is used in annotation."
+                    )
                 else:
-                    _object_label.is_deleted = True
-                    db.session.add(_object_label)
+                    _instance.is_deleted = True
+                    db.session.add(_instance)
                     status = True
-                    message = f"Removed {object_name} label '{object_label}'."
+                    message = f"Removed {_model_name} '{_label_text}'."
 
         if status:
             db.session.commit()
