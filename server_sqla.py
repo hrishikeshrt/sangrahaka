@@ -239,6 +239,24 @@ def create_lexicon(lemma: str) -> int:
 def get_or_create_lexicon(lemma: str) -> int:
     return get_lexicon(lemma) or create_lexicon(lemma)
 
+
+def update_lexicon(old_lemma: int, new_lemma: str) -> bool:
+    transliterations = [
+        f"##{transliterate(new_lemma, 'devanagari', scheme)}"
+        if not new_lemma.startswith(app.config['unnamed_prefix']) else ''
+        for scheme in app.config['schemes']
+    ]
+    transliteration = ''.join(transliterations)
+    lexicon = Lexicon.query.filter(Lexicon.lemma == old_lemma).one_or_none()
+    if lexicon is None:
+        return False
+
+    lexicon.lemma = new_lemma
+    lexicon.transliteration = transliteration
+    db.session.add(lexicon)
+    db.session.commit()
+    return True
+
 ###############################################################################
 # Hooks
 
