@@ -16,6 +16,7 @@ indic_transliteration>=2.2.4
 # Neo4j
 py2neo>=2021.1.5
 python_cypher==0.18.1
+pandas==1.2.3
 
 # PythonAnywhere Support
 requests>=2.26.0
