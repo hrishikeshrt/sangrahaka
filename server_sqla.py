@@ -69,7 +69,9 @@ from models_sqla import (db, user_datastore, User,
                          RelationLabel, Relation,
                          ActionLabel, ActorLabel, Action)
 from models_admin import (CustomAdminIndexView,
-                          BaseModelView, UserModelView, LabelModelView)
+                          BaseModelView,
+                          UserModelView, LabelModelView,
+                          LexiconModelView)
 from settings import app
 from utils.reverseproxied import ReverseProxied
 from utils.database import get_line_data, get_chapter_data
@@ -183,7 +185,7 @@ admin = Admin(
 admin.add_view(UserModelView(User, db.session, category="User"))
 admin.add_view(LabelModelView(NodeLabel, db.session, category="Ontology"))
 admin.add_view(LabelModelView(RelationLabel, db.session, category="Ontology"))
-admin.add_view(BaseModelView(Lexicon, db.session, category="Annotation"))
+admin.add_view(LexiconModelView(Lexicon, db.session, category="Annotation"))
 admin.add_view(BaseModelView(Node, db.session, category="Annotation"))
 admin.add_view(BaseModelView(Relation, db.session, category="Annotation"))
 

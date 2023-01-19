@@ -26,6 +26,8 @@ class BaseModelView(ModelView):
     column_display_pk = True
     column_hide_backrefs = False
     can_export = True
+    can_delete = False
+    can_set_page_size = True
     create_modal = True
     edit_modal = True
 
@@ -44,6 +46,10 @@ class UserModelView(BaseModelView):
 
 class LabelModelView(BaseModelView):
     column_searchable_list = ('label', 'description')
+
+
+class LexiconModelView(BaseModelView):
+    column_searchable_list = ('lemma', 'transliteration')
 
 
 ###############################################################################
