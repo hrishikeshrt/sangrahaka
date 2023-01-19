@@ -202,7 +202,7 @@
                     {% set aria_selected = "false" %}
                 {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link {{active_status}}" id="{{label.name}}-label-tab" data-toggle="tab" href="#{{label.name}}-label-tab-content" role="tab" aria-controls="{{label.name}}-label-tab-content" aria-selected="{{aria_selected}}">{{label.title}}Label</a>
+                        <a class="nav-link {{active_status}} ontology-tab" id="{{label.name}}-label-tab" data-toggle="tab" href="#{{label.name}}-label-tab-content" role="tab" aria-controls="{{label.name}}-label-tab-content" aria-selected="{{aria_selected}}">{{label.title}}Label</a>
                     </li>
                 {% endfor %}
             </ul>
@@ -338,4 +338,5 @@
     {% endif %}
     {% endif %}
 </div>
+<script src="{{url_for('static', filename='custom/js/admin/admin.js')}}"></script>
 {% include "footer.html" %}
