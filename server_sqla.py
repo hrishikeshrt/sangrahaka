@@ -292,49 +292,49 @@ def init_database():
         )
 
     # ----------------------------------------------------------------------- #
-    # Populate various tables if empty
-    # NOTE: Refer to `data/tables/README.md` for format of JSON and CSV
+    # # Populate various tables if empty
+    # # NOTE: Refer to `data/tables/README.md` for format of JSON and CSV
 
-    objects = []
+    # objects = []
 
-    # Labels
-    label_models = [NodeLabel, RelationLabel, ActionLabel, ActorLabel]
-    for label_model in label_models:
-        if not label_model.query.first():
-            table_name = label_model.__tablename__
-            table_json_file = os.path.join(
-                app.tables_dir, f"{table_name}.json"
-            )
-            table_csv_file = os.path.join(
-                app.tables_dir, f"{table_name}.csv"
-            )
+    # # Labels
+    # label_models = [NodeLabel, RelationLabel, ActionLabel, ActorLabel]
+    # for label_model in label_models:
+    #     if not label_model.query.first():
+    #         table_name = label_model.__tablename__
+    #         table_json_file = os.path.join(
+    #             app.tables_dir, f"{table_name}.json"
+    #         )
+    #         table_csv_file = os.path.join(
+    #             app.tables_dir, f"{table_name}.csv"
+    #         )
 
-            table_file = None
-            if os.path.isfile(table_json_file):
-                table_file = table_json_file
-                with open(table_json_file, encoding="utf-8") as f:
-                    table_data = json.load(f)
-            elif os.path.isfile(table_csv_file):
-                table_file = table_csv_file
-                with open(table_csv_file, encoding="utf-8") as f:
-                    table_data = list(csv.DictReader(f))
+    #         table_file = None
+    #         if os.path.isfile(table_json_file):
+    #             table_file = table_json_file
+    #             with open(table_json_file, encoding="utf-8") as f:
+    #                 table_data = json.load(f)
+    #         elif os.path.isfile(table_csv_file):
+    #             table_file = table_csv_file
+    #             with open(table_csv_file, encoding="utf-8") as f:
+    #                 table_data = list(csv.DictReader(f))
 
-            if table_file is None:
-                continue
+    #         if table_file is None:
+    #             continue
 
-            for idx, label in enumerate(table_data, start=1):
-                lm = label_model()
-                lm.label = label["label"]
-                lm.description = label["description"]
-                objects.append(lm)
+    #         for idx, label in enumerate(table_data, start=1):
+    #             lm = label_model()
+    #             lm.label = label["label"]
+    #             lm.description = label["description"]
+    #             objects.append(lm)
 
-            webapp.logger.info(
-                f"Loaded {idx} items to {table_name} from {table_file}."
-            )
+    #         webapp.logger.info(
+    #             f"Loaded {idx} items to {table_name} from {table_file}."
+    #         )
 
-    # Save
-    if objects:
-        db.session.bulk_save_objects(objects)
+    # # Save
+    # if objects:
+    #     db.session.bulk_save_objects(objects)
 
     # ----------------------------------------------------------------------- #
 
@@ -400,25 +400,21 @@ def inject_global_context():
             {
                 "name": "node",
                 "title": "Node",
-                "is_active": True,
                 "object_name": "node_labels"
             },
             {
                 "name": "relation",
                 "title": "Relation",
-                "is_active": False,
                 "object_name": "relation_labels"
             },
             {
                 "name": "action",
                 "title": "Action",
-                "is_active": False,
                 "object_name": "action_labels"
             },
             {
                 "name": "actor",
                 "title": "Actor",
-                "is_active": False,
                 "object_name": "actor_labels"
             },
         ]
@@ -1135,13 +1131,27 @@ def perform_action():
         'admin': [
             'user_role_add', 'user_role_remove',
 
-            # Ontology
-            'node_type_add', 'node_type_remove',
-            'relation_type_add', 'relation_type_remove',
+            # Add/Remove/Upload Labels
 
-            # Action
-            'action_type_add', 'action_type_remove',
-            'actor_type_add', 'actor_type_remove',
+            # - Node Label
+            'node_label_add',
+            'node_label_remove',
+            'node_label_upload',
+
+            # - Relation Label
+            'relation_label_add',
+            'relation_label_remove',
+            'relation_label_upload',
+
+            # - Action Label
+            'action_label_add',
+            'action_label_remove',
+            'action_label_upload',
+
+            # - Actor Label
+            'actor_label_add',
+            'actor_label_remove',
+            'actor_label_upload',
 
             # Data
             'corpus_add', 'chapter_add',
@@ -1260,18 +1270,15 @@ def perform_action():
     # Ontology
 
     if action in [
-        'node_type_add', 'node_type_remove',
-        'relation_type_add', 'relation_type_remove',
-        'action_type_add', 'action_type_remove',
-        'actor_type_add', 'actor_type_remove',
+        'node_label_add', 'node_label_remove', 'node_label_upload',
+        'relation_label_add', 'relation_label_remove', 'relation_label_upload',
+        'action_label_add', 'action_label_remove', 'action_label_upload',
+        'actor_label_add', 'actor_label_remove', 'actor_label_upload',
     ]:
-        action_parts = action.split('_')
+        action_parts = action.split('_label_')
 
         object_name = action_parts[0]
         target_action = action_parts[-1]
-
-        _label_text = request.form[f'{object_name}_label_text']
-        _label_description = request.form[f'{object_name}_label_desc']
 
         MODELS = {
             'node': (NodeLabel, Node, 'label_id'),
@@ -1281,10 +1288,16 @@ def perform_action():
         }
         _model, _annotation_model, _attribute = MODELS[object_name]
 
-        _instance = _model.query.filter(_model.label == _label_text).first()
         _model_name = _model.__name__
 
         if target_action == 'add':
+            _label_text = request.form[f'{object_name}_label_text']
+            _label_description = request.form[f'{object_name}_label_desc']
+
+            _instance = _model.query.filter(
+                _model.label == _label_text
+            ).first()
+
             message = f"Added {_model_name} '{_label_text}'."
             if _instance is None:
                 _instance = _model()
@@ -1302,6 +1315,12 @@ def perform_action():
                     message = f"{_model_name} '{_label_text}' already exists."
 
         if target_action == 'remove':
+            _label_text = request.form[f'{object_name}_label_text']
+
+            _instance = _model.query.filter(
+                _model.label == _label_text
+            ).first()
+
             message = f"{_model_name} '{_label_text}' does not exists."
             if _instance is not None and not _instance.is_deleted:
                 objects_with_given_label = _annotation_model.query.filter(
@@ -1317,6 +1336,68 @@ def perform_action():
                     db.session.add(_instance)
                     status = True
                     message = f"Removed {_model_name} '{_label_text}'."
+
+        if target_action == 'upload':
+            # Labels
+            # NOTE: Refer to `data/tables/README.md` for format of JSON and CSV
+            _label_file = request.files['label_file']
+            _upload_format = request.form['upload_format']
+
+            _existing_labels = {
+                _instance.label: _instance
+                for _instance in _model.query.all()
+            }
+
+            _label_file_content = _label_file.read().decode()
+            if _upload_format == "json":
+                try:
+                    table_data = json.loads(_label_file_content)
+                except json.decoder.JSONDecodeError as e:
+                    webapp.logger.exception(e)
+                    flash("Invalid JSON file format.")
+                    return redirect(request.referrer)
+            elif _upload_format == "csv":
+                try:
+                    table_data = list(
+                        csv.DictReader(_label_file_content.splitlines())
+                    )
+                except csv.Error as e:
+                    webapp.logger.exception(e)
+                    flash("Invalid CSV file format.")
+                    return redirect(request.referrer)
+
+            _add_count = 0
+            _undelete_count = 0
+            _ignore_count = 0
+            objects_to_update = []
+            for idx, label in enumerate(table_data, start=1):
+                _label_identifier = label["label"]
+                if _label_identifier in _existing_labels:
+                    _instance = _existing_labels[_label_identifier]
+                    if _instance.is_deleted:
+                        _instance.is_deleted = False
+                        _undelete_count += 1
+                        objects_to_update.append(_instance)
+                    else:
+                        _ignore_count += 1
+                else:
+                    _instance = _model()
+                    _instance.label = label["label"]
+                    _instance.description = label["description"]
+                    _add_count += 1
+                    objects_to_update.append(_instance)
+
+            if objects_to_update:
+                db.session.bulk_save_objects(objects_to_update)
+                status = True
+                _total = _add_count + _undelete_count
+                message = (
+                    f"Added {_total} {_model_name}s "
+                    f"({_add_count} + {_undelete_count}). "
+                    f"Ignored {_ignore_count}."
+                )
+            else:
+                message = f"No new {_model_name}s were added."
 
         if status:
             db.session.commit()

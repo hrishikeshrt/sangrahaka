@@ -194,7 +194,7 @@
         <div class="card-body p-0">
             <ul class="nav nav-tabs mb-3" id="labels-tab" role="tablist">
                 {% for label in context_labels.admin_labels %}
-                {% if label.is_active %}
+                {% if loop.first %}
                     {% set active_status = "active" %}
                     {% set aria_selected = "true" %}
                 {% else %}
@@ -202,13 +202,13 @@
                     {% set aria_selected = "false" %}
                 {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link {{active_status}}" id="{{label.name}}-label-tab" data-toggle="tab" href="#{{label.name}}-label-tab-content" role="tab" aria-controls="{{label.name}}-label-tab-content" aria-selected="{{aria_selected}}">{{label.title}}</a>
+                        <a class="nav-link {{active_status}}" id="{{label.name}}-label-tab" data-toggle="tab" href="#{{label.name}}-label-tab-content" role="tab" aria-controls="{{label.name}}-label-tab-content" aria-selected="{{aria_selected}}">{{label.title}}Label</a>
                     </li>
                 {% endfor %}
             </ul>
             <div class="tab-content m-3" id="labels-tab-content">
                 {% for label in context_labels.admin_labels %}
-                {% if label.is_active %}
+                {% if loop.first %}
                     {% set active_status = "active" %}
                 {% else %}
                     {% set active_status = "" %}
@@ -217,35 +217,65 @@
                     <div class="container">
                         <form class="form " method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                             <input type="hidden" name="csrf_token" value={{csrf_token()}}>
-                            <div class="form-group">
-                                <label for="{{label.name}}-label-text">
+                            <div class="form-group form-row">
+                                <label class="col-sm-2" for="{{label.name}}-label-text">
                                     Label
-                                    <small class="text-muted">{{label.title}}Label</small>
+                                    <!-- <small class="text-muted">{{label.title}} Label</small> -->
                                 </label>
-                                <input class="form-control" type="text" name="{{label.name}}_label_text" id="{{label.name}}-label-text" required>
+                                <input class="form-control col-sm" type="text" name="{{label.name}}_label_text" id="{{label.name}}-label-text" required>
                             </div>
-                            <div class="form-group">
-                                <label for="{{label.name}}-label-desc">
+                            <div class="form-group form-row">
+                                <label class="col-sm-2" for="{{label.name}}-label-desc">
                                     Description
-                                    <small class="text-muted">{{label.title}}Label</small>
+                                    <!-- <small class="text-muted">{{label.title}} Label</small> -->
                                 </label>
-                                <input class="form-control" type="text" name="{{label.name}}_label_desc" id="{{label.name}}-label-desc" required>
+                                <input class="form-control col-sm" type="text" name="{{label.name}}_label_desc" id="{{label.name}}-label-desc" required>
                             </div>
-                            <button type="submit" name="action" value="{{label.name}}_type_add" class="btn btn-success m-1">
+                            <button type="submit" name="action" value="{{label.name}}_label_add" class="btn btn-success m-1">
                                 Add
                             </button>
                         </form>
                         <hr>
                         <form class="form" method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                             <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                            <div class="input-group my-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="{{label.name}}_label_file_upload">Upload</span>
+                                </div>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="{{label.name}}-label-file" name="label_file" aria-describedby="{{label.name}}_label_file_upload" required>
+                                    <label class="custom-file-label" for="{{label.name}}-label-file">Choose label file</label>
+                                </div>
+                            </div>
+                            <div class="form-group form-row">
+                                <div class="mt-2 col-sm">
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input class="custom-control-input" type="radio" name="upload_format" id="{{label.name}}-upload-format-json" value="json" checked>
+                                        <label class="custom-control-label" for="{{label.name}}-upload-format-json">JSON</label>
+                                    </div>
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input class="custom-control-input" type="radio" name="upload_format" id="{{label.name}}-upload-format-csv" value="csv">
+                                        <label class="custom-control-label" for="{{label.name}}-upload-format-csv">CSV</label>
+                                    </div>
+                                </div>
+                                <div class="col-sm">
+                                    <button type="submit" name="action" value="{{label.name}}_label_upload" class="btn btn-primary m-1 float-right">
+                                        Upload
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <hr>
+                        <form class="form" method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
+                            <input type="hidden" name="csrf_token" value={{csrf_token()}}>
                             <div class="form-group">
-                                <label for="{{label.name}}-label-select">Label</label>
-                                <select class="lead m-1 selectpicker" name="{{label.name}}_label_text" id="{{label.name}}-label-select" data-container="body" data-live-search="true" required>
-                                    {% for _id, _label, _description in context_labels[label.object_name] | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
-                                    <option data-tokens="{{_label}}" value="{{_label}}">{{_description}}</option>
+                                <label for="{{label.name}}-{{label.id}}-label-select">Label</label>
+                                <select class="lead m-1 selectpicker" name="{{label.name}}_label_text" id="{{label.name}}-{{label.id}}-label-select" data-live-search="true" required>
+                                    {% for _id, _label, _description in context_labels[label.object_name] %}
+                                    <option value="{{_label}}">{{_description}}</option>
                                     {% endfor %}
                                 </select>
-                                <button type="submit" name="action" value="{{label.name}}_type_remove" class="btn btn-danger m-1">
+                                <button type="submit" name="action" value="{{label.name}}_label_remove" class="btn btn-danger m-1">
                                     Remove
                                 </button>
                             </div>
