@@ -194,9 +194,10 @@ migrate = Migrate(webapp, db)
 babel = Babel(webapp)
 
 limiter = Limiter(
-    webapp,
     key_func=get_remote_address,
-    default_limits=["1800 per hour"]
+    app=webapp,
+    default_limits=["1800 per hour"],
+    storage_uri="memory://",
 )
 
 ###############################################################################
