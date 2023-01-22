@@ -1,10 +1,10 @@
 # Flask Server Related
-Flask>=2.0.1
-Flask_Security_Too>=4.0.1,<5.0.0
+Flask>=2.2.2
+Flask_Security_Too>=5.0.2
 Flask_Admin>=1.6.0
 Flask_SQLAlchemy>=2.5.1
 Flask_Mail>=0.9.1
-Flask_WTF>=0.14.3
+Flask_WTF>=1.1.1
 Flask_Migrate>=2.7.0
 Flask_BabelEx>=0.9.4
 Flask_Limiter>=3.1.0
@@ -14,10 +14,10 @@ SQLAlchemy>=1.4.25
 indic_transliteration>=2.2.4
 
 # Neo4j
-py2neo>=2021.1.5
-python_cypher==0.18.1
-pandas==1.2.3
+py2neo>=2021.2.3
+python_cypher>=0.20.1
+pandas>=1.2.3
 
 # PythonAnywhere Support
-requests>=2.26.0
+requests>=2.28.1
 GitPython>=3.1.18

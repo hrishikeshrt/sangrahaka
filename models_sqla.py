@@ -1,22 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Mar 07 13:08:36 2021
+SQLAlchemy Models
 
 @author: Hrishikesh Terdalkar
 """
 
 ###############################################################################
 
+import sqlite3
 from datetime import datetime as dt
 from sqlalchemy import (Boolean, DateTime, Column, Integer, String, Text,
-                        ForeignKey, JSON, Enum, Index)
+                        ForeignKey, JSON, Enum, Index, event)
 from sqlalchemy.orm import relationship, backref
-
+from sqlalchemy.engine import Engine
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin, SQLAlchemyUserDatastore
-from flask_security.forms import LoginForm, RegisterForm, StringField, Required
+from flask_security import AsaList
+from sqlalchemy.ext.mutable import MutableList
+from flask_security.forms import LoginForm, StringField, Required
+from flask_security.utils import lookup_identity
+
+###############################################################################
+# Foreign Key Support for SQLite3
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    if type(dbapi_connection) is sqlite3.Connection:
+        # play well with other database backends
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
 
 ###############################################################################
 # Create database connection object
@@ -95,7 +112,7 @@ class Role(db.Model, RoleMixin):
     name = Column(String(255), unique=True)
     description = Column(String(255))
     level = Column(Integer)
-    permissions = Column(String(255))
+    permissions = Column(MutableList.as_mutable(AsaList()), nullable=True)
 
 
 class User(db.Model, UserMixin):
@@ -268,21 +285,21 @@ user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 ###############################################################################
 
 
-class CustomRegisterForm(RegisterForm):
-    username = StringField('Username', [Required()])
-
-    def validate(self):
-        if user_datastore.find_user(username=self.username.data):
-            self.username.errors = ["Username already taken"]
-            return False
-
-        if not super(CustomRegisterForm, self).validate():
-            return False
-
-        return True
-
-
 class CustomLoginForm(LoginForm):
-    email = StringField('Username or Email', [Required()])
+    email = StringField('Username or Email', validators=[Required()])
+
+    def validate(self, **kwargs) -> bool:
+        self.user = lookup_identity(self.email.data)
+        if self.user is None:
+            self.email.errors = ["Invalid username or email"]
+            return False
+
+        self.ifield = self.email
+        # NOTE: setting username data is a temporary solution for a bug which
+        # might be fixed in the later versions of Flask-Security-Too
+        # Ref: https://github.com/Flask-Middleware/flask-security/issues/732
+        self.username.data = self.user.username
+        return super().validate(**kwargs)
+
 
 ###############################################################################
