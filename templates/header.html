@@ -176,13 +176,13 @@
             {% set current_user_name = current_user.username %}
         {% endif %}
 
-        {% if current_user.has_role('querier') %}
+        {% if current_user.has_role(context_roles.querier) %}
             {% set _dummy = navigation_bar.update(querier_navigation) %}
         {% endif %}
 
         {% set _dummy = navigation_bar.update(user_navigation) %}
 
-        {% if current_user.has_role('admin') %}
+        {% if current_user.has_role(context_roles.admin) %}
             {% set _dummy = navigation_bar.update(admin_navigation) %}
         {% endif %}
 

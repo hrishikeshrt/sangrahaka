@@ -158,54 +158,6 @@ USE_MONGO = False
 USE_MYSQL = False
 USE_SQLITE = True
 
-# --------------------------------------------------------------------------- #
-# Role Definitions
-
-ROLES = [
-    {
-        'name': 'guest',
-        'level': 1,
-        'description': 'Guest',
-        'permissions': []
-    },
-    {
-        'name': 'member',
-        'level': 5,
-        'description': 'Member',
-        'permissions': ['view_ucp', 'view_corpus']
-    },
-    {
-        'name': 'querier',
-        'level': 10,
-        'description': 'Querier',
-        'permissions': ['query']
-    },
-    {
-        'name': 'annotator',
-        'level': 50,
-        'description': 'Annotator',
-        'permissions': ['annotate'],
-    },
-    {
-        'name': 'curator',
-        'level': 75,
-        'description': 'Curator',
-        'permissions': ['annotate', 'curate']
-    },
-    {
-        'name': 'admin',
-        'level': 100,
-        'description': 'Administrator',
-        'permissions': ['view_acp', 'add_admin']
-    },
-    {
-        'name': 'owner',
-        'level': 1000,
-        'description': 'Owner',
-        'permissions': ['view_acp', 'remove_admin']
-    },
-]
-
 ###############################################################################
 # DO NOT EDIT
 
@@ -240,8 +192,6 @@ app.admin = {
     'email': ADMIN_MAIL,
     'password': ADMIN_PASS
 }
-
-app.role_definitions = ROLES
 
 app.contacts = CONTACTS
 

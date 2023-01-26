@@ -249,14 +249,17 @@
                             </div>
                             <div class="form-group form-row">
                                 <div class="mt-2 col-sm">
+                                    {% for filetype in data.filetypes.ontology %}
+                                    {% if loop.first %}
+                                    {% set checked = "checked" %}
+                                    {% else %}
+                                    {% set checked = "" %}
+                                    {% endif %}
                                     <div class="custom-control custom-radio custom-control-inline">
-                                        <input class="custom-control-input" type="radio" name="upload_format" id="{{label.name}}-upload-format-json" value="json" checked>
-                                        <label class="custom-control-label" for="{{label.name}}-upload-format-json">JSON</label>
+                                        <input class="custom-control-input" type="radio" name="upload_format" id="{{label.name}}-upload-format-{{filetype.value}}" value="{{filetype.value}}" {{checked}}>
+                                        <label class="custom-control-label" for="{{label.name}}-upload-format-{{filetype.value}}">{{filetype.description}}</label>
                                     </div>
-                                    <div class="custom-control custom-radio custom-control-inline">
-                                        <input class="custom-control-input" type="radio" name="upload_format" id="{{label.name}}-upload-format-csv" value="csv">
-                                        <label class="custom-control-label" for="{{label.name}}-upload-format-csv">CSV</label>
-                                    </div>
+                                    {% endfor %}
                                 </div>
                                 <div class="col-sm">
                                     <button type="submit" name="action" value="{{label.name}}_label_upload" class="btn btn-primary m-1 float-right">
@@ -286,7 +289,7 @@
             </div>
         </div>
     </div>
-    {% if current_user.has_role('owner') %}
+    {% if current_user.has_role(context_roles.owner) %}
     <!-- PythonAnywhere -->
     <div class="card mt-2">
         <div class="card-header lead">

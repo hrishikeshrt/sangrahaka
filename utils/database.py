@@ -17,6 +17,8 @@ from models_sqla import Corpus, Chapter, Verse, Line, Analysis
 from models_sqla import Lexicon, NodeLabel, RelationLabel, Node, Relation
 from models_sqla import ActionLabel, ActorLabel, Action
 
+from constants import PERMISSION_ANNOTATE, PERMISSION_CURATE, ROLE_ADMIN
+
 ###############################################################################
 
 LOGGER = logging.getLogger(__name__)
@@ -219,7 +221,8 @@ def get_chapter_data(chapter_id: int, user: User) -> dict:
         Chapter ID
     user : User
         User object for the user associated with the request
-        If the user has `annotate` permissions, annotations will be fetched
+        If the user has `PERMISSION_ANNOTATE` permissions,
+        annotations will be fetched
 
     Returns
     -------
@@ -237,12 +240,12 @@ def get_chapter_data(chapter_id: int, user: User) -> dict:
     fetch_nodes = False
     fetch_relations = False
     fetch_actions = False
-    if user.has_permission('annotate'):
+    if user.has_permission(PERMISSION_ANNOTATE):
         annotator_ids = [user.id]
         fetch_nodes = True
         fetch_relations = True
         fetch_actions = True
-    if user.has_permission('curate') or user.has_role('admin'):
+    if user.has_permission(PERMISSION_CURATE) or user.has_role(ROLE_ADMIN):
         annotator_ids = None
         fetch_nodes = True
         fetch_relations = True

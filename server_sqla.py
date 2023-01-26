@@ -62,6 +62,29 @@ from flask_migrate import Migrate
 
 from indic_transliteration.sanscript import transliterate
 
+from constants import (
+    ROLE_OWNER,
+    ROLE_ADMIN,
+    ROLE_CURATOR,
+    ROLE_ANNOTATOR,
+    ROLE_QUERIER,
+    ROLE_MEMBER,
+    ROLE_GUEST,
+    ROLE_DEFINITIONS,
+
+    PERMISSION_VIEW_ACP,
+    PERMISSION_QUERY,
+    PERMISSION_ANNOTATE,
+    PERMISSION_CURATE,
+    PERMISSION_VIEW_UCP,
+    PERMISSION_VIEW_CORPUS,
+
+    # File Types
+    FILE_TYPE_PLAINTEXT,
+    FILE_TYPE_JSON,
+    FILE_TYPE_CSV,
+)
+
 from models_sqla import (db, user_datastore, User,
                          CustomLoginForm,
                          Corpus, Chapter, Verse, Line, Analysis,
@@ -264,9 +287,9 @@ def update_lexicon(old_lemma: int, new_lemma: str) -> bool:
 def init_database():
     """Initiate database and create admin user"""
     db.create_all()
-    role_definitions = sorted(app.role_definitions,
-                              key=lambda x: x['level'],
-                              reverse=True)
+    role_definitions = sorted(
+        ROLE_DEFINITIONS, key=lambda x: x['level'], reverse=True
+    )
     for role_definition in role_definitions:
         name = role_definition['name']
         description = role_definition['description']
@@ -284,8 +307,14 @@ def init_database():
             username=app.admin['username'],
             email=app.admin['email'],
             password=hash_password(app.admin['password']),
-            roles=['owner', 'admin', 'curator',
-                   'annotator', 'querier', 'member']
+            roles=[
+                ROLE_OWNER,
+                ROLE_ADMIN,
+                ROLE_CURATOR,
+                ROLE_ANNOTATOR,
+                ROLE_QUERIER,
+                ROLE_MEMBER
+            ]
         )
 
     # ----------------------------------------------------------------------- #
@@ -340,8 +369,8 @@ def init_database():
 
 @user_registered.connect_via(webapp)
 def assign_default_roles(sender, user, **extra):
-    """Assign member role to users after successful registration"""
-    user_datastore.add_role_to_user(user, 'member')
+    """Assign `ROLE_MEMBER` to users after successful registration"""
+    user_datastore.add_role_to_user(user, ROLE_MEMBER)
     db.session.commit()
 
 
@@ -370,6 +399,16 @@ def inject_global_context():
             os.path.basename(theme).split('.')[1]
             for theme in theme_js_files
         ])
+    }
+
+    ROLES = {
+        "owner": ROLE_OWNER,
+        "admin": ROLE_ADMIN,
+        "curator": ROLE_CURATOR,
+        "annotator": ROLE_ANNOTATOR,
+        "querier": ROLE_QUERIER,
+        "member": ROLE_MEMBER,
+        "guest": ROLE_GUEST
     }
 
     LABELS = {
@@ -419,6 +458,7 @@ def inject_global_context():
     return {
         'title': app.title,
         'now': datetime.datetime.utcnow(),
+        'context_roles': ROLES,
         'context_themes': THEMES,
         'context_labels': LABELS,
         'config': app.config
@@ -476,7 +516,7 @@ def security_reset_password_processor():
 
 @webapp.route("/admin")
 @auth_required()
-@permissions_required('view_acp')
+@permissions_required(PERMISSION_VIEW_ACP)
 def show_admin():
     data = {}
     data['title'] = 'Admin'
@@ -488,6 +528,10 @@ def show_admin():
     role_model = user_datastore.role_model
     user_query = user_model.query
     role_query = role_model.query
+
+    data['filetypes'] = {
+        'ontology': [FILE_TYPE_CSV, FILE_TYPE_JSON]
+    }
 
     data['users'] = [user.username for user in user_query.all()]
     data['annotators'] = [user.username for user in user_query.all()
@@ -515,7 +559,7 @@ def show_admin():
 
 @webapp.route("/settings")
 @auth_required()
-@permissions_required('view_ucp')
+@permissions_required(PERMISSION_VIEW_UCP)
 def show_settings():
     data = {}
     data['title'] = 'Settings'
@@ -525,7 +569,7 @@ def show_settings():
 @webapp.route("/corpus")
 @webapp.route("/corpus/<string:chapter_id>")
 @auth_required()
-@permissions_required('view_corpus')
+@permissions_required(PERMISSION_VIEW_CORPUS)
 def show_corpus(chapter_id=None):
     if chapter_id is None:
         flash("Please select a corpus to view.")
@@ -534,12 +578,15 @@ def show_corpus(chapter_id=None):
     data = {}
     data['title'] = 'Corpus'
     data['chapter_id'] = chapter_id
+    data['enable_annotation'] = current_user.has_permission(
+        PERMISSION_ANNOTATE
+    )
     return render_template('corpus.html', data=data)
 
 
 @webapp.route("/query")
 @auth_required()
-@permissions_required('query')
+@permissions_required(PERMISSION_QUERY)
 def show_query():
     data = {}
     data['title'] = 'Query'
@@ -657,10 +704,10 @@ def api():
     # Action Authorization
 
     role_actions = {
-        'admin': [],
-        'annotator': ['update_entity', 'update_relation', 'update_action'],
-        'curator': [],
-        'querier': ['query', 'graph_query']
+        ROLE_ADMIN: [],
+        ROLE_ANNOTATOR: ['update_entity', 'update_relation', 'update_action'],
+        ROLE_CURATOR: [],
+        ROLE_QUERIER: ['query', 'graph_query']
     }
     valid_actions = [
         action for actions in role_actions.values() for action in actions
@@ -719,7 +766,7 @@ def api():
 
                 # Curator can edit annotations by others
                 # i.e. (no annotator_id check)
-                if current_user.has_permission('curate'):
+                if current_user.has_permission(PERMISSION_CURATE):
                     node_query = Node.query.filter(and_(
                         Node.line_id == line_id,
                         Node.lexicon_id == _lexicon_id,
@@ -803,7 +850,7 @@ def api():
 
                 # Curator can edit annotations by others
                 # i.e. (no annotator_id check)
-                if current_user.has_permission('curate'):
+                if current_user.has_permission(PERMISSION_CURATE):
                     relation_query = Relation.query.filter(and_(
                         Relation.line_id == line_id,
                         Relation.src_id == _src_node_id,
@@ -876,7 +923,7 @@ def api():
 
                 # Curator can edit annotations by others
                 # i.e. (no annotator_id check)
-                if current_user.has_permission('curate'):
+                if current_user.has_permission(PERMISSION_CURATE):
                     action_query = Action.query.filter(and_(
                         Action.line_id == line_id,
                         Action.label_id == _label_id,
@@ -1122,10 +1169,10 @@ def perform_action():
     # Admin Actions
 
     role_actions = {
-        'owner': [
+        ROLE_OWNER: [
             'application_info', 'application_update', 'application_reload'
         ],
-        'admin': [
+        ROLE_ADMIN: [
             'user_role_add', 'user_role_remove',
 
             # Add/Remove/Upload Labels
@@ -1154,9 +1201,9 @@ def perform_action():
             'corpus_add', 'chapter_add',
             'annotation_download'
         ],
-        'curator': [],
-        'annotator': [],
-        'member': ['update_settings']
+        ROLE_CURATOR: [],
+        ROLE_ANNOTATOR: [],
+        ROLE_MEMBER: ['update_settings']
     }
     valid_actions = [
         action for actions in role_actions.values() for action in actions
@@ -1346,14 +1393,14 @@ def perform_action():
             }
 
             _label_file_content = _label_file.read().decode()
-            if _upload_format == "json":
+            if _upload_format == FILE_TYPE_JSON["value"]:
                 try:
                     table_data = json.loads(_label_file_content)
                 except json.decoder.JSONDecodeError as e:
                     webapp.logger.exception(e)
                     flash("Invalid JSON file format.")
                     return redirect(request.referrer)
-            elif _upload_format == "csv":
+            elif _upload_format == FILE_TYPE_CSV["value"]:
                 try:
                     table_data = list(
                         csv.DictReader(_label_file_content.splitlines())

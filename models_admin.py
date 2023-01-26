@@ -10,12 +10,14 @@ from flask_security import current_user
 from flask_admin import AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 
+from constants import ROLE_OWNER
+
 ###############################################################################
 
 
 class CustomAdminIndexView(AdminIndexView):
     def is_accessible(self):
-        return current_user.has_role('owner')
+        return current_user.has_role(ROLE_OWNER)
 
     def inaccessible_callback(self, name, **kwargs):
         flash("Unauthorized access.")
@@ -32,7 +34,7 @@ class BaseModelView(ModelView):
     edit_modal = True
 
     def is_accessible(self):
-        return current_user.has_role('owner')
+        return current_user.has_role(ROLE_OWNER)
 
     def inaccessible_callback(self, name, **kwargs):
         flash("Unauthorized access.")
