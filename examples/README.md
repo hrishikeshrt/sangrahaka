@@ -45,6 +45,16 @@ e.g.
 ]
 ```
 
+**NOTE**: Check out [epics/corpus/prepare.py](epics/corpus/prepare.py) to see how to convert
+a plaintext into desired JSON format.
+
+## Plaintext Corpus
+
+One may also upload plaintext corpus, which will undergo regular-expression based
+tokenization (verses split on `\n\n` and lines split on `\n` and words split on `\s`).
+
+**NOTE**: Beware that such upload will lack `Analysis` fields.
+
 ## Preparing JSONL Graph
 
 * `utils/propery_graph.py` implements a basic `PropertyGraph` class for the construction of knowledge graph and conversion to to JSONL format.

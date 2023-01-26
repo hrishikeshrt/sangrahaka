@@ -12,7 +12,19 @@ This work has been accepted in ESEC/FSE 2021.
     - Navigate to the `Neo4j` installation directory
     - Start Graph server `./bin/neo4j console`
 * Copy `settings.sample.py` to `settings.py` and make appropriate changes.
-* Run application server `python server.py`
+* Run application server using `python3 server.py`
+* Load the URL displayed on the terminal in the browser of your choice.
+* Login using the administrator username and password set by you in `settings.py`
+* Go to `Admin` tab to create a corpus and upload chapter files.
+* Create `Ontology` in one of the two ways.
+  - Use GUI to `Add` single relations.
+  - Use `CSV` or `JSON` files to upload `Ontology` in bulk. (Check to [data/tables](data/tables) for file format and sample data)
+
+Your Sangrahaka instance is now ready for annotation!
+
+* Ask your annotators to create accounts on your system.
+* Go to `Admin` tab to add `Annotator` role to the desired users.
+
 
 **Note**: `examples` directory contains sample files for corpus creation, query template and graph building.
 
