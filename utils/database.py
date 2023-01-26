@@ -7,12 +7,12 @@ Database Utility Functions
 ###############################################################################
 
 import logging
-from typing import List
+from typing import List, Dict
 
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.relationships import RelationshipProperty
 
-from models_sqla import User, Role
+from models_sqla import db, User, Role
 from models_sqla import Corpus, Chapter, Verse, Line, Analysis
 from models_sqla import Lexicon, NodeLabel, RelationLabel, Node, Relation
 from models_sqla import ActionLabel, ActorLabel, Action
@@ -22,6 +22,92 @@ from constants import PERMISSION_ANNOTATE, PERMISSION_CURATE, ROLE_ADMIN
 ###############################################################################
 
 LOGGER = logging.getLogger(__name__)
+
+###############################################################################
+
+
+def add_chapter(
+    corpus_id: int,
+    chapter_name: str,
+    chapter_description: str,
+    chapter_data: List[List[Dict]]
+):
+    """Add Chapter Data
+
+    Parameters
+    ----------
+    corpus_id : int
+        Corpus ID
+    chapter_name : str
+        Chapter Name
+    chapter_description : str
+        Chapter Description
+    chapter_data : List[List[Dict]]
+        Chapter data
+    """
+
+    result = {
+        "message": None,
+        "style": None
+    }
+
+    # Assume `chapter_name` to be unique
+    # In order to avoid the need to delete entire database when re-running
+    # the `bulk_add_chapter` function
+    # (otherwise there is unique `line_id` constraint violation)
+    if Chapter.query.filter(
+        Chapter.name == chapter_name
+    ).first():
+        result["message"] = f"Chapter '{chapter_name}' already exists."
+        result["style"] = "warning"
+        return result
+
+    try:
+        chapter = Chapter()
+        chapter.corpus_id = corpus_id
+        chapter.name = chapter_name
+        chapter.description = chapter_description
+
+        # Group verses
+        verses = []
+        last_verse_id = None
+        for _line in chapter_data:
+            line_verse_id = _line.get('verse')
+            if line_verse_id is None or line_verse_id != last_verse_id:
+                last_verse_id = line_verse_id
+                verses.append([])
+            verses[-1].append(_line)
+
+        for _verse in verses:
+            verse = Verse()
+            verse.chapter = chapter
+            for _line in _verse:
+                _analysis = _line.get('analysis', {})
+                line = Line()
+                if _line.get('id'):
+                    line.id = _line.get('id')
+                line.verse = verse
+                line.text = _line.get('text', '')
+                line.split = _line.get('split', '')
+
+                analysis = Analysis()
+                analysis.line = line
+
+                analysis.source = _analysis.get('source', '')
+                analysis.text = _analysis.get('text', '')
+                analysis.parsed = _analysis.get('tokens', [])
+                db.session.add(analysis)
+    except Exception as e:
+        result["message"] = "An error occurred while inserting data."
+        result["style"] = "danger"
+        LOGGER.exception(e)
+    else:
+        db.session.commit()
+        result["message"] = f"Chapter '{chapter_name}' added successfully."
+        result["style"] = "success"
+
+    return result
+
 
 ###############################################################################
 

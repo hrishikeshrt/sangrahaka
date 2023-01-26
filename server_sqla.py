@@ -97,11 +97,12 @@ from models_admin import (CustomAdminIndexView,
                           LexiconModelView)
 from settings import app
 from utils.reverseproxied import ReverseProxied
-from utils.database import get_line_data, get_chapter_data
+from utils.database import add_chapter, get_line_data, get_chapter_data
 from utils.graph import Graph
 from utils.property_graph import PropertyGraph
 from utils.query import load_queries
 from utils.cypher_utils import graph_to_cypher
+from utils.plaintext import Tokenizer
 
 ###############################################################################
 
@@ -530,6 +531,7 @@ def show_admin():
     role_query = role_model.query
 
     data['filetypes'] = {
+        'chapter': [FILE_TYPE_PLAINTEXT, FILE_TYPE_JSON],
         'ontology': [FILE_TYPE_CSV, FILE_TYPE_JSON]
     }
 
@@ -1478,13 +1480,21 @@ def perform_action():
         chapter_description = request.form['chapter_description']
         chapter_file = request.files['chapter_file']
         chapter_filename = chapter_file.filename
+        chapter_format = request.form['chapter_format']
 
         if chapter_filename == '':
             flash("No file selected.")
             return redirect(request.referrer)
 
         # Validity
-        allowed_extensions = {'json', 'txt'}
+        if chapter_format == FILE_TYPE_JSON["value"]:
+            allowed_extensions = FILE_TYPE_JSON["extensions"]
+        elif chapter_format == FILE_TYPE_PLAINTEXT["value"]:
+            allowed_extensions = FILE_TYPE_PLAINTEXT["extensions"]
+        else:
+            flash("Invalid chapter file type.")
+            return redirect(request.referrer)
+
         file_extension = chapter_filename.rsplit('.', 1)[1].lower()
         is_valid_filename = (file_extension in allowed_extensions)
 
@@ -1496,57 +1506,62 @@ def perform_action():
                 return redirect(request.referrer)
 
             try:
-                data = json.load(chapter_file)
+                if chapter_format == FILE_TYPE_JSON["value"]:
+                    chapter_data = json.load(chapter_file)
+                if chapter_format == FILE_TYPE_PLAINTEXT["value"]:
+                    file_content = chapter_file.read().decode()
+
+                    # Plaintext Processor
+                    # TODO: Move to `plaintext.py`
+
+                    verse_sep_regex = r'\s*\n\s*\n\s*'
+                    line_sep_regex = r'\s*\n\s*'
+                    word_sep_regex = r'\s+'
+
+                    verse_tokenizer = Tokenizer(verse_sep_regex)
+                    line_tokenizer = Tokenizer(line_sep_regex)
+                    word_tokenizer = Tokenizer(word_sep_regex)
+
+                    chapter_data = [
+                        {
+                            "verse": _verse_idx,
+                            "text": _line,
+                            "split": "",
+                            "analysis": {
+                                "source": "plaintext",
+                                "text": "",
+                                "tokens": [
+                                    {
+                                        "Word": _word,
+                                    }
+                                    for _word in word_tokenizer.tokenize(_line)
+                                ]
+                            }
+                        }
+                        for _verse_idx, _verse in enumerate(
+                            verse_tokenizer.tokenize(file_content),
+                            start=1
+                        )
+                        for _line_idx, _line in enumerate(
+                            line_tokenizer.tokenize(_verse),
+                            start=1
+                        )
+                    ]
             except json.decoder.JSONDecodeError:
                 flash("Invalid file format.")
                 return redirect(request.referrer)
 
-            # Group verses
-            verses = []
-            last_verse_id = None
-            for _line in data:
-                line_verse_id = _line.get('verse')
-                if line_verse_id is None or line_verse_id != last_verse_id:
-                    last_verse_id = line_verse_id
-                    verses.append([])
-                verses[-1].append(_line)
-
             # --------------------------------------------------------------- #
-            # Insert Data
-            try:
-                chapter = Chapter()
-                chapter.corpus_id = corpus.id
-                chapter.name = chapter_name
-                chapter.description = chapter_description
+            # Insert
 
-                for _verse in verses:
-                    verse = Verse()
-                    verse.chapter = chapter
-                    for _line in _verse:
-                        _analysis = _line.get('analysis', {})
-                        line = Line()
-                        if _line.get('id'):
-                            line.id = _line.get('id')
-                        line.verse = verse
-                        line.text = _line.get('text', '')
-                        line.split = _line.get('split', '')
+            result = add_chapter(
+                corpus_id=corpus.id,
+                chapter_name=chapter_name,
+                chapter_description=chapter_description,
+                chapter_data=chapter_data
+            )
+            flash(result["message"], result["style"])
 
-                        analysis = Analysis()
-                        analysis.line = line
-
-                        analysis.source = _analysis.get('source', '')
-                        analysis.text = _analysis.get('text', '')
-                        analysis.parsed = _analysis.get('tokens', [])
-                        db.session.add(analysis)
-            except Exception as e:
-                print(e)
-                flash("An error occurred while inserting data.", "danger")
-            else:
-                db.session.commit()
-                flash(
-                    f"Chapter '{chapter_name}' added successfully.",
-                    "success"
-                )
             # --------------------------------------------------------------- #
         else:
             flash("Invalid file or file extension.")
