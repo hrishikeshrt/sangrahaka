@@ -91,10 +91,9 @@ from models_sqla import (db, user_datastore, User,
                          Lexicon, NodeLabel, Node,
                          RelationLabel, Relation,
                          ActionLabel, ActorLabel, Action)
-from models_admin import (CustomAdminIndexView,
-                          BaseModelView,
+from models_admin import (SecureAdminIndexView,
                           UserModelView, LabelModelView,
-                          LexiconModelView)
+                          LexiconModelView, AnnotationModelView)
 from settings import app
 from utils.reverseproxied import ReverseProxied
 from utils.database import add_chapter, get_line_data, get_chapter_data
@@ -168,6 +167,7 @@ webapp.config['SECURITY_USERNAME_ENABLE'] = True
 webapp.config['SECURITY_USERNAME_REQUIRED'] = True
 webapp.config['SECURITY_POST_LOGIN_VIEW'] = 'show_home'
 webapp.config['SECURITY_POST_LOGOUT_VIEW'] = 'show_home'
+webapp.config['SECURITY_UNAUTHORIZED_VIEW'] = 'show_home'
 
 ###############################################################################
 # Mail Configuration
@@ -195,19 +195,21 @@ security = Security(webapp, user_datastore, login_form=CustomLoginForm)
 admin = Admin(
     webapp,
     name=f"{app.title} Admin",
-    index_view=CustomAdminIndexView(
+    index_view=SecureAdminIndexView(
         name="Database",
         url="/admin/database"
     ),
     template_mode="bootstrap4",
     base_template="admin_base.html",
 )
-admin.add_view(UserModelView(User, db.session, category="User"))
+admin.add_view(UserModelView(User, db.session))
 admin.add_view(LabelModelView(NodeLabel, db.session, category="Ontology"))
 admin.add_view(LabelModelView(RelationLabel, db.session, category="Ontology"))
 admin.add_view(LexiconModelView(Lexicon, db.session, category="Annotation"))
-admin.add_view(BaseModelView(Node, db.session, category="Annotation"))
-admin.add_view(BaseModelView(Relation, db.session, category="Annotation"))
+admin.add_view(AnnotationModelView(Node, db.session, category="Annotation"))
+admin.add_view(
+    AnnotationModelView(Relation, db.session, category="Annotation")
+)
 
 mail = Mail(webapp)
 migrate = Migrate(webapp, db)

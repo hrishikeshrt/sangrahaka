@@ -15,30 +15,62 @@ from constants import ROLE_OWNER
 ###############################################################################
 
 
-class CustomAdminIndexView(AdminIndexView):
+class SecureAdminIndexView(AdminIndexView):
     def is_accessible(self):
         return current_user.has_role(ROLE_OWNER)
 
     def inaccessible_callback(self, name, **kwargs):
-        flash("Unauthorized access.")
+        flash("You do not have permission to view this resource.", "error")
         return redirect(url_for('show_home', next=request.url))
 
 
-class BaseModelView(ModelView):
+class SecureModelView(ModelView):
+    def is_accessible(self):
+        return current_user.has_role(ROLE_OWNER)
+
+    def inaccessible_callback(self, name, **kwargs):
+        flash("You do not have permission to view this resource.", "error")
+        return redirect(url_for("show_home"))
+
+
+###############################################################################
+
+
+class BaseModelView(SecureModelView):
     column_display_pk = True
     column_hide_backrefs = False
+
     can_export = True
+    can_create = False
+    can_edit = True
     can_delete = False
-    can_set_page_size = True
-    create_modal = True
+
+    create_modal = False
     edit_modal = True
 
-    def is_accessible(self):
-        return current_user.has_role(ROLE_OWNER)
+    can_set_page_size = True
 
-    def inaccessible_callback(self, name, **kwargs):
-        flash("Unauthorized access.")
-        return redirect(url_for('show_home', next=request.url))
+    def __init__(self, model, session, **kwargs):
+        if self.form_excluded_columns:
+            self.form_excluded_columns = list(self.form_excluded_columns)
+        else:
+            self.form_excluded_columns = []
+
+        # if columns were excluded from the list view
+        # exclude them from create / edit forms as well
+        if self.column_exclude_list:
+            for field in self.column_exclude_list:
+                self.form_excluded_columns.append(field)
+
+        # exclude relationships from showing up in the create / edit forms
+        for relationship in model.__mapper__.relationships:
+            self.form_excluded_columns.append(relationship.key)
+
+        self.form_excluded_columns = tuple(self.form_excluded_columns)
+        super().__init__(model, session, **kwargs)
+
+
+###############################################################################
 
 
 class UserModelView(BaseModelView):
@@ -52,6 +84,10 @@ class LabelModelView(BaseModelView):
 
 class LexiconModelView(BaseModelView):
     column_searchable_list = ('lemma', 'transliteration')
+
+
+class AnnotationModelView(BaseModelView):
+    column_searchable_list = ("annotator_id",)
 
 
 ###############################################################################
