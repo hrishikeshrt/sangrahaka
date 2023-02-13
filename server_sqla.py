@@ -1097,13 +1097,14 @@ def suggest_node():
 
     query = request.args.get('q')
     words = query.split(':')
+    min_length = app.config['suggest_min_length']
 
     lexicon_query_term = words[0].strip()
     node_label_query_term = words[1].strip() if len(words) > 1 else ""
 
     response = []
     if all([
-        lexicon_query_term and len(lexicon_query_term) < 3,
+        lexicon_query_term and len(lexicon_query_term) < min_length,
         not lexicon_query_term.startswith(app.config['unnamed_prefix'])
     ]):
         return jsonify(response)
@@ -1140,10 +1141,11 @@ def suggest_node():
 @limiter.limit("60 per minute")
 def suggest_lexicon():
     word = request.args.get('q')
+    min_length = app.config['suggest_min_length']
 
     response = []
     if all([
-        word and len(word) < 3,
+        word and len(word) < min_length,
         not word.startswith(app.config['unnamed_prefix'])
     ]):
         return jsonify(response)

@@ -42,6 +42,7 @@ APPLICATION_CONFIG = {
     'show_split': False,
     'line_detail_formatter': 'generic',
     'query_languages': ['english'],
+    'suggest_min_length': 2,
     'default_query_language': 'english',
     'graph_templates': [
         # TODO: Consider moving to a file
