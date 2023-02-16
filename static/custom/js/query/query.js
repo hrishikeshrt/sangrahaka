@@ -322,7 +322,7 @@ $result_table.on('click-cell.bs.table', function (event, field, value, row, $ele
 
 $(document).ready(function () {
     $cypher_input.val(INITIAL_QUERY);
-    $result_table.data('output-order', JSON.parse(INITIAL_OUTPUT_ORDER));
+    $result_table.data('output-order', INITIAL_OUTPUT_ORDER);
     $submit_button.click();
 });
 
