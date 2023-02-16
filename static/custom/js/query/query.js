@@ -1,3 +1,8 @@
+// NOTE:
+// 'API_URL', 'VARIABLE_PREFIX' and 'VARIABLE_SUFFIX' are global constants
+// They must be set before inclusion of this file
+// They are set in query.html file
+
 /* ******************************* Elements ******************************** */
 
 const $query_builder = $("#query-builder");
@@ -7,7 +12,6 @@ const $language_select = $("#language-select");
 const $cypher_input = $("#cypher-text");
 const $edit_button = $("#edit-cypher");
 const $submit_button = $("#submit-query");
-const $download_button = $("#download-image");
 
 const $query_input = $("#query-input");
 const $query_input_container = $("#query-input-container");
@@ -37,8 +41,8 @@ function update_query() {
         var $element = $("#" + query_input_element_prefix + input_element.id);
         var element_value = $element.val().trim();
         if (element_value) {
-            cypher = cypher.replace(`${variable_prefix}${input_element.id}${variable_suffix}`, element_value);
-            query_text = query_text.replace(`${variable_prefix}${input_element.id}${variable_suffix}`, `"${element_value}"`);
+            cypher = cypher.replace(`${VARIABLE_PREFIX}${input_element.id}${VARIABLE_SUFFIX}`, element_value);
+            query_text = query_text.replace(`${VARIABLE_PREFIX}${input_element.id}${VARIABLE_SUFFIX}`, `"${element_value}"`);
         }
     }
     $cypher_input.val(cypher);
@@ -49,6 +53,39 @@ function update_custom_query() {
     if ($edit_button.prop('disabled')) {
         $query_text.html($cypher_input.val());
     }
+}
+
+function run_cypher_query(cypher_query_text, response_process_callback) {
+    $.post(API_URL, {
+        action: "query",
+        query: cypher_query_text,
+    },
+    function (response) {
+        if (response.success) {
+            $.notify({
+                message: response.message
+            }, {
+                type: "success"
+            });
+            response_process_callback(response);
+        } else {
+            console.log(response.message);
+            $.notify({
+                message: response.message
+            }, {
+                type: "danger"
+            });
+        }
+        if (response.warning) {
+            console.log(response.warning);
+            $.notify({
+                message: response.warning
+            }, {
+                type: "warning"
+            })
+        }
+    },
+    'json');
 }
 
 // function prepare_download_data(nodes, relationships) {
@@ -156,9 +193,7 @@ function process_query_response(response) {
 }
 
 /* ******************************** Events ********************************* */
-// 'variable_prefix' and 'variable_suffix' are global constants
-// They must be set before inclusion of this file
-// They are set in query.html file
+// Input Events
 
 $language_select.on("changed.bs.select", function (event, index, is_selected, old_value) {
     $query_select.find('option').each(function (index, element) {
@@ -212,7 +247,7 @@ $query_select.on("changed.bs.select", function (event, index, is_selected, old_v
         var current_value = $input_element.attr(attribute_to_update);
         var updated_value = current_value.replace(
             "{}",
-            `${variable_prefix}${input_element.id}${variable_suffix}`
+            `${VARIABLE_PREFIX}${input_element.id}${VARIABLE_SUFFIX}`
         );
         $input_element.attr(attribute_to_update, updated_value);
 
@@ -252,6 +287,24 @@ $query_select.on("changed.bs.select", function (event, index, is_selected, old_v
     $edit_button.prop('disabled', false);
 });
 
+$edit_button.click(function () {
+    $cypher_input.prop('disabled', false).removeClass('text-muted').addClass('text-info').focus();
+    $edit_button.prop('disabled', true);
+});
+
+$cypher_input.on('keyup', update_custom_query);
+$cypher_input.on('change', update_custom_query);
+
+// Submit Events
+
+$query_builder.submit(function(e) {
+    e.preventDefault();
+    var cypher_query_text = $cypher_input.val().trim();
+    run_cypher_query(cypher_query_text, process_query_response);
+});
+
+// Result Events
+
 $result_table.on('click-cell.bs.table', function (event, field, value, row, $element) {
     var target = row.ids[field];
     // not the same as params when an actual click is performed
@@ -261,21 +314,4 @@ $result_table.on('click-cell.bs.table', function (event, field, value, row, $ele
         edges: target.edges
     }
     neighbourhood_highlight(params);
-});
-
-$cypher_input.on('keyup', update_custom_query);
-$cypher_input.on('change', update_custom_query);
-
-$edit_button.click(function () {
-    $cypher_input.prop('disabled', false).removeClass('text-muted').addClass('text-info').focus();
-    $edit_button.prop('disabled', true);
-});
-
-$download_button.click(function() {
-    var download_anchor = document.createElement('a');
-    download_anchor.href = $download_button.data('src');
-    download_anchor.download = 'graph.png'
-    document.body.appendChild(download_anchor);
-    download_anchor.click();
-    document.body.removeChild(download_anchor);
 });

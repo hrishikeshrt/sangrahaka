@@ -103,48 +103,14 @@
     </div>
 </div>
 <script>
-    const variable_prefix = "{{config.var_prefix}}";
-    const variable_suffix = "{{config.var_suffix}}";
+    const VARIABLE_PREFIX = "{{config.var_prefix}}";
+    const VARIABLE_SUFFIX = "{{config.var_suffix}}";
+    const API_URL = "{{url_for('api')}}";
 </script>
 <script src="{{url_for('static', filename='plugins/js/vis-network.min.js')}}"></script>
 <script src="{{url_for('static', filename='custom/js/query/network.js')}}"></script>
 <script src="{{url_for('static', filename='custom/js/query/query.js')}}"></script>
 <script>
-    $query_builder.submit(function(e) {
-        e.preventDefault();
-        var cypher_query = $cypher_input.val().trim();
-        $.post("{{url_for('api')}}", {
-                action: "query",
-                query: cypher_query,
-            },
-            function (response) {
-                if (response.success) {
-                    $.notify({
-                        message: response.message
-                    }, {
-                        type: "success"
-                    });
-                    process_query_response(response);
-                } else {
-                    console.log(response.message);
-                    $.notify({
-                        message: response.message
-                    }, {
-                        type: "danger"
-                    });
-                }
-                if (response.warning) {
-                    console.log(response.warning);
-                    $.notify({
-                        message: response.warning
-                    }, {
-                        type: "warning"
-                    })
-                }
-            },
-            'json');
-    });
-
     $(document).ready(function () {
         $cypher_input.val('{{data.initial_query | safe}}');
         $result_table.data('output-order', JSON.parse('{{data.initial_output|tojson|safe}}'));

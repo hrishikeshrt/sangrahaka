@@ -8,7 +8,7 @@ var edges_dataset = new vis.DataSet();
 
 const $physics_button = $("#toggle-physics");
 const $toggle_icon = $("#toggle-icon");
-
+const $download_button = $("#download-image");
 
 $physics_button.click(function () {
     var physics_on = $toggle_icon.hasClass("fa-lock");
@@ -176,7 +176,7 @@ function draw() {
     });
     network.on("afterDrawing", function (ctx) {
         var data_url = ctx.canvas.toDataURL();
-        $('#download-image').data("src", data_url);
+        $download_button.data("src", data_url);
     });
     network.on("click", neighbourhood_highlight);
 }
@@ -307,3 +307,12 @@ function neighbourhood_highlight(params) {
     }
     nodes_dataset.update(update_array);
 }
+
+$download_button.click(function() {
+    var download_anchor = document.createElement('a');
+    download_anchor.href = $download_button.data('src');
+    download_anchor.download = 'graph.png'
+    document.body.appendChild(download_anchor);
+    download_anchor.click();
+    document.body.removeChild(download_anchor);
+});
