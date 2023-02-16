@@ -610,7 +610,7 @@ def show_query():
 
     data['query_groups'] = list(query_groups.values())
     data['initial_query'] = (
-        'MATCH (node_1)-[edge]->(node_2) RETURN *'
+        'MATCH (node_1)-[edge]->(node_2) RETURN * ORDER BY rand() LIMIT 25'
     )
     data['initial_output'] = ['node_1', 'edge', 'node_2']
     return render_template('query.html', data=data)
