@@ -1,5 +1,7 @@
-// NOTE:
-// 'API_URL', 'VARIABLE_PREFIX' and 'VARIABLE_SUFFIX' are global constants
+// NOTE: The following are global constants:
+// * 'API_URL'
+// * 'VARIABLE_PREFIX' and 'VARIABLE_SUFFIX'
+// * 'INITIAL_QUERY' and 'INITIAL_OUTPUT_ORDER'
 // They must be set before inclusion of this file
 // They are set in query.html file
 
@@ -315,3 +317,13 @@ $result_table.on('click-cell.bs.table', function (event, field, value, row, $ele
     }
     neighbourhood_highlight(params);
 });
+
+/* ------------------------- Main ------------------------- */
+
+$(document).ready(function () {
+    $cypher_input.val(INITIAL_QUERY);
+    $result_table.data('output-order', JSON.parse(INITIAL_OUTPUT_ORDER));
+    $submit_button.click();
+});
+
+/* -------------------------------------------------------- */

@@ -106,16 +106,11 @@
     const VARIABLE_PREFIX = "{{config.var_prefix}}";
     const VARIABLE_SUFFIX = "{{config.var_suffix}}";
     const API_URL = "{{url_for('api')}}";
+    const INITIAL_QUERY = "{{data.initial_query | safe}}";
+    const INITIAL_OUTPUT_ORDER = "{{data.initial_output|tojson|safe}}";
 </script>
 <script src="{{url_for('static', filename='plugins/js/vis-network.min.js')}}"></script>
 <script src="{{url_for('static', filename='custom/js/query/network.js')}}"></script>
 <script src="{{url_for('static', filename='custom/js/query/query.js')}}"></script>
-<script>
-    $(document).ready(function () {
-        $cypher_input.val('{{data.initial_query | safe}}');
-        $result_table.data('output-order', JSON.parse('{{data.initial_output|tojson|safe}}'));
-        $submit_button.click();
-    });
-</script>
 
 {% include "footer.html" %}
