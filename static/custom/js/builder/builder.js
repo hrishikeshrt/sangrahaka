@@ -17,6 +17,10 @@ const $edge_save_button = $("#edge-save-button");
 const $edge_cancel_button = $("#edge-cancel-button");
 const $edge_popup = $("#edge-popup");
 
+const $graph_template_select = $("#graph-template");
+const $graph_query_button = $("#graph-query");
+const $cypher_query_textarea = $("#cypher-query");
+
 // Note: Underlying DOM objects of jQuery objects can be accessed by $obj[0]
 
 /* ------------------------------- Network ------------------------------- */
@@ -214,7 +218,7 @@ function saveEdgeData(data, callback) {
   callback(data);
 }
 
-/* --------------------------- Export Functions ---------------------------- */
+/* ---------------------------- Export Functions ---------------------------- */
 
 function exportData() {
   var data = {
@@ -253,3 +257,73 @@ function exportData() {
 }
 
 /* ------------------------------------------------------------------------ */
+
+/* ---------------------------- Events ---------------------------- */
+
+$graph_template_select.change(function () {
+  const builder_data = JSON.parse(decodeURIComponent($(this).val()));
+  console.log(builder_data);
+
+  builder_network_data.nodes = new vis.DataSet();
+  builder_network_data.edges = new vis.DataSet();
+
+  for (const node of builder_data.nodes) {
+    builder_network_data.nodes.add({
+      id: node,
+      label: '?'
+    });
+  }
+  for (const edge of builder_data.edges) {
+    builder_network_data.edges.add({
+      from: edge[0],
+      to: edge[1],
+    });
+  }
+  builder_draw();
+});
+
+$graph_query_button.click(function (e) {
+  // e.preventDefault();
+  $.post(API_URL, {
+      action: "graph_query",
+      data: JSON.stringify(exportData()),
+    },
+    function (response) {
+      if (response.success) {
+        $.notify({
+          message: response.message
+        }, {
+          type: "success"
+        });
+        $cypher_query_textarea.text(response.cypher);
+      } else {
+        console.log(response.message);
+        $.notify({
+          message: response.message
+        }, {
+          type: "danger"
+        });
+      }
+      if (response.warning) {
+        console.log(response.warning);
+        $.notify({
+          message: response.warning
+        }, {
+          type: "warning"
+        })
+      }
+    },
+    'json');
+});
+
+/* -------------------------------------------------------------- */
+
+/* ---------------------------- Main ---------------------------- */
+
+$(document).ready(function () {
+  builder_init();
+  // Setup Auto-complete
+  $node_label.autoComplete();
+});
+
+/* -------------------------------------------------------------- */

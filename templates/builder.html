@@ -130,72 +130,9 @@
 
 </div>
 
+<script>
+    const API_URL = "{{url_for('api')}}";
+</script>
 <script src="{{url_for('static', filename='plugins/js/vis-network.min.js')}}"></script>
 <script src="{{url_for('static', filename='custom/js/builder/builder.js')}}"></script>
-<script>
-    const $graph_query_button = $("#graph-query");
-    const $graph_template_select = $("#graph-template");
-
-    $graph_template_select.change(function() {
-        const builder_data = JSON.parse(decodeURIComponent($(this).val()));
-        console.log(builder_data);
-
-        builder_network_data.nodes = new vis.DataSet();
-        builder_network_data.edges = new vis.DataSet();
-
-        for (const node of builder_data.nodes) {
-            builder_network_data.nodes.add({
-                id: node,
-                label: '?'
-            });
-        }
-        for (const edge of builder_data.edges) {
-            builder_network_data.edges.add({
-                from: edge[0],
-                to: edge[1],
-            });
-        }
-        builder_draw();
-    });
-
-    $graph_query_button.click(function(e) {
-        // e.preventDefault();
-        $.post("{{url_for('api')}}", {
-                action: "graph_query",
-                data: JSON.stringify(exportData()),
-            },
-            function (response) {
-                if (response.success) {
-                    $.notify({
-                        message: response.message
-                    }, {
-                        type: "success"
-                    });
-                    $("#cypher-query").text(response.cypher);
-                } else {
-                    console.log(response.message);
-                    $.notify({
-                        message: response.message
-                    }, {
-                        type: "danger"
-                    });
-                }
-                if (response.warning) {
-                    console.log(response.warning);
-                    $.notify({
-                        message: response.warning
-                    }, {
-                        type: "warning"
-                    })
-                }
-            },
-            'json');
-    });
-
-    $(document).ready(function () {
-        builder_init();
-        // Setup Auto-complete
-        $node_label.autoComplete();
-    });
-</script>
 {% include "footer.html" %}
