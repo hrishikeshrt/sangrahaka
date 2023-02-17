@@ -57,7 +57,7 @@ function update_custom_query() {
     }
 }
 
-function run_cypher_query(cypher_query_text, response_process_callback) {
+function run_cypher_query(cypher_query_text, response_handler) {
     $.post(API_URL, {
         action: "query",
         query: cypher_query_text,
@@ -69,7 +69,7 @@ function run_cypher_query(cypher_query_text, response_process_callback) {
             }, {
                 type: "success"
             });
-            response_process_callback(response);
+            response_handler(response);
         } else {
             console.log(response.message);
             $.notify({
@@ -185,7 +185,7 @@ function process_query_response(response) {
     prepare_network_data(response.nodes, response.edges);
 
     // Draw the network graph
-    draw();
+    setup_network();
 
     // Show result in the table
     update_result_table(response);

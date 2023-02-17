@@ -1,27 +1,26 @@
-// https://visjs.github.io/vis-network/docs/network/
+// Network Documentation: https://visjs.github.io/vis-network/docs/network/
 
-var network, all_nodes;
-var highlight_active = false;
+var NETWORK, ALL_NODES;
+var HIGHLIGHT_ACTIVE = false;
 
-var nodes_dataset = new vis.DataSet();
-var edges_dataset = new vis.DataSet();
+var NODES_DATASET = new vis.DataSet();
+var EDGES_DATASET = new vis.DataSet();
+
+/* ------------------------------------- Elements ------------------------------------- */
 
 const $physics_button = $("#toggle-physics");
 const $toggle_icon = $("#toggle-icon");
 const $download_button = $("#download-image");
 
-$physics_button.click(function () {
-    var physics_on = $toggle_icon.hasClass("fa-lock");
-    if (physics_on) {
-        network.setOptions({physics: false});
-        $toggle_icon.removeClass("fa-lock");
-        $toggle_icon.addClass("fa-unlock");
-    } else {
-        network.setOptions({physics: true});
-        $toggle_icon.removeClass("fa-unlock");
-        $toggle_icon.addClass("fa-lock");
-    }
-});
+/* ------------------------------------------------------------------------------------ */
+
+/* ------------------------------------ Functions ------------------------------------ */
+
+function toTitleCase(str) {
+    return str.replace(/(?:^|\s)\w/g, function(match) {
+        return match.toUpperCase();
+    });
+}
 
 function prepare_network_data(nodes, relationships) {
     var dataset = {
@@ -90,20 +89,14 @@ function prepare_network_data(nodes, relationships) {
         });
     }
 
-    nodes_dataset.clear()
-    nodes_dataset.update(dataset.nodes);
+    NODES_DATASET.clear()
+    NODES_DATASET.update(dataset.nodes);
 
-    edges_dataset.clear()
-    edges_dataset.update(dataset.edges);
+    EDGES_DATASET.clear()
+    EDGES_DATASET.update(dataset.edges);
 }
 
-function toTitleCase(str) {
-    return str.replace(/(?:^|\s)\w/g, function(match) {
-        return match.toUpperCase();
-    });
-}
-
-function draw() {
+function setup_network() {
     var container = document.getElementById('graph');
     var options = {
         nodes: {
@@ -164,21 +157,21 @@ function draw() {
         },
     };
     var data = {
-        nodes: nodes_dataset,
-        edges: edges_dataset
+        nodes: NODES_DATASET,
+        edges: EDGES_DATASET
     }
 
-    network = new vis.Network(container, data, options);
+    NETWORK = new vis.Network(container, data, options);
 
     // get a JSON object
-    all_nodes = nodes_dataset.get({
+    ALL_NODES = NODES_DATASET.get({
         returnType: "Object"
     });
-    network.on("afterDrawing", function (ctx) {
+    NETWORK.on("afterDrawing", function (ctx) {
         var data_url = ctx.canvas.toDataURL();
         $download_button.data("src", data_url);
     });
-    network.on("click", neighbourhood_highlight);
+    NETWORK.on("click", neighbourhood_highlight);
 }
 
 function neighbourhood_highlight(params) {
@@ -196,27 +189,27 @@ function neighbourhood_highlight(params) {
     }
 
     if (selected_nodes.length > 0 || selected_edges.length > 0) {
-        highlight_active = true;
+        HIGHLIGHT_ACTIVE = true;
         var i, j;
         var degrees = 2;
 
         // mark all nodes as hard to read.
-        for (var node_id in all_nodes) {
-            all_nodes[node_id].color = 'rgba(225,225,225, 0.5)';
-            if (all_nodes[node_id].hiddenLabel === undefined) {
-                all_nodes[node_id].hiddenLabel = all_nodes[node_id].label;
-                all_nodes[node_id].label = undefined;
+        for (var node_id in ALL_NODES) {
+            ALL_NODES[node_id].color = 'rgba(225,225,225, 0.5)';
+            if (ALL_NODES[node_id].hiddenLabel === undefined) {
+                ALL_NODES[node_id].hiddenLabel = ALL_NODES[node_id].label;
+                ALL_NODES[node_id].label = undefined;
             }
-            all_nodes[node_id].value = all_nodes[node_id].pagerank / 2;
+            ALL_NODES[node_id].value = ALL_NODES[node_id].pagerank / 2;
         }
 
         var connected_nodes = [];
         var first_degree_nodes = [];
         for (const selected_node of selected_nodes) {
-            first_degree_nodes.push(...network.getConnectedNodes(selected_node));
+            first_degree_nodes.push(...NETWORK.getConnectedNodes(selected_node));
         }
         for (const selected_edge of selected_edges) {
-            first_degree_nodes.push(...network.getConnectedNodes(selected_edge));
+            first_degree_nodes.push(...NETWORK.getConnectedNodes(selected_edge));
         }
 
         for (first_degree_node of first_degree_nodes) {
@@ -226,7 +219,7 @@ function neighbourhood_highlight(params) {
         }
 
         if (selected_nodes.length + connected_nodes.length >= 1) {
-            network.fit({
+            NETWORK.fit({
                 nodes: [...selected_nodes, ...connected_nodes],
                 animation: true
             });
@@ -238,7 +231,7 @@ function neighbourhood_highlight(params) {
             // get the second degree nodes
             for (i = 1; i < degrees; i++) {
                 for (j = 0; j < connected_nodes.length; j++) {
-                    var second_degree_nodes = network.getConnectedNodes(connected_nodes[j]);
+                    var second_degree_nodes = NETWORK.getConnectedNodes(connected_nodes[j]);
                     for (var k = 0; k < second_degree_nodes.length; k++) {
                         var second_degree_node = second_degree_nodes[k];
                         if (!connected_nodes.includes(second_degree_node)) {
@@ -250,63 +243,80 @@ function neighbourhood_highlight(params) {
 
             // all second degree nodes get a different color and their label back
             for (i = 0; i < all_connected_nodes.length; i++) {
-                all_nodes[all_connected_nodes[i]].color = 'rgba(175,175,175,0.75)';
-                if (all_nodes[all_connected_nodes[i]].hiddenLabel !== undefined) {
-                    all_nodes[all_connected_nodes[i]].label = all_nodes[all_connected_nodes[i]].hiddenLabel;
-                    all_nodes[all_connected_nodes[i]].hiddenLabel = undefined;
+                ALL_NODES[all_connected_nodes[i]].color = 'rgba(175,175,175,0.75)';
+                if (ALL_NODES[all_connected_nodes[i]].hiddenLabel !== undefined) {
+                    ALL_NODES[all_connected_nodes[i]].label = ALL_NODES[all_connected_nodes[i]].hiddenLabel;
+                    ALL_NODES[all_connected_nodes[i]].hiddenLabel = undefined;
                 }
-                all_nodes[all_connected_nodes[i]].value = all_nodes[all_connected_nodes[i]].pagerank * 2;
+                ALL_NODES[all_connected_nodes[i]].value = ALL_NODES[all_connected_nodes[i]].pagerank * 2;
             }
         }
 
         // all first degree nodes get their own color and their label back
         for (connected_node of connected_nodes) {
             if (selected_nodes.length > 1) {
-                all_nodes[connected_node].color = 'rgba(115,115,115,0.75)';
+                ALL_NODES[connected_node].color = 'rgba(115,115,115,0.75)';
             } else {
-                all_nodes[connected_node].color = undefined;
+                ALL_NODES[connected_node].color = undefined;
             }
-            if (all_nodes[connected_node].hiddenLabel !== undefined) {
-                all_nodes[connected_node].label = all_nodes[connected_node].hiddenLabel;
-                all_nodes[connected_node].hiddenLabel = undefined;
+            if (ALL_NODES[connected_node].hiddenLabel !== undefined) {
+                ALL_NODES[connected_node].label = ALL_NODES[connected_node].hiddenLabel;
+                ALL_NODES[connected_node].hiddenLabel = undefined;
             }
-            all_nodes[connected_node].value = all_nodes[connected_node].pagerank * 2;
+            ALL_NODES[connected_node].value = ALL_NODES[connected_node].pagerank * 2;
         }
 
         // the main nodes get their own color and label back.
         for (selected_node of selected_nodes) {
-            all_nodes[selected_node].color = undefined;
-            if (all_nodes[selected_node].hiddenLabel !== undefined) {
-                all_nodes[selected_node].label = all_nodes[selected_node].hiddenLabel;
-                all_nodes[selected_node].hiddenLabel = undefined;
+            ALL_NODES[selected_node].color = undefined;
+            if (ALL_NODES[selected_node].hiddenLabel !== undefined) {
+                ALL_NODES[selected_node].label = ALL_NODES[selected_node].hiddenLabel;
+                ALL_NODES[selected_node].hiddenLabel = undefined;
             }
-            all_nodes[selected_node].value = all_nodes[selected_node].pagerank * 3;
+            ALL_NODES[selected_node].value = ALL_NODES[selected_node].pagerank * 3;
         }
-    } else if (highlight_active === true) {
+    } else if (HIGHLIGHT_ACTIVE === true) {
         // reset all nodes
-        for (var node_id in all_nodes) {
-            all_nodes[node_id].color = undefined;
-            if (all_nodes[node_id].hiddenLabel !== undefined) {
-                all_nodes[node_id].label = all_nodes[node_id].hiddenLabel;
-                all_nodes[node_id].hiddenLabel = undefined;
+        for (var node_id in ALL_NODES) {
+            ALL_NODES[node_id].color = undefined;
+            if (ALL_NODES[node_id].hiddenLabel !== undefined) {
+                ALL_NODES[node_id].label = ALL_NODES[node_id].hiddenLabel;
+                ALL_NODES[node_id].hiddenLabel = undefined;
             }
-            all_nodes[node_id].value = all_nodes[node_id].pagerank;
+            ALL_NODES[node_id].value = ALL_NODES[node_id].pagerank;
         }
-        highlight_active = false
-        network.fit({
+        HIGHLIGHT_ACTIVE = false
+        NETWORK.fit({
             animation: true
         });
     }
 
     // transform the object into an array
     var update_array = [];
-    for (node_id in all_nodes) {
-        if (all_nodes.hasOwnProperty(node_id)) {
-            update_array.push(all_nodes[node_id]);
+    for (node_id in ALL_NODES) {
+        if (ALL_NODES.hasOwnProperty(node_id)) {
+            update_array.push(ALL_NODES[node_id]);
         }
     }
-    nodes_dataset.update(update_array);
+    NODES_DATASET.update(update_array);
 }
+
+/* ----------------------------------------------------------------------------------- */
+
+/* -------------------------------------- Events -------------------------------------- */
+
+$physics_button.click(function () {
+    var physics_on = $toggle_icon.hasClass("fa-lock");
+    if (physics_on) {
+        NETWORK.setOptions({physics: false});
+        $toggle_icon.removeClass("fa-lock");
+        $toggle_icon.addClass("fa-unlock");
+    } else {
+        NETWORK.setOptions({physics: true});
+        $toggle_icon.removeClass("fa-unlock");
+        $toggle_icon.addClass("fa-lock");
+    }
+});
 
 $download_button.click(function() {
     var download_anchor = document.createElement('a');
@@ -316,3 +326,5 @@ $download_button.click(function() {
     download_anchor.click();
     document.body.removeChild(download_anchor);
 });
+
+/* ------------------------------------------------------------------------------------ */
