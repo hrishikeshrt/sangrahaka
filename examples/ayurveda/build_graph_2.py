@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Mar 18 01:31:47 2021
+Created on Sun Feb 19 23:05:16 2023
 
 @author: Hrishikesh Terdalkar
 """
@@ -26,188 +26,8 @@ logger = logging.getLogger(__name__)
 
 ###############################################################################
 
-GROUPS = {
-    'SUBSTANCE_ALL': [
-        'SUBSTANCE', 'PART_OF_SUBSTANCE',
-        'COMPOUND_SUBSTANCE', 'PREPARED_SUBSTANCE'
-    ],
-    'EFFECT_TARGET': [
-        'PART_OF_BODY', 'PRODUCT_OF_BODY', 'ANIMAL', 'PLANT'
-    ],
-    'EFFECT_EXTERNAL': [
-        'DISEASE', 'SYMPTOM', 'EFFECT'
-    ],
-    'EFFECT_ALL': [
-        'EFFECT', 'SYMPTOM', 'DISEASE', 'TRIDOSHA'
-    ],
-    'PROPERTY_TYPE': [
-        'PROPERTY'
-    ],
-    'LOCATION': ['LOCATION'],
-    'PERSON': ['PERSON'],
-    'ANIMAL': ['ANIMAL'],
-    'PLANT': ['PLANT'],
-    'SOURCE': ['SOURCE'],
-    'ANIMAL_SOURCE': ['ANIMAL_SOURCE'],
-    'PLANT_SOURCE': ['PLANT_SOURCE'],
-    'QUANTITY': ['QUANTITY'],
-    'METHOD': ['METHOD'],
-    'USAGE': ['USAGE'],
-    'TIME': ['TIME'],
-    'SEASON': ['SEASON'],
-    'OTHER': ['OTHER']
-}
-
-# --------------------------------------------------------------------------- #
-
-COMPATIBILITY = {
-    'IS_SYNONYM_OF': {
-        'source': GROUPS['SUBSTANCE_ALL'] + ['TRIDOSHA'],
-        'target': GROUPS['SUBSTANCE_ALL'] + ['TRIDOSHA'],
-    },
-    'IS_PROPERTY_OF': {
-        'source': GROUPS['PROPERTY_TYPE'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_PROPERTY_NOT_OF': {
-        'source': GROUPS['PROPERTY_TYPE'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_SIMILAR_TO': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_BETTER_THAN': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL'],
-    },
-    'IS_WORSE_THAN': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_NEWER_THAN': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_OLDER_THAN': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_BEST_AMONG': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_MEDIUM_AMONG': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_WORST_AMONG': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_INGREDIENT_OF': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_PART_OF': {
-        'source': ['PART_OF_SUBSTANCE'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_PART_NOT_OF': {
-        'source': ['PART_OF_SUBSTANCE'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_TYPE_OF': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_VARIANT_OF': {
-        'source': GROUPS['SUBSTANCE_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_DISEASE_OF': {
-        'source': ['DISEASE'],
-        'target': GROUPS['EFFECT_TARGET']
-    },
-    'IS_CAUSED_BY': {
-        'source': GROUPS['EFFECT_EXTERNAL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_CAUSED_NOT_BY': {
-        'source': GROUPS['EFFECT_EXTERNAL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_BENEFITTED_BY': {
-        'source': GROUPS['EFFECT_TARGET'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_HARMED_BY': {
-        'source': GROUPS['EFFECT_TARGET'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_PRODUCED_BY': {
-        'source': [],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_REMOVED_BY': {
-        'source': [],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_INCREASED_BY': {
-        'source': GROUPS['EFFECT_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_DECREASED_BY': {
-        'source': GROUPS['EFFECT_ALL'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_PREPARATION_OF': {
-        'source': [],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_PREPARATION_NOT_OF': {
-        'source': [],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-    'IS_LOCATION_OF': {
-        'source': ['LOCATION'],
-        'target': []
-    },
-    'IS_TIME_OF': {
-        'source': ['TIME'],
-        'target': GROUPS['SUBSTANCE_ALL']
-    },
-}
-
-# --------------------------------------------------------------------------- #
-
-SYMMETRIC_RELATIONS = ['IS_SYNONYM_OF', 'IS_SIMILAR_TO']
-
-# --------------------------------------------------------------------------- #
-
-###############################################################################
-
 
 class AyurvedaGraph(PropertyGraph):
-    def infer(self, src_id, label, dst_id, properties):
-        src_labels = COMPATIBILITY[label]['source']
-        dst_labels = COMPATIBILITY[label]['target']
-        src_properties = {
-            'lemma': self.get_lemma_by_id(src_id),
-            'annotator': properties['annotator'],
-            'line_id': properties['line_id'],
-            'auto': True
-        }
-        dst_properties = {
-            'lemma': self.get_lemma_by_id(dst_id),
-            'annotator': properties['annotator'],
-            'line_id': properties['line_id'],
-            'auto': True
-        }
-        return src_labels, dst_labels, src_properties, dst_properties
-
-    def get_lemma_by_id(self, node_id):
-        return Lexicon.query.filter(Lexicon.id == node_id).first().lemma
 
     def get_groups(self, relations=None):
         groups = []
@@ -302,7 +122,7 @@ class AyurvedaGraph(PropertyGraph):
 ###############################################################################
 
 
-def build_graph():
+def build_graph() -> PropertyGraph:
     graph = AyurvedaGraph()
     node_query = Node.query.filter(Node.is_deleted.is_(False))
     relation_query = Relation.query.filter(Relation.is_deleted.is_(False))
@@ -311,7 +131,7 @@ def build_graph():
     nodes = node_query.all()
     relationships = relation_query.all()
     for node in nodes:
-        node_id = node.lexicon_id
+        node_id = node.id
         labels = [node.label.label]
         properties = {
             'lemma': node.lemma.lemma,
@@ -328,8 +148,23 @@ def build_graph():
         }
         if relationship.detail:
             properties['detail'] = relationship.detail
+
         src_id = relationship.src_id
         dst_id = relationship.dst_id
+        src_node = relationship.src_node
+        dst_node = relationship.dst_node
+        if src_node.is_deleted or dst_node.is_deleted:
+            print(
+                f"Relationship ({relationship.id}) "
+                f"(Line: {relationship.line_id}): "
+                f"{src_id} ({src_node.lemma.lemma}:{src_node.label.label}) "
+                f"(is_deleted: {src_node.is_deleted}) "
+                f"-[{label}]-> "
+                f"{dst_id} ({dst_node.lemma.lemma}:{dst_node.label.label}) "
+                f"(is_deleted: {dst_node.is_deleted}) "
+            )
+            continue
+
         graph.add_edge(src_id, label, dst_id, properties=properties)
 
     return graph
@@ -368,5 +203,12 @@ if __name__ == '__main__':
     if save_graph:
         with open(os.path.join(main_dir, "output", "graph.jsonl"), "w") as f:
             f.write(graph.to_jsonl())
+
+        graph_csv = graph.to_csv()
+        with open(os.path.join(main_dir, "output", "graph_nodes.csv"), "w") as f:
+            f.write(graph_csv["nodes"])
+
+        with open(os.path.join(main_dir, "output", "graph_edges.csv"), "w") as f:
+            f.write(graph_csv["edges"])
 
 ###############################################################################
