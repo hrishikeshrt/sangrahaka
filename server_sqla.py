@@ -588,6 +588,22 @@ def show_corpus(chapter_id=None):
     return render_template('corpus.html', data=data)
 
 
+@webapp.route("/browse")
+@auth_required()
+@permissions_required(PERMISSION_QUERY)
+def show_browse():
+    data = {}
+    data['title'] = 'Graph Browser'
+    data['initial_query'] = (
+        'MATCH (node_1)-[edge]->(node_2) RETURN * ORDER BY rand() LIMIT 25'
+    )
+    data['node_query_template'] = (
+        'MATCH (x)-[relation*1..2]-(entity) '
+        'WHERE entity.lemma =~ "{}" RETURN *'
+    )
+    return render_template('browse.html', data=data)
+
+
 @webapp.route("/query")
 @auth_required()
 @permissions_required(PERMISSION_QUERY)

@@ -1,0 +1,32 @@
+{% set active_page = "browse" %}
+{% include "header.html" %}
+<div class="container-fluid p-3">
+    <div class="row">
+        <div class="col-md pl-2">
+            <div class="container-fluid px-0" onload="draw();">
+                <div class="row">
+                    <div class="col-sm">
+                        <button id="download-image" title="Snapshot" class="btn btn-secondary float-right">
+                            <i class="fa fa-camera"></i>
+                        </button>
+                        <button id="toggle-physics" title="Toggle Node Physics" class="btn btn-secondary float-right mx-1">
+                            <i id="toggle-icon" class="fa fa-lock"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="border rounded" id="graph" style="height: 85vh;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const VARIABLE_PREFIX = "{{config.var_prefix}}";
+    const VARIABLE_SUFFIX = "{{config.var_suffix}}";
+    const API_URL = "{{url_for('api')}}";
+    const INITIAL_QUERY = '{{data.initial_query | safe}}';
+    const NODE_QUERY_TEMPLATE = '{{data.node_query_template}}';
+</script>
+<script src="{{url_for('static', filename='plugins/js/vis-network.min.js')}}"></script>
+<script src="{{url_for('static', filename='custom/js/browse/browse.js')}}"></script>
+
+{% include "footer.html" %}
