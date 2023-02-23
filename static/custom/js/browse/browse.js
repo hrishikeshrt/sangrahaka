@@ -16,6 +16,9 @@ var EDGES_DATASET = new vis.DataSet();
 
 /* ------------------------------------- Elements ------------------------------------- */
 
+const $browse_form = $("#browse-form");
+const $seed_node = $("#input-seed-node");
+
 const $physics_button = $("#toggle-physics");
 const $toggle_icon = $("#toggle-icon");
 const $download_button = $("#download-image");
@@ -370,6 +373,14 @@ function neighbourhood_highlight(params) {
 
 
 /* -------------------------------------- Events -------------------------------------- */
+
+// Query
+$browse_form.submit(function(e) {
+    e.preventDefault();
+    const seed_node_lemma = $seed_node.val();
+    const cypher_query_text = $('<textarea />').html(NODE_QUERY_TEMPLATE).text().replace("{}", seed_node_lemma);
+    run_cypher_query(cypher_query_text, process_query_response);
+});
 
 // Physics Enable/Disable
 $physics_button.click(function () {

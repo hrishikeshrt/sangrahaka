@@ -5,6 +5,18 @@
         <div class="col-md pl-2">
             <div class="container-fluid px-0" onload="draw();">
                 <div class="row">
+                    <div class="col-sm-3">
+                        <form id="browse-form">
+                            <div class="input-group">
+                                <input type="text" id="input-seed-node" class="form-control text-info" placeholder="Select seed node" data-url="{{url_for('suggest_lexicon')}}" autocomplete="off" required>
+                                <div class="input-group-append">
+                                    <button type="submit" id="submit-seed-node" class="btn btn-secondary my-auto">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                     <div class="col-sm">
                         <button id="download-image" title="Snapshot" class="btn btn-secondary float-right">
                             <i class="fa fa-camera"></i>
