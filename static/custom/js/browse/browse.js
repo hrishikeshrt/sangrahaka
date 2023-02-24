@@ -17,7 +17,7 @@ var EDGES_DATASET = new vis.DataSet();
 /* ------------------------------------- Elements ------------------------------------- */
 
 const $browse_form = $("#browse-form");
-const $seed_node = $("#input-seed-node");
+const $browse_node = $("#input-browse-node");
 
 const $physics_button = $("#toggle-physics");
 const $toggle_icon = $("#toggle-icon");
@@ -124,7 +124,7 @@ function setup_network() {
             },
             font: {
                 size: 16,
-                face: 'Times New Roman'
+                face: 'Noto Serif Devanagari',
             }
         },
         edges: {
@@ -144,7 +144,19 @@ function setup_network() {
             },
             font: {
                 size: 5,
-                face: 'mono'
+                face: 'Noto Serif Devanagari',
+                align: 'top'
+            }
+        },
+        layout: {
+            improvedLayout: true,
+            hierarchical: {
+                enabled: true,
+                direction: 'LR',
+                sortMethod: 'directed',
+                levelSeparation: 500,
+                nodeSpacing: 150,
+                treeSpacing: 250
             }
         },
         physics: {
@@ -184,7 +196,8 @@ function setup_network() {
         $download_button.data("src", data_url);
     });
     NETWORK.on("click", neighbourhood_highlight);
-    NETWORK.on("oncontext", explore_node)
+    NETWORK.on("oncontext", oncontext_handler)
+    NETWORK.fit({animation: false});
 }
 
 // Query
@@ -234,12 +247,19 @@ function process_query_response(response) {
 /* -------------------------------------- Actions -------------------------------------- */
 
 
-function explore_node(params) {
+function explore_node(browse_node_lemma) {
+    const cypher_query_text = $('<textarea />').html(NODE_QUERY_TEMPLATE).text().replace("{}", browse_node_lemma);
+    run_cypher_query(cypher_query_text, process_query_response);
+}
+
+// 'oncontext' (Right-Click) Handler
+function oncontext_handler(params) {
     params.event.preventDefault();
     const selected_node_id = NETWORK.getNodeAt(params.pointer.DOM);
     const selected_node = ALL_NODES[selected_node_id];
-    const cypher_query_text = $('<textarea />').html(NODE_QUERY_TEMPLATE).text().replace("{}", selected_node.label);
-    run_cypher_query(cypher_query_text, process_query_response);
+    const browse_node_lemma = selected_node.label;
+    $browse_node.val(browse_node_lemma);
+    $browse_form.submit();
 }
 
 function neighbourhood_highlight(params) {
@@ -377,9 +397,8 @@ function neighbourhood_highlight(params) {
 // Query
 $browse_form.submit(function(e) {
     e.preventDefault();
-    const seed_node_lemma = $seed_node.val();
-    const cypher_query_text = $('<textarea />').html(NODE_QUERY_TEMPLATE).text().replace("{}", seed_node_lemma);
-    run_cypher_query(cypher_query_text, process_query_response);
+    const browse_node_lemma = $browse_node.val();
+    explore_node(browse_node_lemma);
 });
 
 // Physics Enable/Disable
@@ -412,7 +431,7 @@ $download_button.click(function() {
 
 $(document).ready(function () {
     run_cypher_query(INITIAL_QUERY, process_query_response);
-    $seed_node.autoComplete();
+    $browse_node.autoComplete();
 });
 
 /* ------------------------------------------------------------------------------------ */
