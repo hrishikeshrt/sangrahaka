@@ -595,10 +595,10 @@ def show_browse():
     data = {}
     data['title'] = 'Graph Browser'
     data['initial_query'] = (
-        'MATCH (node_1)-[edge]->(node_2) RETURN * ORDER BY rand() LIMIT 25'
+        'MATCH (node_1)-[edge]->(node_2) RETURN * ORDER BY rand() LIMIT 10'
     )
     data['node_query_template'] = (
-        'MATCH (x)-[relation*1..2]-(entity) '
+        'MATCH (x)-[relation]-(entity) '
         'WHERE entity.lemma =~ "{}" RETURN *'
     )
     return render_template('browse.html', data=data)
@@ -1004,7 +1004,7 @@ def api():
         try:
             limit_index = query_words.index('LIMIT')
             limit = int(query_words[limit_index + 1])
-            if limit > query_limit:
+            if query_limit > 0 and limit > query_limit:
                 limit_pattern = re.compile(f'LIMIT {limit}', re.IGNORECASE)
                 cypher_query = re.sub(
                     limit_pattern, f'LIMIT {query_limit}', cypher_query
@@ -1012,7 +1012,8 @@ def api():
                 api_response['warning'] = f'LIMIT reset to {query_limit}'
                 logging.warning(f"Limit exceeded. ({limit} > {query_limit}).")
         except ValueError:
-            cypher_query = f'{cypher_query} LIMIT {query_limit}'
+            if query_limit > 0:
+                cypher_query = f'{cypher_query} LIMIT {query_limit}'
 
         # bad-words
         must_have = ['MATCH', 'RETURN']

@@ -37,7 +37,7 @@ APPLICATION_CONFIG = {
     'schemes': [],
     'var_prefix': '#',
     'var_suffix': '#',
-    'query_limit': 50,
+    'query_limit': 250,
     'unnamed_prefix': 'X',
     'show_split': False,
     'line_detail_formatter': 'generic',
