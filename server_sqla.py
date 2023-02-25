@@ -633,6 +633,8 @@ def show_query():
 
 
 @webapp.route("/query/builder")
+@auth_required()
+@permissions_required(PERMISSION_QUERY)
 def show_builder():
     data = {'title': 'Graph Query Builder'}
     data['templates'] = app.config['graph_templates']
@@ -677,6 +679,7 @@ def show_about():
 
 
 @webapp.route("/<page>")
+@auth_required()
 def show_custom_page(page):
     if page in app.custom_pages:
         page_data = app.custom_pages[page]
