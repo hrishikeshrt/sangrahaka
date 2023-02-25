@@ -160,7 +160,10 @@
         'corpus': ('show_corpus', 'Corpus'),
     }-%}
     {% set querier_navigation = {
-        'query': ('show_query', 'Query')
+        'graph': ({
+            'query': ('show_query', 'Query'),
+            'browse': ('show_browse', 'Browse')
+        }, 'Graph')
     }-%}
     {% set user_navigation = {
         'settings': ('show_settings', 'Settings')
@@ -204,9 +207,22 @@
         {% for id in navigation_bar %}
         {% set func = navigation_bar[id][0] %}
         {% set caption = navigation_bar[id][1] %}
+        {% if func is mapping %}
+        <li class="nav-item lead dropdown">
+            <a class="nav-link dropdown-toggle {% if active_page in func %}active{% endif %}" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{caption}}</a>
+            <div class="dropdown-menu">
+            {% for _id in func %}
+                {% set _func = func[_id][0] %}
+                {% set _caption = func[_id][1] %}
+                <a class="dropdown-item {% if _id == active_page %}active{% endif %}" href="{{url_for(_func)}}">{{_caption}}</a>
+            {% endfor %}
+            </div>
+        </li>
+        {% else %}
         <li class="nav-item lead">
             <a class="nav-link {% if id == active_page %}active{% endif %}" href="{{url_for(func)}}">{{caption}}</a>
         </li>
+        {% endif %}
         {% endfor %}
 
     </ul>
