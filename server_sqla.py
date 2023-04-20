@@ -1136,7 +1136,8 @@ def suggest_node():
             Lexicon.transliteration.like(f"%##{lexicon_query_term}%"),
             Lexicon.lemma.startswith(lexicon_query_term)
         ),
-        NodeLabel.label.like(f"{node_label_query_term}%")
+        NodeLabel.label.like(f"{node_label_query_term}%"),
+        Node.is_deleted == False  # noqa
     ).group_by(
         Node.lexicon_id, Node.label_id
     ).order_by(
