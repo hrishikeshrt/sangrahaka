@@ -8,6 +8,78 @@
 // They are set in query.html file
 
 
+const NETWORK_CONTAINER = document.getElementById('graph');
+const NETWORK_OPTIONS = {
+    nodes: {
+        shape: 'dot',
+        scaling: {
+            min: 12,
+            max: 24,
+            label: {
+                min: 15,
+                max: 30,
+                drawThreshold: 12,
+                maxVisible: 30
+            }
+        },
+        font: {
+            size: 16,
+            face: 'Noto Serif Devanagari',
+        }
+    },
+    edges: {
+        width: 0.15,
+        color: {
+            inherit: 'both'
+        },
+        scaling: {
+            min: 1,
+            max: 5,
+            label: {
+                min: 10,
+                max: 25,
+                drawThreshold: 5,
+                maxVisible: 20
+            }
+        },
+        font: {
+            size: 5,
+            face: 'Noto Serif Devanagari',
+            align: 'top'
+        }
+    },
+    layout: {
+        improvedLayout: true,
+        hierarchical: {
+            enabled: true,
+            direction: 'LR',
+            sortMethod: 'directed',
+            levelSeparation: 500,
+            nodeSpacing: 150,
+            treeSpacing: 250
+        }
+    },
+    physics: {
+        forceAtlas2Based: {
+            gravitationalConstant: -30,
+            centralGravity: 0.003,
+            springLength: 200,
+            springConstant: 0.15
+        },
+        maxVelocity: 150,
+        solver: 'forceAtlas2Based',
+        timestep: 0.35,
+        stabilization: {
+            iterations: 120
+        }
+    },
+    interaction: {
+        tooltipDelay: 100,
+        hideEdgesOnDrag: false,
+        hideEdgesOnZoom: false,
+        hover: true
+    },
+};
 var NETWORK, ALL_NODES;
 var HIGHLIGHT_ACTIVE = false;
 
@@ -33,7 +105,7 @@ function toTitleCase(str) {
     });
 }
 
-function prepare_network_data(nodes, relationships) {
+function prepare_network_data(nodes, relationships, clear_existing) {
     var dataset = {
         nodes: [],
         edges: []
@@ -100,92 +172,22 @@ function prepare_network_data(nodes, relationships) {
         });
     }
 
-    NODES_DATASET.clear()
-    NODES_DATASET.update(dataset.nodes);
+    if (clear_existing) {
+        NODES_DATASET.clear();
+        EDGES_DATASET.clear();
+    }
 
-    EDGES_DATASET.clear()
+    NODES_DATASET.update(dataset.nodes);
     EDGES_DATASET.update(dataset.edges);
 }
 
 function setup_network() {
-    var container = document.getElementById('graph');
-    var options = {
-        nodes: {
-            shape: 'dot',
-            scaling: {
-                min: 12,
-                max: 24,
-                label: {
-                    min: 15,
-                    max: 30,
-                    drawThreshold: 12,
-                    maxVisible: 30
-                }
-            },
-            font: {
-                size: 16,
-                face: 'Noto Serif Devanagari',
-            }
-        },
-        edges: {
-            width: 0.15,
-            color: {
-                inherit: 'both'
-            },
-            scaling: {
-                min: 1,
-                max: 5,
-                label: {
-                    min: 10,
-                    max: 25,
-                    drawThreshold: 5,
-                    maxVisible: 20
-                }
-            },
-            font: {
-                size: 5,
-                face: 'Noto Serif Devanagari',
-                align: 'top'
-            }
-        },
-        layout: {
-            improvedLayout: true,
-            hierarchical: {
-                enabled: true,
-                direction: 'LR',
-                sortMethod: 'directed',
-                levelSeparation: 500,
-                nodeSpacing: 150,
-                treeSpacing: 250
-            }
-        },
-        physics: {
-            forceAtlas2Based: {
-                gravitationalConstant: -30,
-                centralGravity: 0.003,
-                springLength: 200,
-                springConstant: 0.15
-            },
-            maxVelocity: 150,
-            solver: 'forceAtlas2Based',
-            timestep: 0.35,
-            stabilization: {
-                iterations: 120
-            }
-        },
-        interaction: {
-            tooltipDelay: 100,
-            hideEdgesOnDrag: false,
-            hideEdgesOnZoom: false,
-            hover: true
-        },
-    };
     var data = {
         nodes: NODES_DATASET,
         edges: EDGES_DATASET
     }
 
-    NETWORK = new vis.Network(container, data, options);
+    NETWORK = new vis.Network(NETWORK_CONTAINER, data, NETWORK_OPTIONS);
 
     // get a JSON object
     ALL_NODES = NODES_DATASET.get({
@@ -236,9 +238,17 @@ function run_cypher_query(cypher_query_text, response_handler) {
     'json');
 }
 
-function process_query_response(response) {
+function process_fresh_query_response(response) {
     // Create Node and Edge datasets suitable for Vis.js Network
-    prepare_network_data(response.nodes, response.edges);
+    prepare_network_data(response.nodes, response.edges, true);
+
+    // Draw the network graph
+    setup_network();
+}
+
+function process_incremental_query_response(response) {
+    // Create Node and Edge datasets suitable for Vis.js Network
+    prepare_network_data(response.nodes, response.edges, false);
 
     // Draw the network graph
     setup_network();
@@ -246,10 +256,14 @@ function process_query_response(response) {
 
 /* -------------------------------------- Actions -------------------------------------- */
 
-
-function explore_node(browse_node_lemma) {
+function explore_fresh_node(browse_node_lemma) {
     const cypher_query_text = $('<textarea />').html(NODE_QUERY_TEMPLATE).text().replace("{}", browse_node_lemma);
-    run_cypher_query(cypher_query_text, process_query_response);
+    run_cypher_query(cypher_query_text, process_fresh_query_response);
+}
+
+function explore_incremental_node(browse_node_lemma) {
+    const cypher_query_text = $('<textarea />').html(NODE_QUERY_TEMPLATE).text().replace("{}", browse_node_lemma);
+    run_cypher_query(cypher_query_text, process_incremental_query_response);
 }
 
 // 'oncontext' (Right-Click) Handler
@@ -258,8 +272,9 @@ function oncontext_handler(params) {
     const selected_node_id = NETWORK.getNodeAt(params.pointer.DOM);
     const selected_node = ALL_NODES[selected_node_id];
     const browse_node_lemma = selected_node.label;
-    $browse_node.val(browse_node_lemma);
-    $browse_form.submit();
+    // $browse_node.val(browse_node_lemma);
+    // $browse_form.submit();
+    explore_incremental_node(browse_node_lemma);
 }
 
 function neighbourhood_highlight(params) {
@@ -363,7 +378,9 @@ function neighbourhood_highlight(params) {
             }
             ALL_NODES[selected_node].value = ALL_NODES[selected_node].pagerank * 3;
         }
+        $("#node-options").removeClass("d-none");
     } else if (HIGHLIGHT_ACTIVE === true) {
+        $("#node-options").addClass("d-none");
         // reset all nodes
         for (var node_id in ALL_NODES) {
             ALL_NODES[node_id].color = undefined;
@@ -398,7 +415,7 @@ function neighbourhood_highlight(params) {
 $browse_form.submit(function(e) {
     e.preventDefault();
     const browse_node_lemma = $browse_node.val();
-    explore_node(browse_node_lemma);
+    explore_fresh_node(browse_node_lemma);
 });
 
 // Physics Enable/Disable
@@ -430,7 +447,7 @@ $download_button.click(function() {
 /* --------------------------------------- Main --------------------------------------- */
 
 $(document).ready(function () {
-    run_cypher_query(INITIAL_QUERY, process_query_response);
+    run_cypher_query(INITIAL_QUERY, process_fresh_query_response);
     $browse_node.autoComplete();
 });
 
