@@ -95,6 +95,9 @@ const $physics_button = $("#toggle-physics");
 const $toggle_icon = $("#toggle-icon");
 const $download_button = $("#download-image");
 
+const $explore_incremental_button = $("#explore-incremental");
+const $explore_fresh_button = $("#explore-fresh");
+
 /* ------------------------------------------------------------------------------------ */
 
 /* ------------------------------------ Functions ------------------------------------ */
@@ -197,7 +200,7 @@ function setup_network() {
         var data_url = ctx.canvas.toDataURL();
         $download_button.data("src", data_url);
     });
-    NETWORK.on("click", neighbourhood_highlight);
+    NETWORK.on("click", onclick_handler);
     NETWORK.on("oncontext", oncontext_handler)
     NETWORK.fit({animation: false});
 }
@@ -277,6 +280,24 @@ function oncontext_handler(params) {
         // $browse_form.submit();
         explore_incremental_node(browse_node_lemma);
     }
+}
+
+function reset_explore_button_data() {
+    $explore_fresh_button.removeData("lemma");
+    $explore_incremental_button.removeData("lemma");
+}
+
+function onclick_handler(params) {
+    const selected_node_id = NETWORK.getNodeAt(params.pointer.DOM);
+    if (selected_node_id) {
+        const selected_node = ALL_NODES[selected_node_id];
+        const browse_node_lemma = selected_node.label;
+        $explore_fresh_button.data("lemma", browse_node_lemma);
+        $explore_incremental_button.data("lemma", browse_node_lemma);
+    } else {
+        reset_explore_button_data();
+    }
+    neighbourhood_highlight(params);
 }
 
 function neighbourhood_highlight(params) {
