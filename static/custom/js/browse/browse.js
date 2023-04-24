@@ -270,11 +270,13 @@ function explore_incremental_node(browse_node_lemma) {
 function oncontext_handler(params) {
     params.event.preventDefault();
     const selected_node_id = NETWORK.getNodeAt(params.pointer.DOM);
-    const selected_node = ALL_NODES[selected_node_id];
-    const browse_node_lemma = selected_node.label;
-    // $browse_node.val(browse_node_lemma);
-    // $browse_form.submit();
-    explore_incremental_node(browse_node_lemma);
+    if (selected_node_id) {
+        const selected_node = ALL_NODES[selected_node_id];
+        const browse_node_lemma = selected_node.label;
+        // $browse_node.val(browse_node_lemma);
+        // $browse_form.submit();
+        explore_incremental_node(browse_node_lemma);
+    }
 }
 
 function neighbourhood_highlight(params) {
