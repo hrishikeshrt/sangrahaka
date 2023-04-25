@@ -465,6 +465,23 @@ $download_button.click(function() {
     document.body.removeChild(download_anchor);
 });
 
+// Explore
+$explore_incremental_button.click(function () {
+    const browse_lemma =  $(this).data("lemma");
+    if (browse_lemma) {
+        reset_explore_button_data();
+        explore_incremental_node(browse_lemma);
+    }
+});
+
+$explore_fresh_button.click(function () {
+    const browse_lemma =  $(this).data("lemma");
+    if (browse_lemma) {
+        reset_explore_button_data();
+        explore_fresh_node(browse_lemma);
+    }
+});
+
 /* ------------------------------------------------------------------------------------ */
 
 /* --------------------------------------- Main --------------------------------------- */
