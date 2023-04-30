@@ -124,11 +124,11 @@ function relation_formatter(relation, li_classes = "") {
         li_class += " " + li_classes;
     }
     var relation_html = [
-        relation.annotator ? `<li title="${relation.annotator.username}" class="${li_class}">` : `<li class="${li_class}">`,
+        relation.annotator ? `<li title="Relation ID: ${relation.id}, Annotator: ${relation.annotator.username}" class="${li_class}">` : `<li class="${li_class}">`,
         '<div class="row">',
         '<div class="col-sm">',
         `<span title="Source Node ID: ${relation.source.id}">(${relation.source.lemma} <span class="text-secondary">:: ${relation.source.label}</span>)</span>`,
-        ` <span class="text-muted">⊢ [${relation.label.label} (${relation.detail})] →</span> `,
+        ` <span class="text-muted" title="Label ID: ${relation.label.id}">⊢ [${relation.label.label} (${relation.detail})] →</span> `,
         `<span title="Target Node ID: ${relation.target.id}">(${relation.target.lemma} <span class="text-secondary">:: ${relation.target.label}</span>)</span>`,
         '</div>',
         '<div class="col-sm-3">',

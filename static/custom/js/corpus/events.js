@@ -99,6 +99,7 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     $.each(row.relation, function (index, relation) {
         if (!relation.is_deleted) {
             relation_html = relation_formatter({
+                "id": relation.id,
                 "source": relation.source,
                 "label": relation.label,
                 "detail": relation.detail,
