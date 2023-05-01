@@ -423,9 +423,18 @@ def get_line_data(
         for node in node_query.all():
             data[node.line_id]['entity'].append({
                 'id': node.id,
-                'root': node.lemma.lemma,
-                'type': node.label.label,
-                'annotator': node.annotator.username,
+                'lemma': {
+                    'id': node.lexicon_id,
+                    'lemma': node.lemma.lemma
+                },
+                'label': {
+                    'id': node.label_id,
+                    'label': node.label.label
+                },
+                'annotator': {
+                    'id': node.annotator_id,
+                    'username': node.annotator.username
+                },
                 'is_deleted': node.is_deleted
             })
             data[node.line_id]['marked'] = True
