@@ -70,17 +70,17 @@ function column_marked_formatter(value, row) {
     return value ? '<i class="fa fa-check"></i>' : '';
 }
 
-function entity_formatter(root, type, li_classes = "", annotator = "") {
-    var entity_value = [root, type].join('$');
+function entity_formatter(entity, li_classes = "") {
+    var entity_value = [entity.lemma.lemma, entity.label.label].join('$');
     var li_class = 'list-group-item';
     if (li_classes !== "") {
         li_class += " " + li_classes;
     }
     var entity_html = [
-        annotator ? `<li title="${annotator}" class="${li_class}">` : `<li class="${li_class}">`,
+        entity.annotator ? `<li title="Node ID: ${entity.id}, Annotator: ${entity.annotator.username}" class="${li_class}">` : `<li class="${li_class}">`,
         '<div class="row">',
-        `<div class="col-sm-4">${root}</div>`,
-        `<div class="col-sm-4 text-secondary">${type}</div>`,
+        `<div class="col-sm-4" title="Lexicon ID: ${entity.lemma.id}">${entity.lemma.lemma}</div>`,
+        `<div class="col-sm-4 text-secondary" title="Label ID: ${entity.label.id}">${entity.label.label}</div>`,
         '<div class="col-sm-4">',
         '<span class="float-right">',
         `<input type="checkbox" name="entity" value="${entity_value}" class="mr-5"`,

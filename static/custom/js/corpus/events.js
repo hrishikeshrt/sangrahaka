@@ -91,7 +91,12 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
 
     $.each(row.entity, function (index, entity) {
         if (!entity.is_deleted) {
-            entity_html = entity_formatter(entity.root, entity.type, "", entity.annotator);
+            entity_html = entity_formatter({
+                "id": entity.id,
+                "lemma": entity.lemma,
+                "label": entity.label,
+                "annotator": entity.annotator
+            }, "");
             entity_list_html.push(entity_html);
         }
     });
@@ -123,7 +128,11 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
 
     if (unconfirmed !== null) {
         $.each(JSON.parse(unconfirmed), function (index, entity) {
-            entity_html = entity_formatter(entity.root, entity.type, "list-group-item-warning", entity.annotator);
+            entity_html = entity_formatter({
+                "lemma": entity.lemma,
+                "label": entity.label,
+                "annotator": entity.annotator
+            }, "list-group-item-warning");
             entity_list_html.push(entity_html);
         });
     }

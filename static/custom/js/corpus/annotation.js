@@ -6,10 +6,23 @@
 $add_entity_button.on('click', function(e) {
     if ($form_prepare_entity[0].checkValidity() && $line_id_entity.val() != "") {
 
-        var _root = unnamed_formatter($line_id_entity.val(), $entity_root.val().trim(), UNNAMED_PREFIX);
-        var _type = $entity_type.val().trim();
+        var _lemma = unnamed_formatter($line_id_entity.val(), $entity_root.val().trim(), UNNAMED_PREFIX);
+        var _label = $entity_type.val().trim();
 
-        var entity_html = entity_formatter(_root, _type, "list-group-item-warning", CURRENT_USERNAME);
+        const entity_object = {
+            "lemma": {
+                "lemma": _lemma,
+            },
+            "label": {
+                "label": _label
+            },
+            "annotator": {
+                "id": CURRENT_USER_ID,
+                "username": CURRENT_USERNAME,
+            },
+            "is_deleted": false
+        };
+        const entity_html = entity_formatter(entity_object, "list-group-item-warning");
         $entity_list.append(entity_html);
         $('[name="entity"]').bootstrapToggle();
 
@@ -19,12 +32,7 @@ $add_entity_button.on('click', function(e) {
             unconfirmed = '[]';
         }
         unconfirmed = JSON.parse(unconfirmed);
-        unconfirmed.push({
-            'root': _root,
-            'type': _type,
-            'annotator': CURRENT_USERNAME,
-            'is_deleted': false
-        });
+        unconfirmed.push(entity_object);
         storage.setItem($line_id_entity.val(), JSON.stringify(unconfirmed));
     } else {
         $form_prepare_entity[0].reportValidity();
@@ -66,9 +74,16 @@ $confirm_entity_button.on('click', function(e) {
                     $(this).closest('li').removeClass("list-group-item-warning");
                     var entity_values = $(this).val().split('$');
                     entity_objects.push({
-                        'root': entity_values[0],
-                        'type': entity_values[1],
-                        'annotator': CURRENT_USERNAME,
+                        'lemma': {
+                            'lemma': entity_values[0]
+                        },
+                        'label': {
+                            'label': entity_values[1]
+                        },
+                        'annotator': {
+                            'id': CURRENT_USER_ID,
+                            'username': CURRENT_USERNAME
+                        },
                         'is_deleted': false
                     });
                     // all_roots.add("<option>" + entity_values[0] + "</option>");
