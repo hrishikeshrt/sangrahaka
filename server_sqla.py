@@ -240,12 +240,14 @@ except Exception as e:
 
 
 def get_lexicon(lemma: str) -> int:
+    """Fetch id of an existing Lexicon"""
     lexicon = Lexicon.query.filter(Lexicon.lemma == lemma).one_or_none()
     if lexicon:
         return lexicon.id
 
 
 def create_lexicon(lemma: str) -> int:
+    """Create a new Lexicon and return its id"""
     transliterations = [
         f"##{transliterate(lemma, 'devanagari', scheme)}"
         if not lemma.startswith(app.config['unnamed_prefix']) else ''
@@ -266,6 +268,18 @@ def get_or_create_lexicon(lemma: str) -> int:
 
 
 def update_lexicon(old_lemma: int, new_lemma: str) -> bool:
+    """
+    Change lemma of a lexicon entry
+
+    It must be ensured that `new_lemma` does not exist already,
+    else the uniqueness constraint on `Lexicon.lemma` will be violated.
+    Different strategies may be required if the `new_lemma` already exists,
+    based on different roles of users trying to use this command.
+    e.g., when changing to an existing lemma, we would need to update all the
+    `Node` references as well, and this should be limited to secure roles,
+    such as `ROLE_CURATOR` or `ROLE_ADMIN`.
+    These decisions are left out of scope of this function.
+    """
     transliterations = [
         f"##{transliterate(new_lemma, 'devanagari', scheme)}"
         if not new_lemma.startswith(app.config['unnamed_prefix']) else ''
