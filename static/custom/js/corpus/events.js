@@ -99,6 +99,32 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
             }, "");
             entity_list_html.push(entity_html);
         }
+        attach_context_menu(".context-node", [
+            {
+                header: "Node Actions",
+            },
+            {
+                text: "<i class='fa fa-info-circle mr-1'></i> Information",
+                action: function(e) {
+                    e.preventDefault();
+                    alert("I will show information about the node.");
+                 },
+            },
+            {
+                text: "<i class='fa fa-edit mr-1'></i> Edit Entity Text",
+                action: function(e) {
+                   e.preventDefault();
+                   alert("I will launch a modal to edit entity text.");
+                },
+            },
+            {
+                text: "<i class='fa fa-edit mr-1'></i> Change Entity Type",
+                action: function(e) {
+                   e.preventDefault();
+                   alert("I will launch a modal to change entity type.")
+                },
+            }
+        ]);
     });
 
     $.each(row.relation, function (index, relation) {

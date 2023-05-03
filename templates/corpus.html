@@ -6,7 +6,7 @@
             <span id="corpus-title" class="lead"></span>
             <table id="corpus_viewer" class="table table-bordered table-hover" data-toggle="table"
                 data-url="{{url_for('api_corpus', chapter_id=data.chapter_id)}}"
-                data-response-handler="response_handler"
+                data-response-handler="table_response_handler"
                 data-toolbar="#corpus-title"
                 data-unique-id="line_id"
                 data-cache="false"
