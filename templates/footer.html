@@ -16,6 +16,7 @@
         <!-- Bootstrap-Notify -->
         <script src="{{url_for('static', filename='plugins/js/bootstrap-notify.min.js')}}"></script>
 
+        <!-- CSRF Token to All AJAX Requests -->
         <script type="text/javascript">
             var csrf_token = "{{ csrf_token() }}";
 
@@ -27,12 +28,28 @@
                 }
             });
         </script>
+
+        <!-- Context.js -->
+        <script src="{{url_for('static', filename='plugins/js/context.js')}}"></script>
+        <script>
+            context.init({
+                fadeSpeed: 100,
+                filter: function ($object) {},  // default: null
+                above: 'auto',
+                preventDoubleContext: false,    // default: true
+                compress: false
+            });
+        </script>
+
+        <!-- Bootstrap selectpicker -->
         <script>
             $(function () {
                 $('[data-toggle="tooltip"]').tooltip();
             });
             $('.selectpicker').selectpicker();
         </script>
+
+        <!-- Custom Notifications -->
         <script>
             $.notifyDefaults({
                 placement: {
