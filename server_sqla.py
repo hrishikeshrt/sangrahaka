@@ -742,7 +742,12 @@ def api():
 
     role_actions = {
         ROLE_ADMIN: [],
-        ROLE_ANNOTATOR: ['update_entity', 'update_relation', 'update_action'],
+        ROLE_ANNOTATOR: [
+            'update_lexicon',
+            'update_entity',
+            'update_relation',
+            'update_action'
+        ],
         ROLE_CURATOR: [],
         ROLE_QUERIER: ['query', 'graph_query']
     }
@@ -764,6 +769,34 @@ def api():
     api_response['success'] = True
 
     # ----------------------------------------------------------------------- #
+
+    if action == 'update_lexicon':
+        annotator_id = current_user.id
+        current_lemma = request.form['current']
+        replacement_lemma = request.form['replacement']
+
+        replacement_lexicon_id = get_lexicon(replacement_lemma)
+        if replacement_lexicon_id:
+            # TODO: Add replacement strategy for ROLE_ADMIN, ROLE_CURATOR
+            # if current_user.has_permission(PERMISSION_CURATE):
+            #     ....
+            api_response["success"] = False
+            api_response["message"] = "Replacement lemma already exists."
+            return jsonify(api_response)
+
+        try:
+            status = update_lexicon(current_lemma, replacement_lemma)
+            if not status:
+                api_response["success"] = False
+                api_response["message"] = "Original lemma does not exist."
+            else:
+                api_response["success"] = True
+                api_response["message"] = "Successfully updated!"
+        except Exception as e:
+            print(e)
+            api_response['success'] = False
+            api_response['message'] = 'Something went wrong.'
+        return jsonify(api_response)
 
     if action in ['update_entity', 'update_relation', 'update_action']:
         line_id = request.form['line_id']
