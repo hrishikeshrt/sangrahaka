@@ -108,7 +108,8 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
                 action: function(e) {
                     e.preventDefault();
                     alert("I will show information about the node.");
-                 },
+                },
+                disabled: true
             },
             {
                 text: "<i class='fa fa-edit mr-1'></i> Edit Entity Text",
@@ -123,6 +124,7 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
                    e.preventDefault();
                    alert("I will launch a modal to change entity type.")
                 },
+                disabled: true
             }
         ]);
     });

@@ -48,15 +48,16 @@ var context = context || (function () {
 	}
 
 	function buildMenu(data, id, subMenu) {
-		var subClass = (subMenu) ? ' dropdown-context-sub' : '',
-			compressed = options.compress ? ' compressed-context' : '',
-			$menu = $('<ul class="dropdown-menu dropdown-context' + subClass + compressed+'" id="dropdown-' + id + '"></ul>');
+		var subClass = (subMenu) ? ' dropdown-context-sub' : '';
+		var compressed = options.compress ? ' compressed-context' : '';
+		var $menu = $('<div class="dropdown-menu dropdown-context' + subClass + compressed+'" id="dropdown-' + id + '"></div>');
         var i = 0, linkTarget = '';
         for(i; i<data.length; i++) {
+			var disabled = data[i].disabled ? ' disabled': '';
         	if (typeof data[i].divider !== 'undefined') {
-				$menu.append('<li class="divider"></li>');
+				$menu.append('<div class="dropdown-divider"></div>');
 			} else if (typeof data[i].header !== 'undefined') {
-				$menu.append('<li class="nav-header">' + data[i].header + '</li>');
+				$menu.append('<h6 class="dropdown-header">' + data[i].header + '</h6>');
 			} else {
 				if (typeof data[i].href == 'undefined') {
 					data[i].href = '#';
@@ -65,9 +66,9 @@ var context = context || (function () {
 					linkTarget = ' target="'+data[i].target+'"';
 				}
 				if (typeof data[i].subMenu !== 'undefined') {
-					$sub = ('<li class="dropdown-submenu"><a tabindex="-1" href="' + data[i].href + '">' + data[i].text + '</a></li>');
+					$sub = ('<li class="dropdown-submenu"><a class="dropdown-item' + disabled + '" tabindex="-1" href="' + data[i].href + '">' + data[i].text + '</a></li>');
 				} else {
-					$sub = $('<li><a tabindex="-1" href="' + data[i].href + '"'+linkTarget+'>' + data[i].text + '</a></li>');
+					$sub = $('<li><a class="dropdown-item' + disabled + '" tabindex="-1" href="' + data[i].href + '"'+linkTarget+'>' + data[i].text + '</a></li>');
 				}
 				if (typeof data[i].action !== 'undefined') {
 					var actiond = new Date(),

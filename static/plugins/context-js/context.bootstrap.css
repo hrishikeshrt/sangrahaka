@@ -4,7 +4,7 @@
  * http://lab.jakiestfu.com/contextjs/context.bootstrap.css
  */
 
-.dropdown-context .nav-header{
+.dropdown-context .dropdown-header{
 	cursor:default;
 	}
 .dropdown-context:before, .dropdown-context-up:before {
@@ -48,7 +48,7 @@
 
 .dropdown-context-sub:before, .dropdown-context-sub:after{
 	display:none;
-	}
+}
 .dropdown-context .dropdown-submenu:hover .dropdown-menu {
 	display: none;
 	}
@@ -58,15 +58,15 @@
 	}
 
 
-.compressed-context a{
+.compressed-context a {
 	padding-left: 14px;
 	padding-top: 0;
 	padding-bottom: 0;
 	font-size: 13px;
 	}
-.compressed-context .divider{
+.compressed-context .dropdown-divider{
 	margin: 5px 1px;
 	}
-.compressed-context .nav-header{
+.compressed-context .dropdown-header{
 	padding:1px 13px;
 	}

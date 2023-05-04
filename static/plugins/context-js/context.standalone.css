@@ -4,7 +4,7 @@
  * http://lab.jakiestfu.com/contextjs/context.standalone.css
  */
 
-.nav-header {
+.dropdown-header {
 	display: block;
 	padding: 3px 15px;
 	font-size: 11px;
@@ -47,7 +47,7 @@
 	right: 0;
 	left: auto;
 }
-.dropdown-menu .divider {
+.dropdown-menu .dropdown-divider {
 	*width: 100%;
 	height: 1px;
 	margin: 9px 1px;
@@ -156,7 +156,7 @@
 .dropdown-submenu:hover > a:after {
 	border-left-color: #ffffff;
 }
-.dropdown .dropdown-menu .nav-header {
+.dropdown .dropdown-menu .dropdown-header {
 	padding-right: 20px;
 	padding-left: 20px;
 }
@@ -164,7 +164,7 @@
  * 	Context Styles
  */
 
-.dropdown-context .nav-header {
+.dropdown-context .dropdown-header {
 	cursor: default;
 }
 .dropdown-context:before, .dropdown-context-up:before {
@@ -221,9 +221,9 @@
 	padding-bottom: 0;
 	font-size: 13px;
 	}
-.compressed-context .divider{
+.compressed-context .dropdown-divider{
 	margin: 5px 1px;
 	}
-.compressed-context .nav-header{
+.compressed-context .dropdown-header{
 	padding:1px 13px;
 	}
