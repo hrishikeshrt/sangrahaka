@@ -99,34 +99,6 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
             }, "");
             entity_list_html.push(entity_html);
         }
-        attach_context_menu(".context-node", [
-            {
-                header: "Node Actions",
-            },
-            {
-                text: "<i class='fa fa-info-circle mr-1'></i> Information",
-                action: function(e) {
-                    e.preventDefault();
-                    alert("I will show information about the node.");
-                },
-                disabled: true
-            },
-            {
-                text: "<i class='fa fa-edit mr-1'></i> Edit Entity Text",
-                action: function(e) {
-                   e.preventDefault();
-                   alert("I will launch a modal to edit entity text.");
-                },
-            },
-            {
-                text: "<i class='fa fa-edit mr-1'></i> Change Entity Type",
-                action: function(e) {
-                   e.preventDefault();
-                   alert("I will launch a modal to change entity type.")
-                },
-                disabled: true
-            }
-        ]);
     });
 
     $.each(row.relation, function (index, relation) {
@@ -190,6 +162,67 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     $('[name="entity"]').bootstrapToggle();
     $('[name="relation"]').bootstrapToggle();
     $('[name="action"]').bootstrapToggle();
+
+    /* --------------------------------------------------------------------- */
+    // Menu Items
+
+    const node_actions_header_menu_item = {
+        header: "Node Actions",
+    }
+    const node_information_menu_item = {
+        text: "<i class='fa fa-info-circle mr-1'></i> Information",
+        action: function(e, context) {
+            e.preventDefault();
+            const $element = $(context);
+            const lemma = $element.find('div.entity-lemma').text();
+            const label = $element.find('div.entity-label').text();
+            const label_id = $element.data('node-label-id');
+            const lexicon_id = $element.data('lexicon-id');
+            const node_id = $element.data('node-id');
+            const alert_text = [
+                `${lemma} :: ${label}`,
+                `Node ID: ${node_id}`,
+                `Lemma ID: ${lexicon_id}`,
+                `Label ID: ${label_id}`
+            ];
+            $.notify({message: alert_text.join("<br>")});
+        }
+    };
+    const edit_node_lexicon_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Edit Entity Text",
+        action: function(e, context) {
+            e.preventDefault();
+            const $element = $(context);
+            const current_lemma = $element.find('div.entity-lemma').text();
+            $("#edit-lexicon-modal").modal('show');
+            $("#input-current-lemma").val(current_lemma);
+            $("#input-replacement-lemma").val(current_lemma);
+            setTimeout(function() {
+                $("#input-replacement-lemma").focus();
+            }, 500);
+        },
+    };
+    const edit_node_label_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Change Entity Type",
+        action: function(e, context) {
+            e.preventDefault();
+            $.notify({
+                message: "Eventually this will launch a modal to change entity type."
+            }, {
+                type: "warning"
+            });
+        },
+        disabled: true
+    };
+
+    /* --------------------------------------------------------------------- */
+
+    attach_context_menu(".context-node", [
+        node_actions_header_menu_item,
+        node_information_menu_item,
+        edit_node_lexicon_menu_item,
+        edit_node_label_menu_item
+    ]);
 });
 
 // Page Change
