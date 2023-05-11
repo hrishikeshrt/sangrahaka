@@ -225,6 +225,35 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     ]);
 });
 
+$("#edit-lexicon-submit").on('click', function(e) {
+    e.preventDefault();
+    if ($("#edit-lexicon-form")[0].checkValidity()) {
+        $.post(API_URL, {
+            action: "update_lexicon",
+            current_lemma: $("#input-current-lemma").val().trim(),
+            replacement_lemma: $("#input-replacement-lemma").val().trim()
+        },
+        function (response) {
+            $.notify({
+                message: response.message
+            }, {
+                type: response.style
+            });
+            // TODO: Update node list in local table.
+            if (response.success) {
+                $.notify({
+                    message: "NOTE: Refresh the page to update the node list."
+                }, {
+                    type: "warning"
+                })
+            }
+        },
+        'json');
+    } else {
+        $("#edit-lexicon-form")[0].reportValidity();
+    }
+});
+
 // Page Change
 $corpus_table.on('page-change.bs.table', function (e, number, size) {
     $line_id_entity.val("");

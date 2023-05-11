@@ -767,13 +767,21 @@ def api():
     # ----------------------------------------------------------------------- #
 
     api_response['success'] = True
+    api_response['style'] = "info"
 
     # ----------------------------------------------------------------------- #
 
     if action == 'update_lexicon':
         annotator_id = current_user.id
-        current_lemma = request.form['current']
-        replacement_lemma = request.form['replacement']
+        current_lemma = request.form['current_lemma']
+        replacement_lemma = request.form['replacement_lemma']
+
+        if current_lemma == replacement_lemma:
+            api_response["success"] = False
+            api_response["message"] = (
+                "Replacement text is identical to current text."
+            )
+            return jsonify(api_response)
 
         replacement_lexicon_id = get_lexicon(replacement_lemma)
         if replacement_lexicon_id:
@@ -781,21 +789,25 @@ def api():
             # if current_user.has_permission(PERMISSION_CURATE):
             #     ....
             api_response["success"] = False
-            api_response["message"] = "Replacement lemma already exists."
+            api_response["message"] = "Replacement text already exists."
+            api_response["style"] = "warning"
             return jsonify(api_response)
 
         try:
             status = update_lexicon(current_lemma, replacement_lemma)
             if not status:
                 api_response["success"] = False
-                api_response["message"] = "Original lemma does not exist."
+                api_response["message"] = "Original text not found."
+                api_response["style"] = "warning"
             else:
                 api_response["success"] = True
                 api_response["message"] = "Successfully updated!"
+                api_response["style"] = "success"
         except Exception as e:
             print(e)
-            api_response['success'] = False
-            api_response['message'] = 'Something went wrong.'
+            api_response["success"] = False
+            api_response["message"] = "Something went wrong."
+            api_response["style"] = "error"
         return jsonify(api_response)
 
     if action in ['update_entity', 'update_relation', 'update_action']:
