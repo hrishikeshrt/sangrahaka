@@ -83,11 +83,15 @@ function entity_formatter(entity, li_classes = "") {
     if (li_classes !== "") {
         li_class += " " + li_classes;
     }
+    const node_hover_text = entity.annotator ? `Node ID: ${entity.id}, Annotator: ${entity.annotator.username}` : `Node ID: ${entity.id}`;
+    const lemma_hover_text = `Lexicon ID: ${entity.lemma.id}`;
+    const node_label_hover_text = `Label ID: ${entity.label.id}`;
+
     var entity_html = [
-        entity.annotator ? `<li title="Node ID: ${entity.id}, Annotator: ${entity.annotator.username}" class="${li_class}">` : `<li class="${li_class}">`,
+        `<li title="${node_hover_text}" class="${li_class}" data-node-id="${entity.id}" data-annotator-id="${entity.annotator.id}" data-lexicon-id="${entity.lemma.id}" data-node-label-id="${entity.label.id}">`,
         '<div class="row">',
-        `<div class="col-sm-4" title="Lexicon ID: ${entity.lemma.id}">${entity.lemma.lemma}</div>`,
-        `<div class="col-sm-4 text-secondary" title="Label ID: ${entity.label.id}">${entity.label.label}</div>`,
+        `<div class="col-sm-4 entity-lemma" title="${lemma_hover_text}">${entity.lemma.lemma}</div>`,
+        `<div class="col-sm-4 text-secondary entity-label" title="${node_label_hover_text}">${entity.label.label}</div>`,
         '<div class="col-sm-4">',
         '<span class="float-right">',
         `<input type="checkbox" name="entity" value="${entity_value}" class="mr-5"`,
@@ -131,13 +135,18 @@ function relation_formatter(relation, li_classes = "") {
     if (li_classes !== "") {
         li_class += " " + li_classes;
     }
+    const relation_hover_text = relation.annotator ? `Relation ID: ${relation.id}, Annotator: ${relation.annotator.username}` : `Relation ID: ${relation.id}`;
+    const source_node_hover_text = `Source Node ID: ${relation.source.id}`;
+    const target_node_hover_text = `Target Node ID: ${relation.target.id}`;
+    const relation_label_hover_text = `Label ID: ${relation.label.id}`;
+
     var relation_html = [
-        relation.annotator ? `<li title="Relation ID: ${relation.id}, Annotator: ${relation.annotator.username}" class="${li_class}">` : `<li class="${li_class}">`,
+        `<li title="${relation_hover_text}" class="${li_class}">`,
         '<div class="row">',
         '<div class="col-sm">',
-        `<span class="context-node" title="Source Node ID: ${relation.source.id}">(${relation.source.lemma} <span class="text-secondary">:: ${relation.source.label}</span>)</span>`,
-        ` <span class="text-muted" title="Label ID: ${relation.label.id}">⊢ [${relation.label.label} (${relation.detail})] →</span> `,
-        `<span class="context-node" title="Target Node ID: ${relation.target.id}">(${relation.target.lemma} <span class="text-secondary">:: ${relation.target.label}</span>)</span>`,
+        `<span title="${source_node_hover_text}">(${relation.source.lemma} <span class="text-secondary">:: ${relation.source.label}</span>)</span>`,
+        ` <span class="text-muted" title="${relation_label_hover_text}">⊢ [${relation.label.label} (${relation.detail})] →</span> `,
+        `<span title="${target_node_hover_text}">(${relation.target.lemma} <span class="text-secondary">:: ${relation.target.label}</span>)</span>`,
         '</div>',
         '<div class="col-sm-3">',
         '<span class="float-right">',
