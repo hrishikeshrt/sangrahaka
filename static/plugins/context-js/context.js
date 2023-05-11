@@ -66,17 +66,22 @@ var context = context || (function () {
 					linkTarget = ' target="'+data[i].target+'"';
 				}
 				if (typeof data[i].subMenu !== 'undefined') {
-					$sub = ('<li class="dropdown-submenu"><a class="dropdown-item' + disabled + '" tabindex="-1" href="' + data[i].href + '">' + data[i].text + '</a></li>');
+					$sub = $('<li class="dropdown-submenu"><a class="dropdown-item' + disabled + '" tabindex="-1" href="' + data[i].href + '">' + data[i].text + '</a></li>');
 				} else {
 					$sub = $('<li><a class="dropdown-item' + disabled + '" tabindex="-1" href="' + data[i].href + '"'+linkTarget+'>' + data[i].text + '</a></li>');
 				}
 				if (typeof data[i].action !== 'undefined') {
-					var actiond = new Date(),
-						actionID = 'event-' + actiond.getTime() * Math.floor(Math.random()*100000),
-						eventAction = data[i].action;
-					$sub.find('a').attr('id', actionID);
-					$('#' + actionID).addClass('context-event');
-					$(document).on('click', '#' + actionID, eventAction);
+					var action_date = new Date();
+					var action_id = 'event-' + action_date.getTime() * Math.floor(Math.random()*100000);
+					var event_action = data[i].action;
+
+					$sub.find('a').attr('id', action_id);
+					$('#' + action_id).addClass('context-event');
+					(function(eventAction) {
+						$(document).on('click', '#' + action_id, function(event) {
+							eventAction(event, $menu.context);
+						});
+					})(event_action);
 				}
 				$menu.append($sub);
 				if (typeof data[i].subMenu != 'undefined') {
@@ -93,16 +98,16 @@ var context = context || (function () {
 
 	function addContext(selector, data) {
 
-		var d = new Date(),
-			id = d.getTime(),
-			$menu = buildMenu(data, id);
+		var date = new Date();
+		var id = date.getTime() * Math.floor(Math.random()*100000);;
+		var $menu = buildMenu(data, id);
 
 		$('body').append($menu);
-
 
 		$(document).on('contextmenu', selector, function (e) {
 			e.preventDefault();
 			e.stopPropagation();
+			$menu.context = this;
 
 			$('.dropdown-context:not(.dropdown-context-sub)').hide();
 
