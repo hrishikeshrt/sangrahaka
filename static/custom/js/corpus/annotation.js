@@ -22,7 +22,7 @@ $add_entity_button.on('click', function(e) {
             },
             "is_deleted": false
         };
-        const entity_html = entity_formatter(entity_object, "list-group-item-warning");
+        const entity_html = entity_formatter(entity_object, true);
         $entity_list.append(entity_html);
         $('[name="entity"]').bootstrapToggle();
 
@@ -43,10 +43,10 @@ $confirm_entity_button.on('click', function(e) {
     var entity_add = [];
     var entity_delete = [];
     $.each($entity_list.find('[name="entity"]'), function () {
-        if ($(this).closest("li").hasClass("list-group-item-warning") && $(this).is(":checked")) {
+        if ($(this).closest("li").hasClass("unconfirmed-entity") && $(this).is(":checked")) {
             entity_add.push($(this).val());
         }
-        if (!$(this).closest("li").hasClass("list-group-item-warning") && !$(this).is(":checked")) {
+        if (!$(this).closest("li").hasClass("unconfirmed-entity") && !$(this).is(":checked")) {
             entity_delete.push($(this).val());
         }
     });
@@ -71,7 +71,7 @@ $confirm_entity_button.on('click', function(e) {
             // update local entity list
             $.each($entity_list.find('[name="entity"]'), function () {
                 if ($(this).is(":checked")) {
-                    $(this).closest('li').removeClass("list-group-item-warning");
+                    $(this).closest('li').removeClass(["unconfirmed-entity", "list-group-item-warning"]);
                     var entity_values = $(this).val().split('$');
                     entity_objects.push({
                         'lemma': {
@@ -177,7 +177,7 @@ $add_relation_button.on('click', function(e) {
             },
             "is_deleted": false
         };
-        const relation_html = relation_formatter(relation_object, "list-group-item-warning");
+        const relation_html = relation_formatter(relation_object, true);
         $relation_list.append(relation_html);
         $('[name="relation"]').bootstrapToggle();
 
@@ -198,10 +198,10 @@ $confirm_relation_button.on('click', function(e) {
     var relation_add = [];
     var relation_delete = [];
     $.each($relation_list.find('[name="relation"]'), function () {
-        if ($(this).closest("li").hasClass("list-group-item-warning") && $(this).is(":checked")) {
+        if ($(this).closest("li").hasClass("unconfirmed-relation") && $(this).is(":checked")) {
             relation_add.push($(this).val());
         }
-        if (!$(this).closest("li").hasClass("list-group-item-warning") && !$(this).is(":checked")) {
+        if (!$(this).closest("li").hasClass("unconfirmed-relation") && !$(this).is(":checked")) {
             relation_delete.push($(this).val());
         }
     });
@@ -226,7 +226,7 @@ $confirm_relation_button.on('click', function(e) {
             // update local relation list
             $.each($relation_list.find('[name="relation"]'), function () {
                 if ($(this).is(":checked")) {
-                    $(this).closest('li').removeClass("list-group-item-warning");
+                    $(this).closest('li').removeClass(["unconfirmed-relation", "list-group-item-warning"]);
                     var relation_values = $(this).val().split('$');
                     relation_objects.push({
                         'source': {
@@ -287,7 +287,7 @@ $add_action_button.on('click', function(e) {
         var _actor_label = $action_actor_label.val().trim();
         var _actor = unnamed_formatter($line_id_action.val(), $action_actor.val().trim(), UNNAMED_PREFIX);
 
-        var action_html = action_formatter(_label, _actor_label, _actor, "list-group-item-warning", CURRENT_USERNAME);
+        var action_html = action_formatter(_label, _actor_label, _actor, true, CURRENT_USERNAME);
         $action_list.append(action_html);
         $('[name="action"]').bootstrapToggle();
 
@@ -314,10 +314,10 @@ $confirm_action_button.on('click', function(e) {
     var action_add = [];
     var action_delete = [];
     $.each($action_list.find('[name="action"]'), function () {
-        if ($(this).closest("li").hasClass("list-group-item-warning") && $(this).is(":checked")) {
+        if ($(this).closest("li").hasClass("unconfirmed-action") && $(this).is(":checked")) {
             action_add.push($(this).val());
         }
-        if (!$(this).closest("li").hasClass("list-group-item-warning") && !$(this).is(":checked")) {
+        if (!$(this).closest("li").hasClass("unconfirmed-action") && !$(this).is(":checked")) {
             action_delete.push($(this).val());
         }
     });
@@ -342,7 +342,7 @@ $confirm_action_button.on('click', function(e) {
             // update local action list
             $.each($action_list.find('[name="action"]'), function () {
                 if ($(this).is(":checked")) {
-                    $(this).closest('li').removeClass("list-group-item-warning");
+                    $(this).closest('li').removeClass(["unconfirmed-action", "list-group-item-warning"]);
                     var action_values = $(this).val().split('$');
                     action_objects.push({
                         'label': action_values[0],

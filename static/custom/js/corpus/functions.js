@@ -76,13 +76,17 @@ function attach_context_menu(css_selector, menu_options) {
     context.attach(css_selector, menu_options);
 }
 
-function entity_formatter(entity, li_classes = "") {
+function entity_formatter(entity, is_unconfirmed = false) {
     // TODO: Should this return object instead of HTML? Construction via JS/jQuery?
-    var entity_value = [entity.lemma.lemma, entity.label.label].join('$');
-    var li_class = 'list-group-item context-node';
-    if (li_classes !== "") {
-        li_class += " " + li_classes;
-    }
+    const entity_value = [entity.lemma.lemma, entity.label.label].join('$');
+
+    const li_base_class = "list-group-item";
+    // edit-entity context menu will be shown for nodes with `context-node` class
+    // we add this class only to the confirmed nodes, since unconfirmed nodes can just be removed
+    const li_confirmed_classes = "context-node";
+    const li_unconfirmed_classes = "list-group-item-warning unconfirmed-entity";
+    const li_class = is_unconfirmed ? li_base_class + " " + li_unconfirmed_classes : li_base_class + " " + li_confirmed_classes;
+
     const node_hover_text = entity.annotator ? `Node ID: ${entity.id}, Annotator: ${entity.annotator.username}` : `Node ID: ${entity.id}`;
     const lemma_hover_text = `Lexicon ID: ${entity.lemma.id}`;
     const node_label_hover_text = `Label ID: ${entity.label.id}`;
@@ -115,7 +119,7 @@ function unnamed_formatter(line_id, text, unnamed_prefix) {
     return text;
 }
 
-function relation_formatter(relation, li_classes = "") {
+function relation_formatter(relation, is_unconfirmed = false) {
     // TODO: Should this return object instead of HTML? Construction via JS/jQuery?
     if (relation.detail == null) {
         relation.detail = "";
@@ -131,10 +135,11 @@ function relation_formatter(relation, li_classes = "") {
         relation.target.lemma,
         relation.target.label,
     ].join('$');
-    var li_class = 'list-group-item';
-    if (li_classes !== "") {
-        li_class += " " + li_classes;
-    }
+
+    const li_base_class = "list-group-item";
+    const li_unconfirmed_classes = "list-group-item-warning unconfirmed-relation";
+    const li_class = is_unconfirmed ? li_base_class + " " + li_unconfirmed_classes : li_base_class;
+
     const relation_hover_text = relation.annotator ? `Relation ID: ${relation.id}, Annotator: ${relation.annotator.username}` : `Relation ID: ${relation.id}`;
     const source_node_hover_text = `Source Node ID: ${relation.source.id}`;
     const target_node_hover_text = `Target Node ID: ${relation.target.id}`;
@@ -162,12 +167,13 @@ function relation_formatter(relation, li_classes = "") {
     return relation_html.join("");
 }
 
-function action_formatter(label, actor_label, actor, li_classes = "", annotator = "") {
+function action_formatter(label, actor_label, actor, is_unconfirmed = false, annotator = "") {
     var action_value = [label, actor_label, actor].join('$');
-    var li_class = 'list-group-item';
-    if (li_classes !== "") {
-        li_class += " " + li_classes;
-    }
+
+    const li_base_class = "list-group-item";
+    const li_unconfirmed_classes = "list-group-item-warning unconfirmed-action";
+    const li_class = is_unconfirmed ? li_base_class + " " + li_unconfirmed_classes : li_base_class;
+
     var action_html = [
         annotator ? `<li title="${annotator}" class="${li_class}">` : `<li class="${li_class}">`,
         '<div class="row">',

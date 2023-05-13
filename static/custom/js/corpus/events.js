@@ -132,7 +132,7 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
                 "lemma": entity.lemma,
                 "label": entity.label,
                 "annotator": entity.annotator
-            }, "list-group-item-warning");
+            }, true);
             entity_list_html.push(entity_html);
         });
     }
@@ -144,13 +144,13 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
                 "detail": relation.detail,
                 "target": relation.target,
                 "annotator": relation.annotator
-            }, "list-group-item-warning");
+            }, true);
             relation_list_html.push(relation_html);
         });
     }
     if (unconfirmed_actions !== null) {
         $.each(JSON.parse(unconfirmed_actions), function (index, action) {
-            action_html = action_formatter(action.label, action.actor_label, action.actor, "list-group-item-warning", action.annotator);
+            action_html = action_formatter(action.label, action.actor_label, action.actor, true, action.annotator);
             action_list_html.push(action_html);
         });
     }
