@@ -1,6 +1,6 @@
 const $corpus_table = $("#corpus_viewer");
 
-// Line Annotation
+// Entity Annotation
 const $form_prepare_entity = $("#form_prepare_entity");
 const $line_id_entity = $("#line_id_entity");
 const $entity_root = $("#input_entity_root");
@@ -10,6 +10,14 @@ const $add_entity_button = $("#add_entity");
 
 const $confirm_entity_button = $("#confirm_entity_list");
 const $entity_list = $("#entity_list");
+
+// Entity Edit
+
+const $edit_lexicon_modal = $("#edit-lexicon-modal");
+const $edit_lexicon_form = $("#edit-lexicon-form");
+const $edit_lexicon_submit_button = $("#edit-lexicon-submit");
+const $edit_lexicon_current_lemma = $("#edit-lexicon-current-lemma");
+const $edit_lexicon_replacement_lemma = $("#edit-lexicon-replacement-lemma");
 
 // Relation Annotation
 const $form_prepare_relation = $("#form_prepare_relation");

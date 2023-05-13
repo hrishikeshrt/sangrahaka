@@ -194,12 +194,10 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
             e.preventDefault();
             const $element = $(context);
             const current_lemma = $element.find('div.entity-lemma').text();
-            $("#edit-lexicon-modal").modal('show');
-            $("#input-current-lemma").val(current_lemma);
-            $("#input-replacement-lemma").val(current_lemma);
-            setTimeout(function() {
-                $("#input-replacement-lemma").focus();
-            }, 500);
+            $edit_lexicon_modal.modal('show');
+            $edit_lexicon_current_lemma.val(current_lemma);
+            $edit_lexicon_replacement_lemma.val(current_lemma);
+            setTimeout(function() {$edit_lexicon_replacement_lemma.focus();}, 500);
         },
     };
     const edit_node_label_menu_item = {
@@ -225,13 +223,13 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     ]);
 });
 
-$("#edit-lexicon-submit").on('click', function(e) {
+$edit_lexicon_submit_button.on('click', function(e) {
     e.preventDefault();
-    if ($("#edit-lexicon-form")[0].checkValidity()) {
+    if ($edit_lexicon_form[0].checkValidity()) {
         $.post(API_URL, {
             action: "update_lexicon",
-            current_lemma: $("#input-current-lemma").val().trim(),
-            replacement_lemma: $("#input-replacement-lemma").val().trim()
+            current_lemma: $edit_lexicon_current_lemma.val().trim(),
+            replacement_lemma: $edit_lexicon_replacement_lemma.val().trim()
         },
         function (response) {
             $.notify({
@@ -239,8 +237,30 @@ $("#edit-lexicon-submit").on('click', function(e) {
             }, {
                 type: response.style
             });
-            // TODO: Update node list in local table.
             if (response.success) {
+                // NOTE: potential bug when there's an unconfirmed relation using an existing entity and we change the lexicon
+                // TODO: investigate and fix if required
+
+                // update local entity list
+                // $.each($entity_list.find('[name="entity"]'), function () {
+                //     // TODO: update lemma
+                // });
+
+                // update local table
+                // TODO:
+                // - iterate through all rows
+                // - find all instances of entities, relationships that use this lexicon
+                // - update lexicon there
+                // ALTERNATE: reload verse data
+                const current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_entity.val());
+
+                // iterate through current_row.entity
+
+                // $corpus_table.bootstrapTable('updateByUniqueId', {
+                //     line_id: current_row.line_id,
+                //     row: current_row
+                // });
+
                 $.notify({
                     message: "NOTE: Refresh the page to update the node list."
                 }, {
@@ -250,7 +270,7 @@ $("#edit-lexicon-submit").on('click', function(e) {
         },
         'json');
     } else {
-        $("#edit-lexicon-form")[0].reportValidity();
+        $edit_lexicon_form[0].reportValidity();
     }
 });
 
