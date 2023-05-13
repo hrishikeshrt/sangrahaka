@@ -13,9 +13,12 @@ const $entity_list = $("#entity_list");
 
 // Entity Edit
 
+// Edit Entity Text
 const $edit_lexicon_modal = $("#edit-lexicon-modal");
 const $edit_lexicon_form = $("#edit-lexicon-form");
 const $edit_lexicon_submit_button = $("#edit-lexicon-submit");
+const $edit_lexicon_node_id = $("#edit-lexicon-node-id");
+const $edit_lexicon_lexicon_id = $("#edit-lexicon-lexicon-id");
 const $edit_lexicon_current_lemma = $("#edit-lexicon-current-lemma");
 const $edit_lexicon_replacement_lemma = $("#edit-lexicon-replacement-lemma");
 
@@ -44,10 +47,6 @@ const $add_action_button = $("#add_action")
 const $confirm_action_button = $("#confirm_action_list");
 const $action_list = $("#action_list");
 
-const $datalist_root = $("#datalist_root");
-const $datalist_source = $("#datalist_source");
-const $datalist_target = $("#datalist_target");
-const $datalist_detail = $("#datalist_detail");
 
 // Globals
 var storage = window.localStorage;

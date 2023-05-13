@@ -30,7 +30,7 @@ $(document).ready(function () {
     // });
 
     // Split Columns
-    var splitobj = Split(["#corpus-column","#annotation-column"], {
+    const splitobj = Split(["#corpus-column", "#annotation-column"], {
         elementStyle: function (dimension, size, gutterSize) {
             $(window).trigger('resize');
             return {
@@ -39,7 +39,7 @@ $(document).ready(function () {
         },
         gutterStyle: function (dimension, gutterSize) {
             return {
-                'flex-basis':  `${gutterSize}px`
+                'flex-basis': `${gutterSize}px`
             };
         },
         sizes: [70, 30],
@@ -66,24 +66,6 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     $relation_target.val("");
     $relation_detail.val("");
     $action_actor.val("");
-
-    // var row_roots = new Set();
-    // $.each(row.analysis, function(index, word) {
-    //     if (word.is_noun) {
-    //         row_roots.add(word.root);
-    //     }
-    // });
-    // $corpus_table.data('current_roots', row_roots);
-
-    // var suggest_roots = new Set([...row_roots, ...all_roots]);
-
-    // $datalist_root.html("");
-    // $datalist_root.append(Array.from(suggest_roots).join(""));
-
-    // $datalist_source.html("");
-    // $datalist_source.append(Array.from(suggest_roots).join(""));
-    // $datalist_target.html("");
-    // $datalist_target.append(Array.from(suggest_roots).join(""));
 
     var entity_list_html = [];
     var relation_list_html = [];
@@ -171,7 +153,7 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     }
     const node_information_menu_item = {
         text: "<i class='fa fa-info-circle mr-1'></i> Information",
-        action: function(e, context) {
+        action: function (e, context) {
             e.preventDefault();
             const $element = $(context);
             const lemma = $element.find('div.entity-lemma').text();
@@ -185,24 +167,28 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
                 `Lemma ID: ${lexicon_id}`,
                 `Label ID: ${label_id}`
             ];
-            $.notify({message: alert_text.join("<br>")});
+            $.notify({
+                message: alert_text.join("<br>")
+            });
         }
     };
     const edit_node_lexicon_menu_item = {
         text: "<i class='fa fa-edit mr-1'></i> Edit Entity Text",
-        action: function(e, context) {
+        action: function (e, context) {
             e.preventDefault();
             const $element = $(context);
             const current_lemma = $element.find('div.entity-lemma').text();
             $edit_lexicon_modal.modal('show');
             $edit_lexicon_current_lemma.val(current_lemma);
             $edit_lexicon_replacement_lemma.val(current_lemma);
-            setTimeout(function() {$edit_lexicon_replacement_lemma.focus();}, 500);
+            setTimeout(function () {
+                $edit_lexicon_replacement_lemma.focus();
+            }, 500);
         },
     };
     const edit_node_label_menu_item = {
         text: "<i class='fa fa-edit mr-1'></i> Change Entity Type",
-        action: function(e, context) {
+        action: function (e, context) {
             e.preventDefault();
             $.notify({
                 message: "Eventually this will launch a modal to change entity type."
@@ -223,52 +209,70 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     ]);
 });
 
-$edit_lexicon_submit_button.on('click', function(e) {
-    e.preventDefault();
+$edit_lexicon_submit_button.on('click', function (e) {
+    $edit_lexicon_modal.modal('hide');
     if ($edit_lexicon_form[0].checkValidity()) {
         $.post(API_URL, {
-            action: "update_lexicon",
-            current_lemma: $edit_lexicon_current_lemma.val().trim(),
-            replacement_lemma: $edit_lexicon_replacement_lemma.val().trim()
-        },
-        function (response) {
-            $.notify({
-                message: response.message
-            }, {
-                type: response.style
-            });
-            if (response.success) {
-                // NOTE: potential bug when there's an unconfirmed relation using an existing entity and we change the lexicon
-                // TODO: investigate and fix if required
-
-                // update local entity list
-                // $.each($entity_list.find('[name="entity"]'), function () {
-                //     // TODO: update lemma
-                // });
-
-                // update local table
-                // TODO:
-                // - iterate through all rows
-                // - find all instances of entities, relationships that use this lexicon
-                // - update lexicon there
-                // ALTERNATE: reload verse data
-                const current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_entity.val());
-
-                // iterate through current_row.entity
-
-                // $corpus_table.bootstrapTable('updateByUniqueId', {
-                //     line_id: current_row.line_id,
-                //     row: current_row
-                // });
-
+                action: "update_lexicon",
+                current_lemma: $edit_lexicon_current_lemma.val().trim(),
+                replacement_lemma: $edit_lexicon_replacement_lemma.val().trim()
+            },
+            function (response) {
                 $.notify({
-                    message: "NOTE: Refresh the page to update the node list."
+                    message: response.message
                 }, {
-                    type: "warning"
-                })
-            }
-        },
-        'json');
+                    type: response.style
+                });
+                if (response.success) {
+                    // NOTE: potential bug when there's an unconfirmed relation using an existing entity and we change the lexicon
+                    // TODO: investigate and fix if required
+                    const current_text = $edit_lexicon_current_lemma.val().trim();
+                    const replacement_text = $edit_lexicon_replacement_lemma.val().trim();
+
+                    // update local entity list
+                    $.each($entity_list.find("div.entity-lemma"), function () {
+                        // TODO: update lemma
+                        const current_lemma = $(this).text();
+                        if (current_lemma == current_text) {
+                            $(this).text(replacement_text);
+                        }
+                    });
+                    // update local relation list
+                    $.each($relation_list.find('span.relation-lemma'), function () {
+                        const current_lemma = $(this).text();
+                        if (current_lemma == current_text) {
+                            $(this).text(replacement_text);
+                        }
+                    });
+
+                    // update local table
+                    setTimeout(() => {
+                        const data = $corpus_table.bootstrapTable('getData');
+                        for (const row of data) {
+                            for (const entity of row.entity) {
+                                // iterate through current_row.entity
+                                if (entity.lemma.lemma == current_text) {
+                                    entity.lemma.lemma = replacement_text;
+                                }
+                            }
+                            for (const relation of row.relation) {
+                                // iterate through current_row.relation
+                                if (relation.source.lemma == current_text) {
+                                    relation.source.lemma = replacement_text;
+                                }
+                                if (relation.target.lemma == current_text) {
+                                    relation.target.lemma = replacement_text;
+                                }
+                            }
+                            $corpus_table.bootstrapTable('updateByUniqueId', {
+                                line_id: row.line_id,
+                                row: row
+                            });
+                        }
+                        console.log("Updated local table after entity text replacement.");
+                    }, 100);
+                }
+            }, 'json');
     } else {
         $edit_lexicon_form[0].reportValidity();
     }

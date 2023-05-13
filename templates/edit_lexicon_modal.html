@@ -10,23 +10,25 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                   <div class="form-group form-row">
-                       <label class="col-sm-4 col-form-label" for="edit-lexicon-current-lemma">Current</label>
-                       <div class="col-sm">
-                           <input type="text" class="form-control bg-light" name="current_lexicon" id="edit-lexicon-current-lemma" required disabled>
-                       </div>
-                   </div>
+                    <input type="hidden" name="node_id" value="" id="edit-lexicon-node-id">
+                    <input type="hidden" name="lexicon_id" value="" id="edit-lexicon-lexicon-id">
+                    <div class="form-group form-row">
+                        <label class="col-sm-4 col-form-label" for="edit-lexicon-current-lemma">Current</label>
+                        <div class="col-sm">
+                            <input type="text" class="form-control bg-light" name="current_lexicon" id="edit-lexicon-current-lemma" required disabled>
+                        </div>
+                    </div>
 
-                   <div class="form-group form-row">
-                       <label class="col-sm-4 col-form-label" for="edit-lexicon-replacement-lemma">Replacement</label>
-                       <div class="col-sm">
-                           <input type="text" class="form-control" name="replacement_lexicon" id="edit-lexicon-replacement-lemma" required>
-                       </div>
-                   </div>
+                    <div class="form-group form-row">
+                        <label class="col-sm-4 col-form-label" for="edit-lexicon-replacement-lemma">Replacement</label>
+                        <div class="col-sm">
+                            <input type="text" class="form-control" name="replacement_lexicon" id="edit-lexicon-replacement-lemma" required>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="edit-lexicon-submit">Save</button>
+                    <button type="button" class="btn btn-primary" id="edit-lexicon-submit">Save</button>
                 </div>
             </form>
          </div>
