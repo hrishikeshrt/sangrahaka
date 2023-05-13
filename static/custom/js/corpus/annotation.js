@@ -6,8 +6,8 @@
 $add_entity_button.on('click', function(e) {
     if ($form_prepare_entity[0].checkValidity() && $line_id_entity.val() != "") {
 
-        var _lemma = unnamed_formatter($line_id_entity.val(), $entity_root.val().trim(), UNNAMED_PREFIX);
-        var _label = $entity_type.val().trim();
+        const _lemma = unnamed_formatter($line_id_entity.val(), $entity_root.val().trim(), UNNAMED_PREFIX);
+        const _label = $entity_type.val().trim();
 
         const entity_object = {
             "lemma": {
@@ -92,7 +92,7 @@ $confirm_entity_button.on('click', function(e) {
                 }
             });
             // update local table
-            var current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_entity.val());
+            const current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_entity.val());
             current_row.marked = true;
             current_row.entity = entity_objects;
 
@@ -257,7 +257,7 @@ $confirm_relation_button.on('click', function(e) {
                 }
             });
             // update local table
-            var current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_relation.val());
+            const current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_relation.val());
             current_row.marked = true;
             current_row.relation = relation_objects;
 
@@ -283,11 +283,11 @@ $confirm_relation_button.on('click', function(e) {
 $add_action_button.on('click', function(e) {
     if ($form_prepare_action[0].checkValidity() && $line_id_action.val() != "") {
 
-        var _label = $action_label.val().trim();
-        var _actor_label = $action_actor_label.val().trim();
-        var _actor = unnamed_formatter($line_id_action.val(), $action_actor.val().trim(), UNNAMED_PREFIX);
+        const _label = $action_label.val().trim();
+        const _actor_label = $action_actor_label.val().trim();
+        const _actor = unnamed_formatter($line_id_action.val(), $action_actor.val().trim(), UNNAMED_PREFIX);
 
-        var action_html = action_formatter(_label, _actor_label, _actor, true, CURRENT_USERNAME);
+        const action_html = action_formatter(_label, _actor_label, _actor, true, CURRENT_USERNAME);
         $action_list.append(action_html);
         $('[name="action"]').bootstrapToggle();
 
@@ -358,7 +358,7 @@ $confirm_action_button.on('click', function(e) {
                 }
             });
             // update local table
-            var current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_action.val());
+            const current_row = $corpus_table.bootstrapTable('getRowByUniqueId', $line_id_action.val());
             current_row.marked = true;
             current_row.action = action_objects;
 
