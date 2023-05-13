@@ -439,16 +439,16 @@ def inject_global_context():
         ).with_entities(
             RelationLabel.id, RelationLabel.label, RelationLabel.description
         ).all(),
-        'action_labels': ActionLabel.query.filter(
-            ActionLabel.is_deleted == False  # noqa # '== False' is required
-        ).with_entities(
-            ActionLabel.id, ActionLabel.label, ActionLabel.description
-        ).all(),
-        'actor_labels': ActorLabel.query.filter(
-            ActorLabel.is_deleted == False  # noqa # '== False' is required
-        ).with_entities(
-            ActorLabel.id, ActorLabel.label, ActorLabel.description
-        ).all(),
+        # 'action_labels': ActionLabel.query.filter(
+        #     ActionLabel.is_deleted == False  # noqa # '== False' is required
+        # ).with_entities(
+        #     ActionLabel.id, ActionLabel.label, ActionLabel.description
+        # ).all(),
+        # 'actor_labels': ActorLabel.query.filter(
+        #     ActorLabel.is_deleted == False  # noqa # '== False' is required
+        # ).with_entities(
+        #     ActorLabel.id, ActorLabel.label, ActorLabel.description
+        # ).all(),
         'admin_labels': [
             {
                 "name": "node",
@@ -460,16 +460,16 @@ def inject_global_context():
                 "title": "Relation",
                 "object_name": "relation_labels"
             },
-            {
-                "name": "action",
-                "title": "Action",
-                "object_name": "action_labels"
-            },
-            {
-                "name": "actor",
-                "title": "Actor",
-                "object_name": "actor_labels"
-            },
+            # {
+            #     "name": "action",
+            #     "title": "Action",
+            #     "object_name": "action_labels"
+            # },
+            # {
+            #     "name": "actor",
+            #     "title": "Actor",
+            #     "object_name": "actor_labels"
+            # },
         ]
     }
     return {
@@ -746,7 +746,7 @@ def api():
             'update_lexicon',
             'update_entity',
             'update_relation',
-            'update_action'
+            # 'update_action'
         ],
         ROLE_CURATOR: [],
         ROLE_QUERIER: ['query', 'graph_query']
@@ -1273,15 +1273,15 @@ def perform_action():
             'relation_label_remove',
             'relation_label_upload',
 
-            # - Action Label
-            'action_label_add',
-            'action_label_remove',
-            'action_label_upload',
+            # # - Action Label
+            # 'action_label_add',
+            # 'action_label_remove',
+            # 'action_label_upload',
 
-            # - Actor Label
-            'actor_label_add',
-            'actor_label_remove',
-            'actor_label_upload',
+            # # - Actor Label
+            # 'actor_label_add',
+            # 'actor_label_remove',
+            # 'actor_label_upload',
 
             # Data
             'corpus_add', 'chapter_add',

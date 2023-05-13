@@ -341,7 +341,7 @@ def get_chapter_data(chapter_id: int, user: User) -> dict:
         annotator_ids=annotator_ids,
         fetch_nodes=fetch_nodes,
         fetch_relations=fetch_relations,
-        fetch_actions=fetch_actions
+        fetch_actions=False
     )
 
 

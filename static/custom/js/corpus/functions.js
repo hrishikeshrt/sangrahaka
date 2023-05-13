@@ -168,6 +168,7 @@ function relation_formatter(relation, is_unconfirmed = false) {
     return relation_html.join("");
 }
 
+/*
 function action_formatter(label, actor_label, actor, is_unconfirmed = false, annotator = "") {
     var action_value = [label, actor_label, actor].join('$');
 
@@ -196,6 +197,7 @@ function action_formatter(label, actor_label, actor, is_unconfirmed = false, ann
     ];
     return action_html.join("");
 }
+*/
 
 function row_attribute_handler(row, index) {
     return {}

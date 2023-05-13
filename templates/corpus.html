@@ -61,9 +61,11 @@
                 <li class="nav-item">
                   <a class="nav-link" id="relation-tab" data-toggle="pill" href="#relation-tab-content" role="tab" aria-controls="relation-tab-content" aria-selected="false">Relation</a>
                 </li>
+                {#
                 <li class="nav-item">
                   <a class="nav-link" id="action-tab" data-toggle="pill" href="#action-tab-content" role="tab" aria-controls="action-tab-content" aria-selected="false">Action</a>
                 </li>
+                #}
             </ul>
             <div class="tab-content" id="pills-tab-content">
                 <div class="tab-pane active" id="entity-tab-content" role="tabpanel" aria-labelledby="entity-tab">
@@ -72,9 +74,11 @@
                 <div class="tab-pane" id="relation-tab-content" role="tabpanel" aria-labelledby="relation-tab">
                     {% include "relation.html" %}
                 </div>
+                {#
                 <div class="tab-pane" id="action-tab-content" role="tabpanel" aria-labelledby="action-tab">
                     {% include "action.html" %}
                 </div>
+                #}
             </div>
             </div>
 

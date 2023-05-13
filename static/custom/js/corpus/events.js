@@ -18,7 +18,7 @@ $(document).ready(function () {
     $relation_source.addClass('custom-auto-complete');
     $relation_target.addClass('custom-auto-complete');
     $relation_detail.addClass('custom-auto-complete');
-    $action_actor.addClass('custom-auto-complete');
+    // $action_actor.addClass('custom-auto-complete');
     $('.custom-auto-complete').autoComplete();
     // $('.custom-auto-complete').autoComplete({
     //     events: {
@@ -60,16 +60,16 @@ $corpus_table.on('check.bs.table', function (e, row, $element, field) {
 $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     $line_id_entity.val(row.line_id);
     $line_id_relation.val(row.line_id);
-    $line_id_action.val(row.line_id);
+    // $line_id_action.val(row.line_id);
     $entity_root.val("");
     $relation_source.val("");
     $relation_target.val("");
     $relation_detail.val("");
-    $action_actor.val("");
+    // $action_actor.val("");
 
     var entity_list_html = [];
     var relation_list_html = [];
-    var action_list_html = [];
+    // var action_list_html = [];
 
     $.each(row.entity, function (index, entity) {
         if (!entity.is_deleted) {
@@ -97,16 +97,16 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
         }
     });
 
-    $.each(row.action, function (index, action) {
-        if (!action.is_deleted) {
-            action_html = action_formatter(action.label, action.actor_label, action.actor, "", action.annotator);
-            action_list_html.push(action_html);
-        }
-    });
+    // $.each(row.action, function (index, action) {
+    //     if (!action.is_deleted) {
+    //         action_html = action_formatter(action.label, action.actor_label, action.actor, "", action.annotator);
+    //         action_list_html.push(action_html);
+    //     }
+    // });
 
     var unconfirmed = storage.getItem(row.line_id);
     var unconfirmed_relations = storage.getItem(row.line_id + '_relations');
-    var unconfirmed_actions = storage.getItem(row.line_id + '_actions');
+    // var unconfirmed_actions = storage.getItem(row.line_id + '_actions');
 
     if (unconfirmed !== null) {
         $.each(JSON.parse(unconfirmed), function (index, entity) {
@@ -130,20 +130,20 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
             relation_list_html.push(relation_html);
         });
     }
-    if (unconfirmed_actions !== null) {
-        $.each(JSON.parse(unconfirmed_actions), function (index, action) {
-            action_html = action_formatter(action.label, action.actor_label, action.actor, true, action.annotator);
-            action_list_html.push(action_html);
-        });
-    }
+    // if (unconfirmed_actions !== null) {
+    //     $.each(JSON.parse(unconfirmed_actions), function (index, action) {
+    //         action_html = action_formatter(action.label, action.actor_label, action.actor, true, action.annotator);
+    //         action_list_html.push(action_html);
+    //     });
+    // }
 
     $entity_list.html("").append(entity_list_html.join(""));
     $relation_list.html("").append(relation_list_html.join(""));
-    $action_list.html("").append(action_list_html.join(""));
+    // $action_list.html("").append(action_list_html.join(""));
 
     $('[name="entity"]').bootstrapToggle();
     $('[name="relation"]').bootstrapToggle();
-    $('[name="action"]').bootstrapToggle();
+    // $('[name="action"]').bootstrapToggle();
 
     /* --------------------------------------------------------------------- */
     // Menu Items
@@ -282,7 +282,7 @@ $edit_lexicon_submit_button.on('click', function (e) {
 $corpus_table.on('page-change.bs.table', function (e, number, size) {
     $line_id_entity.val("");
     $line_id_relation.val("");
-    $line_id_action.val("");
+    // $line_id_action.val("");
 
     $entity_root.val("");
     $entity_type.val("");
@@ -296,10 +296,10 @@ $corpus_table.on('page-change.bs.table', function (e, number, size) {
     $relation_detail.val("");
     $relation_list.html("")
 
-    $action_label.selectpicker('refresh');
-    $action_actor_label.selectpicker('refresh');
-    $action_actor.val("");
-    $action_list.html("");
+    // $action_label.selectpicker('refresh');
+    // $action_actor_label.selectpicker('refresh');
+    // $action_actor.val("");
+    // $action_list.html("");
 });
 
 // Click / Double-Click Cell

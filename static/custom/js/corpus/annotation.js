@@ -279,6 +279,7 @@ $confirm_relation_button.on('click', function(e) {
 /* ******************** Relation Annotation - END ******************** */
 
 /* ******************** Action Annotation - BEGIN ******************** */
+/*
 
 $add_action_button.on('click', function(e) {
     if ($form_prepare_action[0].checkValidity() && $line_id_action.val() != "") {
@@ -377,4 +378,5 @@ $confirm_action_button.on('click', function(e) {
     'json');
 });
 
+*/
 /* ******************** Action Annotation - END ******************** */
