@@ -290,11 +290,18 @@ def update_lexicon(old_lemma: int, new_lemma: str) -> bool:
     if lexicon is None:
         return False
 
-    lexicon.lemma = new_lemma
-    lexicon.transliteration = transliteration
-    db.session.add(lexicon)
-    db.session.commit()
-    return True
+    try:
+        lexicon.lemma = new_lemma
+        lexicon.transliteration = transliteration
+        db.session.add(lexicon)
+    except Exception as e:
+        webapp.logger.exception(e)
+        db.session.rollback()
+    else:
+        db.session.commit()
+        return True
+
+    return False
 
 ###############################################################################
 # Hooks
