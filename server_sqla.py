@@ -792,9 +792,11 @@ def api():
 
         replacement_lexicon_id = get_lexicon(replacement_lemma)
         if replacement_lexicon_id:
-            # TODO: Add replacement strategy for ROLE_ADMIN, ROLE_CURATOR
-            # if current_user.has_permission(PERMISSION_CURATE):
-            #     ....
+            # NOTE: One option is to add a replacement strategy for Curators
+            # However, it might be best to handle this case-by-case basis and
+            # not make an interface for it.
+            # # if current_user.has_permission(PERMISSION_CURATE):
+            # #     ...
             api_response["success"] = False
             api_response["message"] = "Replacement text already exists."
             api_response["style"] = "warning"
@@ -817,7 +819,7 @@ def api():
             api_response["style"] = "error"
         return jsonify(api_response)
 
-    if action in ['update_entity', 'update_relation', 'update_action']:
+    if action in ['update_entity', 'update_relation']:  # , 'update_action']:
         line_id = request.form['line_id']
         annotator_id = current_user.id
 
@@ -1007,74 +1009,74 @@ def api():
 
         # ------------------------------------------------------------------- #
 
-        if action == 'update_action':
-            actions_add = request.form['action_add'].split('##')
-            actions_del = request.form['action_delete'].split('##')
-            for action in actions_add + actions_del:
-                if '$' not in action:
-                    continue
-                parts = action.split('$')
-                _actor_id = get_lexicon(parts[2])
+        # if action == 'update_action':
+        #     actions_add = request.form['action_add'].split('##')
+        #     actions_del = request.form['action_delete'].split('##')
+        #     for action in actions_add + actions_del:
+        #         if '$' not in action:
+        #             continue
+        #         parts = action.split('$')
+        #         _actor_id = get_lexicon(parts[2])
 
-                if _actor_id is None:
-                    api_response['success'] = False
-                    api_response['message'] = (
-                        'Actor entity does not exist.'
-                    )
-                    return jsonify(api_response)
+        #         if _actor_id is None:
+        #             api_response['success'] = False
+        #             api_response['message'] = (
+        #                 'Actor entity does not exist.'
+        #             )
+        #             return jsonify(api_response)
 
-                label_query = ActionLabel.query.filter(
-                    ActionLabel.label == parts[0]
-                )
-                _label = label_query.first()
-                if _label is None:
-                    api_response['success'] = False
-                    api_response['message'] = 'Invalid action type.'
-                    return jsonify(api_response)
+        #         label_query = ActionLabel.query.filter(
+        #             ActionLabel.label == parts[0]
+        #         )
+        #         _label = label_query.first()
+        #         if _label is None:
+        #             api_response['success'] = False
+        #             api_response['message'] = 'Invalid action type.'
+        #             return jsonify(api_response)
 
-                actor_label_query = ActorLabel.query.filter(
-                    ActorLabel.label == parts[1]
-                )
-                _actor_label = actor_label_query.first()
-                if _actor_label is None:
-                    api_response['success'] = False
-                    api_response['message'] = 'Invalid actor type.'
-                    return jsonify(api_response)
+        #         actor_label_query = ActorLabel.query.filter(
+        #             ActorLabel.label == parts[1]
+        #         )
+        #         _actor_label = actor_label_query.first()
+        #         if _actor_label is None:
+        #             api_response['success'] = False
+        #             api_response['message'] = 'Invalid actor type.'
+        #             return jsonify(api_response)
 
-                _label_id = _label.id
-                _actor_label_id = _actor_label.id
+        #         _label_id = _label.id
+        #         _actor_label_id = _actor_label.id
 
-                action_query = Action.query.filter(and_(
-                    Action.line_id == line_id,
-                    Action.label_id == _label_id,
-                    Action.annotator_id == annotator_id,
-                    Action.actor_label_id == _actor_label_id,
-                    Action.actor_id == _actor_id,
-                ))
+        #         action_query = Action.query.filter(and_(
+        #             Action.line_id == line_id,
+        #             Action.label_id == _label_id,
+        #             Action.annotator_id == annotator_id,
+        #             Action.actor_label_id == _actor_label_id,
+        #             Action.actor_id == _actor_id,
+        #         ))
 
-                # Curator can edit annotations by others
-                # i.e. (no annotator_id check)
-                if current_user.has_permission(PERMISSION_CURATE):
-                    action_query = Action.query.filter(and_(
-                        Action.line_id == line_id,
-                        Action.label_id == _label_id,
-                        Action.actor_label_id == _actor_label_id,
-                        Action.actor_id == _actor_id,
-                    ))
-                a = action_query.first()
+        #         # Curator can edit annotations by others
+        #         # i.e. (no annotator_id check)
+        #         if current_user.has_permission(PERMISSION_CURATE):
+        #             action_query = Action.query.filter(and_(
+        #                 Action.line_id == line_id,
+        #                 Action.label_id == _label_id,
+        #                 Action.actor_label_id == _actor_label_id,
+        #                 Action.actor_id == _actor_id,
+        #             ))
+        #         a = action_query.first()
 
-                if a is None:
-                    if action in actions_add:
-                        a = Action()
-                        a.line_id = line_id
-                        a.annotator_id = annotator_id
-                        a.label_id = _label_id
-                        a.actor_id = _actor_id
-                        a.actor_label_id = _actor_label_id
-                        objects_to_update.append(a)
-                else:
-                    a.is_deleted = (action in actions_del)
-                    objects_to_update.append(a)
+        #         if a is None:
+        #             if action in actions_add:
+        #                 a = Action()
+        #                 a.line_id = line_id
+        #                 a.annotator_id = annotator_id
+        #                 a.label_id = _label_id
+        #                 a.actor_id = _actor_id
+        #                 a.actor_label_id = _actor_label_id
+        #                 objects_to_update.append(a)
+        #         else:
+        #             a.is_deleted = (action in actions_del)
+        #             objects_to_update.append(a)
 
         # ------------------------------------------------------------------- #
 
@@ -1470,8 +1472,8 @@ def perform_action():
     if action in [
         'node_label_add', 'node_label_remove', 'node_label_upload',
         'relation_label_add', 'relation_label_remove', 'relation_label_upload',
-        'action_label_add', 'action_label_remove', 'action_label_upload',
-        'actor_label_add', 'actor_label_remove', 'actor_label_upload',
+        # 'action_label_add', 'action_label_remove', 'action_label_upload',
+        # 'actor_label_add', 'actor_label_remove', 'actor_label_upload',
     ]:
         action_parts = action.split('_label_')
 
@@ -1481,8 +1483,8 @@ def perform_action():
         MODELS = {
             'node': (NodeLabel, Node, 'label_id'),
             'relation': (RelationLabel, Relation, 'label_id'),
-            'action': (ActionLabel, Action, 'label_id'),
-            'actor': (ActorLabel, Action, 'actor_label_id')
+            # 'action': (ActionLabel, Action, 'label_id'),
+            # 'actor': (ActorLabel, Action, 'actor_label_id')
         }
         _model, _annotation_model, _attribute = MODELS[object_name]
 
