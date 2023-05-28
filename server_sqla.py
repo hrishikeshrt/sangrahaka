@@ -822,6 +822,7 @@ def api():
         annotator_id = current_user.id
 
         objects_to_update = []
+        objects_untouched = []
 
         # ------------------------------------------------------------------- #
 
@@ -842,7 +843,10 @@ def api():
                 _label = label_query.first()
                 if _label is None:
                     api_response['success'] = False
-                    api_response['message'] = 'Invalid node type.'
+                    api_response['message'] = (
+                        f"Invalid node type '{entity_label}'."
+                    )
+                    api_response['style'] = "warning"
                     return jsonify(api_response)
                 _label_id = _label.id
 
@@ -872,8 +876,30 @@ def api():
                         n.label_id = _label_id
                         objects_to_update.append(n)
                 else:
-                    n.is_deleted = (entity in entities_del)
-                    objects_to_update.append(n)
+                    if entity in entities_del:
+                        relation_query = Relation.query.filter(
+                            or_(
+                                Relation.src_id == n.id,
+                                Relation.dst_id == n.id
+                            ),
+                            Relation.is_deleted == False  # noqa
+                        )
+                        relations_with_n = relation_query.count()
+                        if relations_with_n:
+                            objects_untouched.append({
+                                "node_id": n.id,
+                                "reason": (
+                                    f"Node {n.id} "
+                                    f"({entity_lemma}::{entity_label}) "
+                                    f"used in {relations_with_n} relations."
+                                )
+                            })
+                        else:
+                            n.is_deleted = True
+                            objects_to_update.append(n)
+                    else:
+                        n.is_deleted = False
+                        objects_to_update.append(n)
 
         # ------------------------------------------------------------------- #
 
@@ -912,20 +938,36 @@ def api():
                 _src_lexicon_id = get_lexicon(_src_lemma)
                 _dst_lexicon_id = get_lexicon(_dst_lemma)
 
-                if _src_node_id is None or _dst_node_id is None:
-                    api_response['success'] = False
-                    api_response['message'] = (
-                        'Source or Destination entity does not exist.'
-                    )
-                    return jsonify(api_response)
+                if _src_node_id is None:
+                    objects_untouched.append({
+                        "relation": (_src_lemma, _relation_label, _dst_lemma),
+                        "reason": (
+                            f"Source node ({_src_lemma}::{_src_label}) "
+                            "does not exist."
+                        )
+                    })
+                    continue
+
+                if _dst_node_id is None:
+                    objects_untouched.append({
+                        "relation": (_src_lemma, _relation_label, _dst_lemma),
+                        "reason": (
+                            f"Target node ({_dst_lemma}::{_dst_label}) "
+                            "does not exist."
+                        )
+                    })
+                    continue
+
                 label_query = RelationLabel.query.filter(
                     RelationLabel.label == _relation_label
                 )
                 _label = label_query.first()
                 if _label is None:
-                    api_response['success'] = False
-                    api_response['message'] = 'Invalid relation type.'
-                    return jsonify(api_response)
+                    objects_untouched.append({
+                        "relation": (_src_lemma, _relation_label, _dst_lemma),
+                        "reason": f"Invalid relation type '{_relation_label}'."
+                    })
+                    continue
                 _label_id = _label.id
 
                 relation_query = Relation.query.filter(and_(
@@ -1036,19 +1078,37 @@ def api():
 
         # ------------------------------------------------------------------- #
 
+        untouched_count = len(objects_untouched)
+        api_message = [
+            f"No changes were made. ({untouched_count} problematic objects.)",
+            ""
+        ]
+        if objects_untouched:
+            api_message.extend(uo["reason"] for uo in objects_untouched)
+            print(api_message)
+            api_response['message'] = "<br>".join(api_message)
+            api_response['success'] = False
+            api_response['style'] = 'danger'
+            return jsonify(api_response)
+
         try:
+            updated_count = len(objects_to_update)
+            print(f"Total objects to update: {updated_count}")
             if objects_to_update:
                 db.session.bulk_save_objects(objects_to_update)
                 db.session.commit()
-                api_response['message'] = 'Successfully updated!'
+                api_response['message'] = f'Updated {updated_count} objects!'
+                api_response['success'] = True
             else:
-                api_response['message'] = 'No changes were submitted.'
-            api_response['success'] = True
+                api_response['message'] = 'No changes were made.'
+                api_response['style'] = 'info'
+                api_response['success'] = False
         except Exception as e:
             print(e)
             print(request.form)
             api_response['success'] = False
             api_response['message'] = 'Something went wrong.'
+            api_response['style'] = 'danger'
         return jsonify(api_response)
 
     # ----------------------------------------------------------------------- #
@@ -1116,6 +1176,7 @@ def api():
         except Exception as e:
             api_response['success'] = False
             api_response['message'] = f'Something went wrong. ({e})'
+            api_response['style'] = 'error'
 
         return jsonify(api_response)
 

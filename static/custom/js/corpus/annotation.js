@@ -58,12 +58,12 @@ $confirm_entity_button.on('click', function(e) {
         entity_delete: entity_delete.join("##")
     },
     function (response) {
+        $.notify({
+            message: response.message
+        }, {
+            type: response.style
+        });
         if (response.success) {
-            $.notify({
-                message: "Successfully updated!"
-            }, {
-                type: "success"
-            });
             var entity_objects = [];
             // clear out the unconfirmed storage
             storage.removeItem($line_id_entity.val());
@@ -99,12 +99,6 @@ $confirm_entity_button.on('click', function(e) {
             $corpus_table.bootstrapTable('updateByUniqueId', {
                 line_id: current_row.line_id,
                 row: current_row
-            });
-        } else {
-            $.notify({
-                message: "Something went wrong!"
-            }, {
-                type: "danger"
             });
         }
     },
@@ -213,12 +207,12 @@ $confirm_relation_button.on('click', function(e) {
         relation_delete: relation_delete.join("##")
     },
     function (response) {
+        $.notify({
+            message: response.message
+        }, {
+            type: response.style
+        });
         if (response.success) {
-            $.notify({
-                message: "Successfully updated!"
-            }, {
-                type: "success"
-            });
             var relation_objects = [];
             // clear out the unconfirmed storage
             storage.removeItem($line_id_relation.val() + '_relations');
@@ -264,12 +258,6 @@ $confirm_relation_button.on('click', function(e) {
             $corpus_table.bootstrapTable('updateByUniqueId', {
                 line_id: current_row.line_id,
                 row: current_row
-            });
-        } else {
-            $.notify({
-                message: "Something went wrong!"
-            }, {
-                type: "danger"
             });
         }
     },
