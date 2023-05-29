@@ -3,10 +3,118 @@
 
 /* ******************** Entity Annotation - BEGIN ******************** */
 
+function setup_entity_annotation(unique_id) {
+    console.log(`Called ${arguments.callee.name}(${Object.values(arguments).join(", ")});`);
+    const row = $corpus_table.bootstrapTable('getRowByUniqueId', unique_id);
+
+    $entity_root.val("");
+    $entity_type.val("");
+    $entity_type.selectpicker('refresh');
+    $entity_list.html("");
+
+    var entity_list_html = [];
+
+    /* add HTML for unconfirmed nodes */
+    var unconfirmed_nodes = storage.getItem(row.line_id + '_nodes');
+    if (unconfirmed_nodes !== null) {
+        $.each(JSON.parse(unconfirmed_nodes), function (index, entity) {
+            entity_html = entity_formatter({
+                "lemma": entity.lemma,
+                "label": entity.label,
+                "annotator": entity.annotator
+            }, true);
+            entity_list_html.push(entity_html);
+        });
+    }
+
+    /* add HTML for confirmed nodes */
+    $.each(row.entity, function (index, entity) {
+        if (!entity.is_deleted) {
+            entity_html = entity_formatter({
+                "id": entity.id,
+                "lemma": entity.lemma,
+                "label": entity.label,
+                "annotator": entity.annotator
+            }, "");
+            entity_list_html.push(entity_html);
+        }
+    });
+
+    $entity_list.append(entity_list_html.join(""));
+    $('[name="entity"]').bootstrapToggle();
+
+    /* --------------------------------------------------------------------- */
+    // Menu Items
+
+    const node_actions_header_menu_item = {
+        header: "Node Actions",
+    }
+    const node_information_menu_item = {
+        text: "<i class='fa fa-info-circle mr-1'></i> Information",
+        action: function (e, context) {
+            e.preventDefault();
+            const $element = $(context);
+
+            const lemma = $element.find('div.entity-lemma').text();
+            const label = $element.find('div.entity-label').text();
+
+            const node_id = $element.data('node-id');
+            const lexicon_id = $element.data('lexicon-id');
+            const label_id = $element.data('node-label-id');
+
+            const alert_text = [
+                `${lemma} :: ${label}`,
+                `Node ID: ${node_id}`,
+                `Lemma ID: ${lexicon_id}`,
+                `Label ID: ${label_id}`
+            ];
+            $.notify({
+                message: alert_text.join("<br>")
+            });
+        }
+    };
+    const edit_node_lexicon_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Edit Entity Text",
+        action: function (e, context) {
+            e.preventDefault();
+            const $element = $(context);
+            const current_lemma = $element.find('div.entity-lemma').text();
+            $edit_lexicon_modal.modal('show');
+            $edit_lexicon_current_lemma.val(current_lemma);
+            $edit_lexicon_replacement_lemma.val(current_lemma);
+            setTimeout(function () {
+                $edit_lexicon_replacement_lemma.focus();
+            }, 500);
+        },
+    };
+    const edit_node_label_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Change Entity Type",
+        action: function (e, context) {
+            e.preventDefault();
+            $.notify({
+                message: "Eventually this will launch a modal to change entity type."
+            }, {
+                type: "warning"
+            });
+        },
+        disabled: true
+    };
+
+    /* --------------------------------------------------------------------- */
+
+    attach_context_menu(".context-node", [
+        node_actions_header_menu_item,
+        node_information_menu_item,
+        edit_node_lexicon_menu_item,
+        edit_node_label_menu_item
+    ]);
+}
+
 $add_entity_button.on('click', function(e) {
     if ($form_prepare_entity[0].checkValidity() && $line_id_entity.val() != "") {
 
-        const _lemma = unnamed_formatter($line_id_entity.val(), $entity_root.val().trim(), UNNAMED_PREFIX);
+        const line_id = $line_id_entity.val();
+        const _lemma = unnamed_formatter(line_id, $entity_root.val().trim(), UNNAMED_PREFIX);
         const _label = $entity_type.val().trim();
 
         const entity_object = {
@@ -27,13 +135,13 @@ $add_entity_button.on('click', function(e) {
         $('[name="entity"]').bootstrapToggle();
 
         // update local unconfirmed storage
-        var unconfirmed = storage.getItem($line_id_entity.val());
-        if (unconfirmed === null) {
-            unconfirmed = '[]';
+        var unconfirmed_nodes = storage.getItem(line_id + '_nodes');
+        if (unconfirmed_nodes === null) {
+            unconfirmed_nodes = '[]';
         }
-        unconfirmed = JSON.parse(unconfirmed);
-        unconfirmed.push(entity_object);
-        storage.setItem($line_id_entity.val(), JSON.stringify(unconfirmed));
+        unconfirmed_nodes = JSON.parse(unconfirmed_nodes);
+        unconfirmed_nodes.push(entity_object);
+        storage.setItem(line_id + '_nodes', JSON.stringify(unconfirmed_nodes));
     } else {
         $form_prepare_entity[0].reportValidity();
     }
@@ -108,6 +216,54 @@ $confirm_entity_button.on('click', function(e) {
 /* ******************** Entity Annotation - END ******************** */
 
 /* ******************** Relation Annotation - BEGIN ******************** */
+
+function setup_relation_annotation(unique_id) {
+    console.log(`Called ${arguments.callee.name}(${Object.values(arguments).join(", ")});`);
+    const row = $corpus_table.bootstrapTable('getRowByUniqueId', unique_id);
+
+    $relation_source.val("");
+    $relation_target.val("");
+    $relation_label.val("");
+    $relation_label.selectpicker('refresh');
+    $relation_detail.val("");
+    $relation_list.html("");
+
+    var relation_list_html = [];
+
+    /* add HTML for unconfirmed relations */
+    var unconfirmed_relations = storage.getItem(row.line_id + '_relations');
+    if (unconfirmed_relations !== null) {
+        $.each(JSON.parse(unconfirmed_relations), function (index, relation) {
+            relation_html = relation_formatter({
+                "source": relation.source,
+                "label": relation.label,
+                "detail": relation.detail,
+                "target": relation.target,
+                "annotator": relation.annotator
+            }, true);
+            relation_list_html.push(relation_html);
+        });
+    }
+
+    /* add HTML for confirmed relations */
+    $.each(row.relation, function (index, relation) {
+        if (!relation.is_deleted) {
+            relation_html = relation_formatter({
+                "id": relation.id,
+                "source": relation.source,
+                "label": relation.label,
+                "detail": relation.detail,
+                "target": relation.target,
+                "annotator": relation.annotator,
+            }, "");
+            relation_list_html.push(relation_html);
+        }
+    });
+
+    $relation_list.append(relation_list_html.join(""));
+    $('[name="relation"]').bootstrapToggle();
+
+}
 
 $add_relation_button.on('click', function(e) {
     const separator = "::";
@@ -267,6 +423,7 @@ $confirm_relation_button.on('click', function(e) {
 /* ******************** Relation Annotation - END ******************** */
 
 /* ******************** Action Annotation - BEGIN ******************** */
+// TODO: Would need to write setup_action_annotation() function and call it from row expand event
 /*
 
 $add_action_button.on('click', function(e) {

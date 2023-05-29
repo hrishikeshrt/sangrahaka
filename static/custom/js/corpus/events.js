@@ -58,155 +58,14 @@ $corpus_table.on('check.bs.table', function (e, row, $element, field) {
 
 // Row Expand
 $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
-    $line_id_entity.val(row.line_id);
-    $line_id_relation.val(row.line_id);
-    // $line_id_action.val(row.line_id);
-    $entity_root.val("");
-    $relation_source.val("");
-    $relation_target.val("");
-    $relation_detail.val("");
-    // $action_actor.val("");
+    const unique_id = row.line_id;
 
-    var entity_list_html = [];
-    var relation_list_html = [];
-    // var action_list_html = [];
+    $line_id_entity.val(unique_id);
+    $line_id_relation.val(unique_id);
 
-    $.each(row.entity, function (index, entity) {
-        if (!entity.is_deleted) {
-            entity_html = entity_formatter({
-                "id": entity.id,
-                "lemma": entity.lemma,
-                "label": entity.label,
-                "annotator": entity.annotator
-            }, "");
-            entity_list_html.push(entity_html);
-        }
-    });
-
-    $.each(row.relation, function (index, relation) {
-        if (!relation.is_deleted) {
-            relation_html = relation_formatter({
-                "id": relation.id,
-                "source": relation.source,
-                "label": relation.label,
-                "detail": relation.detail,
-                "target": relation.target,
-                "annotator": relation.annotator,
-            }, "");
-            relation_list_html.push(relation_html);
-        }
-    });
-
-    // $.each(row.action, function (index, action) {
-    //     if (!action.is_deleted) {
-    //         action_html = action_formatter(action.label, action.actor_label, action.actor, "", action.annotator);
-    //         action_list_html.push(action_html);
-    //     }
-    // });
-
-    var unconfirmed = storage.getItem(row.line_id);
-    var unconfirmed_relations = storage.getItem(row.line_id + '_relations');
-    // var unconfirmed_actions = storage.getItem(row.line_id + '_actions');
-
-    if (unconfirmed !== null) {
-        $.each(JSON.parse(unconfirmed), function (index, entity) {
-            entity_html = entity_formatter({
-                "lemma": entity.lemma,
-                "label": entity.label,
-                "annotator": entity.annotator
-            }, true);
-            entity_list_html.push(entity_html);
-        });
-    }
-    if (unconfirmed_relations !== null) {
-        $.each(JSON.parse(unconfirmed_relations), function (index, relation) {
-            relation_html = relation_formatter({
-                "source": relation.source,
-                "label": relation.label,
-                "detail": relation.detail,
-                "target": relation.target,
-                "annotator": relation.annotator
-            }, true);
-            relation_list_html.push(relation_html);
-        });
-    }
-    // if (unconfirmed_actions !== null) {
-    //     $.each(JSON.parse(unconfirmed_actions), function (index, action) {
-    //         action_html = action_formatter(action.label, action.actor_label, action.actor, true, action.annotator);
-    //         action_list_html.push(action_html);
-    //     });
-    // }
-
-    $entity_list.html("").append(entity_list_html.join(""));
-    $relation_list.html("").append(relation_list_html.join(""));
-    // $action_list.html("").append(action_list_html.join(""));
-
-    $('[name="entity"]').bootstrapToggle();
-    $('[name="relation"]').bootstrapToggle();
-    // $('[name="action"]').bootstrapToggle();
-
-    /* --------------------------------------------------------------------- */
-    // Menu Items
-
-    const node_actions_header_menu_item = {
-        header: "Node Actions",
-    }
-    const node_information_menu_item = {
-        text: "<i class='fa fa-info-circle mr-1'></i> Information",
-        action: function (e, context) {
-            e.preventDefault();
-            const $element = $(context);
-            const lemma = $element.find('div.entity-lemma').text();
-            const label = $element.find('div.entity-label').text();
-            const label_id = $element.data('node-label-id');
-            const lexicon_id = $element.data('lexicon-id');
-            const node_id = $element.data('node-id');
-            const alert_text = [
-                `${lemma} :: ${label}`,
-                `Node ID: ${node_id}`,
-                `Lemma ID: ${lexicon_id}`,
-                `Label ID: ${label_id}`
-            ];
-            $.notify({
-                message: alert_text.join("<br>")
-            });
-        }
-    };
-    const edit_node_lexicon_menu_item = {
-        text: "<i class='fa fa-edit mr-1'></i> Edit Entity Text",
-        action: function (e, context) {
-            e.preventDefault();
-            const $element = $(context);
-            const current_lemma = $element.find('div.entity-lemma').text();
-            $edit_lexicon_modal.modal('show');
-            $edit_lexicon_current_lemma.val(current_lemma);
-            $edit_lexicon_replacement_lemma.val(current_lemma);
-            setTimeout(function () {
-                $edit_lexicon_replacement_lemma.focus();
-            }, 500);
-        },
-    };
-    const edit_node_label_menu_item = {
-        text: "<i class='fa fa-edit mr-1'></i> Change Entity Type",
-        action: function (e, context) {
-            e.preventDefault();
-            $.notify({
-                message: "Eventually this will launch a modal to change entity type."
-            }, {
-                type: "warning"
-            });
-        },
-        disabled: true
-    };
-
-    /* --------------------------------------------------------------------- */
-
-    attach_context_menu(".context-node", [
-        node_actions_header_menu_item,
-        node_information_menu_item,
-        edit_node_lexicon_menu_item,
-        edit_node_label_menu_item
-    ]);
+    setup_entity_annotation(unique_id);
+    setup_relation_annotation(unique_id);
+    // setup_action_annotation(unique_id);
 });
 
 $edit_lexicon_submit_button.on('click', function (e) {
@@ -231,7 +90,6 @@ $edit_lexicon_submit_button.on('click', function (e) {
 
                     // update local entity list
                     $.each($entity_list.find("div.entity-lemma"), function () {
-                        // TODO: update lemma
                         const current_lemma = $(this).text();
                         if (current_lemma == current_text) {
                             $(this).text(replacement_text);
