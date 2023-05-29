@@ -138,8 +138,11 @@ function relation_formatter(relation, is_unconfirmed = false) {
     ].join('$');
 
     const li_base_class = "list-group-item";
+     // edit-relation context menu will be shown for relations with `context-relation` class
+    // we add this class only to the confirmed relations, since unconfirmed relations can just be removed
+    const li_confirmed_classes = "context-relation";
     const li_unconfirmed_classes = "list-group-item-warning unconfirmed-relation";
-    const li_class = is_unconfirmed ? li_base_class + " " + li_unconfirmed_classes : li_base_class;
+    const li_class = is_unconfirmed ? li_base_class + " " + li_unconfirmed_classes : li_base_class + " " + li_confirmed_classes;
 
     const relation_hover_text = relation.annotator ? `Relation ID: ${relation.id}, Annotator: ${relation.annotator.username}` : `Relation ID: ${relation.id}`;
     const source_node_hover_text = `Source Node ID: ${relation.source.id}`;
@@ -147,12 +150,12 @@ function relation_formatter(relation, is_unconfirmed = false) {
     const relation_label_hover_text = `Label ID: ${relation.label.id}`;
 
     const relation_html = [
-        `<li title="${relation_hover_text}" class="${li_class}">`,
+        `<li title="${relation_hover_text}" class="${li_class}" data-relation-id="${relation.id}" data-annotator-id="${relation.annotator.id}" data-src-node-id="${relation.source.id}" data-dst-node-id="${relation.target.id}" data-relation-label-id="${relation.label.id}">`,
         '<div class="row">',
         '<div class="col-sm">',
-        `<span title="${source_node_hover_text}">(<span class="relation-lemma relation-source-lemma">${relation.source.lemma}</span> <span class="text-secondary">:: ${relation.source.label}</span>)</span>`,
-        ` <span class="text-muted" title="${relation_label_hover_text}">⊢ [${relation.label.label} (${relation.detail})] →</span> `,
-        `<span title="${target_node_hover_text}">(<span class="relation-lemma relation-target-lemma">${relation.target.lemma}</span> <span class="text-secondary">:: ${relation.target.label}</span>)</span>`,
+        `<span title="${source_node_hover_text}">(<span class="relation-lemma relation-source-lemma">${relation.source.lemma}</span> <span class="text-secondary">::</span> <span class="text-secondary relation-source-label">${relation.source.label}</span>)</span>`,
+        ` <span class="text-muted" title="${relation_label_hover_text}">⊢ [<span class="relation-label">${relation.label.label}</span> (<span class="relation-detail">${relation.detail}</span>)] →</span> `,
+        `<span title="${target_node_hover_text}">(<span class="relation-lemma relation-target-lemma">${relation.target.lemma}</span> <span class="text-secondary">::</span> <span class="text-secondary relation-target-label"> ${relation.target.label}</span>)</span>`,
         '</div>',
         '<div class="col-sm-3">',
         '<span class="float-right">',

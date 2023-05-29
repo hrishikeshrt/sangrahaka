@@ -263,6 +263,61 @@ function setup_relation_annotation(unique_id) {
     $relation_list.append(relation_list_html.join(""));
     $('[name="relation"]').bootstrapToggle();
 
+    /* --------------------------------------------------------------------- */
+    // Menu Items
+
+    const relation_actions_header_menu_item = {
+        header: "Relation Actions",
+    }
+    const relation_information_menu_item = {
+        text: "<i class='fa fa-info-circle mr-1'></i> Information",
+        action: function (e, context) {
+            e.preventDefault();
+            const $element = $(context);
+
+            const src_lemma = $element.find('span.relation-source-lemma').text();
+            const src_label = $element.find('span.relation-source-label').text();
+            const dst_lemma = $element.find('span.relation-target-lemma').text();
+            const dst_label = $element.find('span.relation-target-label').text();
+            const relation_label = $element.find('span.relation-label').text();
+            const related_text = $element.find('span.relation-detail').text();
+
+            const relation_id = $element.data('relation-id');
+            const src_node_id = $element.data('src-node-id');
+            const dst_node_id = $element.data('dst-node-id');
+            const relation_label_id = $element.data('relation-label-id');
+            const alert_text = [
+                `${src_lemma} :: ${src_label} - [${relation_label} (${related_text})] -> ${dst_lemma} :: ${dst_label}`,
+                `Relation ID: ${relation_id}`,
+                `Source ID: ${src_node_id}`,
+                `Label ID: ${relation_label_id}`,
+                `Target ID: ${dst_node_id}`,
+            ];
+            $.notify({
+                message: alert_text.join("<br>")
+            });
+        }
+    };
+    const edit_relation_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Edit Relation",
+        action: function (e, context) {
+            e.preventDefault();
+            $.notify({
+                message: "Eventually this will launch a modal to edit relation."
+            }, {
+                type: "warning"
+            });
+        },
+        disabled: true
+    };
+
+    /* --------------------------------------------------------------------- */
+
+    attach_context_menu(".context-relation", [
+        relation_actions_header_menu_item,
+        relation_information_menu_item,
+        edit_relation_menu_item,
+    ]);
 }
 
 $add_relation_button.on('click', function(e) {
