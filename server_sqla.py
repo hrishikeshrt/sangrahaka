@@ -1238,6 +1238,28 @@ def api_chapter(chapter_id):
 # --------------------------------------------------------------------------- #
 
 
+@webapp.route("/api/line/<int:line_id>")
+@auth_required()
+def api_line(line_id):
+    line = Line.query.get(line_id)
+    if line is None:
+        return jsonify({})
+
+    annotator_ids = []
+    if current_user.has_permission(PERMISSION_ANNOTATE):
+        annotator_ids = [current_user.id]
+
+    data = get_line_data(
+        [line_id],
+        annotator_ids=annotator_ids,
+        fetch_nodes=True,
+        fetch_relations=True
+    )
+    return jsonify(data)
+
+# --------------------------------------------------------------------------- #
+
+
 @webapp.route("/api/suggest-node")
 @limiter.limit("60 per minute")
 def suggest_node():
