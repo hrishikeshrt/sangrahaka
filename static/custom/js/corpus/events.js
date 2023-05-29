@@ -59,13 +59,66 @@ $corpus_table.on('check.bs.table', function (e, row, $element, field) {
 // Row Expand
 $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     const unique_id = row.line_id;
-
     $line_id_entity.val(unique_id);
     $line_id_relation.val(unique_id);
 
-    setup_entity_annotation(unique_id);
-    setup_relation_annotation(unique_id);
-    // setup_action_annotation(unique_id);
+    const $active_tab = $('.annotation-tab[aria-selected="true"]');
+    const tab_id = $active_tab.attr("id");
+
+    if (tab_id == "entity-tab") {
+        setup_entity_annotation(unique_id);
+    }
+    if (tab_id == "relation-tab") {
+        setup_relation_annotation(unique_id);
+    }
+    // if (tab_id == "action-tab") {
+    //     setup_action_annotation(unique_id);
+    // }
+});
+
+// Tab Change
+$('.annotation-tab[data-toggle="pill"]').on('shown.bs.tab', function (event) {
+    const $active_tab = $(event.target);
+    const tab_id = $active_tab.attr("id");
+
+    if (tab_id == "entity-tab") {
+        const unique_id = $line_id_entity.val();
+        if (unique_id == "") {
+            $.notify({
+                message: "Please select a row first."
+            }, {
+                type: "warning"
+            })
+            return;
+        }
+        setup_entity_annotation(unique_id);
+    }
+
+    if (tab_id == "relation-tab") {
+        const unique_id = $line_id_relation.val();
+        if (unique_id == "") {
+            $.notify({
+                message: "Please select a row first."
+            }, {
+                type: "warning"
+            })
+            return;
+        }
+        setup_relation_annotation(unique_id);
+    }
+
+    // if (tab_id == "action-tab") {
+    //     const unique_id = $line_id_action.val();
+    //     if (unique_id == "") {
+    //         $.notify({
+    //             message: "Please select a row first."
+    //         }, {
+    //             type: "warning"
+    //         })
+    //         return;
+    //     }
+    //     setup_action_annotation(unique_id);
+    // }
 });
 
 $edit_lexicon_submit_button.on('click', function (e) {
