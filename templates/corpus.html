@@ -5,7 +5,7 @@
         <div id="corpus-column">
             <span id="corpus-title" class="lead"></span>
             <table id="corpus_viewer" class="table table-bordered table-hover" data-toggle="table"
-                data-url="{{url_for('api_corpus', chapter_id=data.chapter_id)}}"
+                data-url="{{url_for('api_chapter', chapter_id=data.chapter_id)}}"
                 data-response-handler="table_response_handler"
                 data-toolbar="#corpus-title"
                 data-unique-id="line_id"
@@ -16,7 +16,7 @@
                 data-show-toggle="true"
                 data-show-columns="true"
                 data-pagination="true"
-                data-page-list="[10, 25, 50, 100, 200, All]"
+                data-page-list="[10, 25, 50, 100, 200]"
                 data-show-jump-to="true"
                 data-show-jump-to-by-pages="10"
                 data-click-to-select="true"

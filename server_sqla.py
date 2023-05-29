@@ -1218,9 +1218,9 @@ def api():
         return jsonify(api_response)
 
 
-@webapp.route("/api/corpus/<int:chapter_id>")
+@webapp.route("/api/chapter/<int:chapter_id>")
 @auth_required()
-def api_corpus(chapter_id):
+def api_chapter(chapter_id):
     chapter = Chapter.query.get(chapter_id)
     if chapter is None:
         return jsonify({
