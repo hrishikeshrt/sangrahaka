@@ -1,6 +1,27 @@
 // Annotation Event Handlers
 // Note: Constants in CAPITAL letters are declared in corpus.html
 
+/* *************************** Generic Functions *************************** */
+
+function refresh_row_data(unique_id, _callback) {
+    console.log(`Called ${arguments.callee.name}(${Object.values(arguments).join(", ")});`);
+    const line_data_url = SAMPLE_LINE_DATA_URL.replace('0', unique_id);
+    $.get(line_data_url, function (data) {
+        $corpus_table.bootstrapTable('updateByUniqueId', {
+            id: unique_id,
+            row: data[unique_id],
+            replace: true
+        });
+        $corpus_table.bootstrapTable('collapseRowByUniqueId', unique_id);
+        $corpus_table.bootstrapTable('check', storage.getItem('current_index'));
+
+        if (_callback) {
+            _callback(unique_id);
+        }
+    }, 'json');
+    console.log(`Line data updated for ID: ${unique_id}`);
+}
+
 /* ******************** Entity Annotation - BEGIN ******************** */
 
 function setup_entity_annotation(unique_id) {
