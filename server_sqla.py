@@ -246,7 +246,7 @@ def get_lexicon(lemma: str) -> int:
         return lexicon.id
 
 
-def create_lexicon(lemma: str) -> int:
+def create_lexicon(lemma: str, commit: bool = False) -> int:
     """Create a new Lexicon and return its id"""
     transliterations = [
         f"##{transliterate(lemma, 'devanagari', scheme)}"
@@ -258,9 +258,19 @@ def create_lexicon(lemma: str) -> int:
     lexicon.lemma = lemma
     if transliteration:
         lexicon.transliteration = transliteration
-    db.session.add(lexicon)
-    db.session.flush()
-    return lexicon.id
+
+    try:
+        db.session.add(lexicon)
+    except Exception as e:
+        webapp.logger.exception(e)
+        db.session.rollback()
+        return None
+    else:
+        if not commit:
+            db.session.flush()
+        else:
+            db.session.commit()
+        return lexicon.id
 
 
 def get_or_create_lexicon(lemma: str) -> int:
