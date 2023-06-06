@@ -1102,6 +1102,8 @@ def api():
             api_response['success'] = False
             api_response['style'] = 'danger'
             return jsonify(api_response)
+        else:
+            api_response['success'] = True
 
         try:
             updated_count = len(objects_to_update)
@@ -1110,11 +1112,10 @@ def api():
                 db.session.bulk_save_objects(objects_to_update)
                 db.session.commit()
                 api_response['message'] = f'Updated {updated_count} objects!'
-                api_response['success'] = True
+                api_response['style'] = 'success'
             else:
                 api_response['message'] = 'No changes were made.'
                 api_response['style'] = 'info'
-                api_response['success'] = False
         except Exception as e:
             print(e)
             print(request.form)

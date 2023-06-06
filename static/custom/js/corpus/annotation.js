@@ -13,6 +13,7 @@ function refresh_row_data(unique_id, _callback) {
             replace: true
         });
         $corpus_table.bootstrapTable('collapseRowByUniqueId', unique_id);
+        // TODO: Who's setting `current_index` ?! (Check Antarlekhaka corresponding function)
         $corpus_table.bootstrapTable('check', storage.getItem('current_index'));
 
         if (_callback) {
@@ -195,7 +196,7 @@ $confirm_entity_button.on('click', function(e) {
         if (response.success) {
             var entity_objects = [];
             // clear out the unconfirmed storage
-            storage.removeItem($line_id_entity.val());
+            storage.removeItem($line_id_entity.val() + '_nodes');
 
             // update local entity list
             $.each($entity_list.find('[name="entity"]'), function () {
