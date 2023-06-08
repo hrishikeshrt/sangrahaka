@@ -1340,6 +1340,11 @@ def api_line(line_id):
     annotator_ids = []
     if current_user.has_permission(PERMISSION_ANNOTATE):
         annotator_ids = [current_user.id]
+    if (
+        current_user.has_permission(PERMISSION_CURATE) or
+        current_user.has_role(ROLE_ADMIN)
+    ):
+        annotator_ids = None
 
     data = get_line_data(
         [line_id],
