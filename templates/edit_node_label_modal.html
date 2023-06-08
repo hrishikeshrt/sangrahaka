@@ -1,0 +1,51 @@
+ <!-- Modal -->
+ <div class="modal fade" id="edit-node-label-modal" tabindex="-1" aria-labelledby="edit-node-label-modal-title" aria-hidden="true">
+     <div class="modal-dialog">
+         <div class="modal-content">
+            <form id="edit-node-label-form">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="edit-node-label-modal-title">Edit Entity Type</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                   <input type="hidden" name="node_id" value="" id="edit-node-label-node-id">
+                   <div class="form-group form-row">
+                        <span class="col-sm-4 col-form-label">Node</span>
+                        <div class="col-sm">
+                            <span class="font-weight-bold" id="edit-node-label-lexicon"></span>
+                            <span class="mx-1 text-secondary">::</span>
+                            <span class="text-secondary" id="edit-node-label-node-label"></span>
+                        </div>
+                   </div>
+                   <div class="form-group form-row">
+                       <label class="col-sm-4 col-form-label" for="edit-node-label-current-label">Current</label>
+                       <div class="col-sm">
+                           <select name="" id="edit-node-label-current-label" title="None" class="form-control selectpicker" data-container="body" data-live-search="true" autocomplete="off" required disabled>
+                                {% for _id, _label, _description in context_labels.node_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
+                                <option data-tokens="{{_label}}" value="{{_id}}">{{_description}}</option>
+                                {% endfor %}
+                            </select>
+                       </div>
+                   </div>
+
+                   <div class="form-group form-row">
+                       <label class="col-sm-4 col-form-label" for="edit-node-label-replacement-label">Replacement</label>
+                       <div class="col-sm">
+                            <select name="" id="edit-node-label-replacement-label" title="None" class="form-control selectpicker" data-container="body" data-live-search="true" autocomplete="off" required>
+                                {% for _id, _label, _description in context_labels.node_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
+                                <option data-tokens="{{_label}}" value="{{_id}}">{{_description}}</option>
+                                {% endfor %}
+                            </select>
+                       </div>
+                   </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="edit-node-label-submit">Save</button>
+                </div>
+            </form>
+         </div>
+     </div>
+ </div>
