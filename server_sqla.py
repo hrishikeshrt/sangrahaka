@@ -277,7 +277,7 @@ def get_or_create_lexicon(lemma: str) -> int:
     return get_lexicon(lemma) or create_lexicon(lemma)
 
 
-def update_lexicon(old_lemma: int, new_lemma: str) -> bool:
+def update_lexicon(old_lemma: str, new_lemma: str) -> bool:
     """
     Change lemma of a lexicon entry
 
@@ -312,6 +312,45 @@ def update_lexicon(old_lemma: int, new_lemma: str) -> bool:
         return True
 
     return False
+
+
+def update_node_label_id(
+    node_id: int, old_label_id: int, new_label_id: int
+) -> bool:
+    """
+    Change node label (label_id) of a node
+
+    If there is already exists a node which has node label `new_label_id`
+    and shares `line_id`, `annotator_id`,  `lexicon_id` with `node_id`,
+    it'll result in the uniqueness constraint violation on `Node`.
+
+    In case of such an event, transaction will be aborted.
+
+    NOTE: Even if a user with ROLE_CURATOR changes a node, it will not
+    change the `annotator_id` associated with it.
+    """
+    node = Node.query.get(node_id)
+    node_label = NodeLabel.query.get(new_label_id)
+
+    if node is None or node_label is None:
+        return False
+
+    # sanity check
+    if node.label_id != int(old_label_id):
+        return False
+
+    try:
+        node.label_id = new_label_id
+        db.session.add(node)
+    except Exception as e:
+        webapp.logger.exception(e)
+        db.session.rollback()
+    else:
+        db.session.commit()
+        return True
+
+    return False
+
 
 ###############################################################################
 # Hooks
@@ -760,10 +799,11 @@ def api():
     role_actions = {
         ROLE_ADMIN: [],
         ROLE_ANNOTATOR: [
-            'update_lexicon',
             'update_entity',
             'update_relation',
-            # 'update_action'
+            # 'update_action',
+            'update_lexicon',
+            'update_node_label_id',
         ],
         ROLE_CURATOR: [],
         ROLE_QUERIER: ['query', 'graph_query']
