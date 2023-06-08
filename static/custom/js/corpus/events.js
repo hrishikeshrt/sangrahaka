@@ -61,6 +61,7 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     const unique_id = row.line_id;
     $line_id_entity.val(unique_id);
     $line_id_relation.val(unique_id);
+    $refresh_row_data_buttons.prop('disabled', false);
 
     storage.setItem(KEY_CURRENT_UNIQUE_ID, parseInt(unique_id));
     storage.setItem(KEY_NEXT_UNIQUE_ID, parseInt(unique_id) + 1);
@@ -148,6 +149,8 @@ $corpus_table.on('page-change.bs.table', function (e, number, size) {
     // $action_actor_label.selectpicker('refresh');
     // $action_actor.val("");
     // $action_list.html("");
+
+    $refresh_row_data_buttons.prop('disabled', true);
 });
 
 // Click / Double-Click Cell

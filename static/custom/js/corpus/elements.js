@@ -24,6 +24,16 @@ const $edit_lexicon_lexicon_id = $("#edit-lexicon-lexicon-id");
 const $edit_lexicon_current_lemma = $("#edit-lexicon-current-lemma");
 const $edit_lexicon_replacement_lemma = $("#edit-lexicon-replacement-lemma");
 
+// Edit Entity Type
+const $edit_node_label_modal = $("#edit-node-label-modal");
+const $edit_node_label_form = $("#edit-node-label-form");
+const $edit_node_label_submit_button = $("#edit-node-label-submit");
+const $edit_node_label_node_id = $('#edit-node-label-node-id');
+const $edit_node_label_lexicon = $('#edit-node-label-lexicon');
+const $edit_node_label_node_label = $('#edit-node-label-node-label');
+const $edit_node_label_current_label = $("#edit-node-label-current-label");
+const $edit_node_label_replacement_label = $("#edit-node-label-replacement-label");
+
 // Relation Annotation
 const $form_prepare_relation = $("#form_prepare_relation");
 const $line_id_relation = $("#line_id_relation");

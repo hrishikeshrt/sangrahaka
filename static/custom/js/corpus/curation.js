@@ -1,5 +1,6 @@
 
 $edit_lexicon_submit_button.on('click', function (e) {
+    const line_id = $line_id_entity.val();
     $edit_lexicon_modal.modal('hide');
     if ($edit_lexicon_form[0].checkValidity()) {
         $.post(API_URL, {
@@ -14,6 +15,12 @@ $edit_lexicon_submit_button.on('click', function (e) {
                     type: response.style
                 });
                 if (response.success) {
+                    // refresh_row_data(line_id, setup_entity_annotation); ???
+                    // If we call "refresh_row_data" at the start of every setup_entity_annotation
+                    // we wouldn't need to do anything here. However, that may be unnecessarily costly
+                    // Other option can be to figure out which "lines" need to be refreshed and just
+                    // refresh those
+
                     // NOTE: potential bug when there's an unconfirmed relation using an existing entity and we change the lexicon
                     // TODO: investigate and fix if required
                     const current_text = $edit_lexicon_current_lemma.val().trim();
@@ -64,5 +71,41 @@ $edit_lexicon_submit_button.on('click', function (e) {
             }, 'json');
     } else {
         $edit_lexicon_form[0].reportValidity();
+    }
+});
+
+
+$edit_node_label_submit_button.on('click', function (e) {
+    const line_id = $line_id_entity.val();
+    $edit_node_label_modal.modal('hide');
+    if ($edit_node_label_form[0].checkValidity()) {
+        $.post(API_URL, {
+                action: "update_node_label_id",
+                node_id: $edit_node_label_node_id.val(),
+                old_label_id: $edit_node_label_current_label.selectpicker('val'),
+                new_label_id: $edit_node_label_replacement_label.selectpicker('val'),
+            },
+            function (response) {
+                $.notify({
+                    message: response.message
+                }, {
+                    type: response.style
+                });
+                if (response.success) {
+                    $.notify({
+                        message: "Please refresh row data for updating the list."
+                    }, {
+                        type: "warning"
+                    });
+                    // TODO: Success Handler
+                    // refresh_row_data(line_id, setup_entity_annotation); ???
+                    // If we call "refresh_row_data" at the start of every setup_entity_annotation
+                    // we wouldn't need to do anything here. However, that may be unnecessarily costly
+                    // Other option can be to figure out which "lines" need to be refreshed and just
+                    // refresh those
+                }
+            }, 'json');
+    } else {
+        $edit_node_label_form[0].reportValidity();
     }
 });

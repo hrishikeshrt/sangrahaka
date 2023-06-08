@@ -133,13 +133,22 @@ function setup_entity_annotation(unique_id) {
         text: "<i class='fa fa-edit mr-1'></i> Change Entity Type",
         action: function (e, context) {
             e.preventDefault();
-            $.notify({
-                message: "Eventually this will launch a modal to change entity type."
-            }, {
-                type: "warning"
-            });
+            const $element = $(context);
+            const lemma = $element.find('div.entity-lemma').text();
+            const label = $element.find('div.entity-label').text();
+            const node_id = $element.data('node-id');
+            const label_id = $element.data('node-label-id');
+
+            $edit_node_label_modal.modal('show');
+            $edit_node_label_node_id.val(node_id);
+            $edit_node_label_lexicon.text(lemma);
+            $edit_node_label_node_label.text(label);
+            $edit_node_label_current_label.selectpicker('val', label_id);
+            $edit_node_label_replacement_label.selectpicker('val', label_id);
+            setTimeout(function () {
+                $edit_node_label_replacement_label.focus();
+            }, 500);
         },
-        disabled: true
     };
 
     /* --------------------------------------------------------------------- */
