@@ -325,23 +325,23 @@ def get_chapter_data(chapter_id: int, user: User) -> dict:
     annotator_ids = []
     fetch_nodes = False
     fetch_relations = False
-    fetch_actions = False
+    # fetch_actions = False
     if user.has_permission(PERMISSION_ANNOTATE):
         annotator_ids = [user.id]
         fetch_nodes = True
         fetch_relations = True
-        fetch_actions = True
+        # fetch_actions = True
     if user.has_permission(PERMISSION_CURATE) or user.has_role(ROLE_ADMIN):
         annotator_ids = None
         fetch_nodes = True
         fetch_relations = True
-        fetch_actions = True
+        # fetch_actions = True
     return get_line_data(
         line_ids,
         annotator_ids=annotator_ids,
         fetch_nodes=fetch_nodes,
         fetch_relations=fetch_relations,
-        fetch_actions=False
+        # fetch_actions=fetch_actions
     )
 
 
@@ -350,7 +350,7 @@ def get_line_data(
     annotator_ids: List[int] = None,
     fetch_nodes: bool = False,
     fetch_relations: bool = False,
-    fetch_actions: bool = False
+    # fetch_actions: bool = False,
 ) -> dict:
     """Get Line Data
 
@@ -389,7 +389,7 @@ def get_line_data(
             'analysis': line.analyses.first().parsed,
             'entity': [],
             'relation': [],
-            'action': [],
+            # 'action': [],
             'marked': False
         }
         for line in line_object_query.all()
@@ -402,9 +402,9 @@ def get_line_data(
         relation_query = Relation.query.filter(
             Relation.line_id.in_(line_ids)
         )
-        action_query = Action.query.filter(
-            Action.line_id.in_(line_ids)
-        )
+        # action_query = Action.query.filter(
+        #     Action.line_id.in_(line_ids)
+        # )
     else:
         node_query = Node.query.filter(
             Node.line_id.in_(line_ids),
@@ -414,10 +414,10 @@ def get_line_data(
             Relation.line_id.in_(line_ids),
             Relation.annotator_id.in_(annotator_ids)
         )
-        action_query = Action.query.filter(
-            Action.line_id.in_(line_ids),
-            Action.annotator_id.in_(annotator_ids)
-        )
+        # action_query = Action.query.filter(
+        #     Action.line_id.in_(line_ids),
+        #     Action.annotator_id.in_(annotator_ids)
+        # )
 
     if fetch_nodes:
         for node in node_query.all():
@@ -466,16 +466,16 @@ def get_line_data(
             })
             data[relation.line_id]['marked'] = True
 
-    if fetch_actions:
-        for action in action_query.all():
-            data[action.line_id]['action'].append({
-                'id': action.id,
-                'label': action.label.label,
-                'actor_label': action.actor_label.label,
-                'actor': action.actor_lemma.lemma,
-                'annotator': action.annotator.username,
-                'is_deleted': action.is_deleted
-            })
-            data[action.line_id]['marked'] = True
+    # if fetch_actions:
+    #     for action in action_query.all():
+    #         data[action.line_id]['action'].append({
+    #             'id': action.id,
+    #             'label': action.label.label,
+    #             'actor_label': action.actor_label.label,
+    #             'actor': action.actor_lemma.lemma,
+    #             'annotator': action.annotator.username,
+    #             'is_deleted': action.is_deleted
+    #         })
+    #         data[action.line_id]['marked'] = True
 
     return data
