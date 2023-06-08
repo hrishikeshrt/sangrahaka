@@ -13,8 +13,7 @@ function refresh_row_data(unique_id, _callback) {
             replace: true
         });
         $corpus_table.bootstrapTable('collapseRowByUniqueId', unique_id);
-        // TODO: Who's setting `current_index` ?! (Check Antarlekhaka corresponding function)
-        $corpus_table.bootstrapTable('check', storage.getItem('current_index'));
+        $corpus_table.bootstrapTable('check', storage.getItem(KEY_CURRENT_INDEX));
 
         if (_callback) {
             _callback(unique_id);

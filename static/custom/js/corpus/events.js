@@ -62,6 +62,11 @@ $corpus_table.on('expand-row.bs.table', function (e, index, row, $detail) {
     $line_id_entity.val(unique_id);
     $line_id_relation.val(unique_id);
 
+    storage.setItem(KEY_CURRENT_UNIQUE_ID, parseInt(unique_id));
+    storage.setItem(KEY_NEXT_UNIQUE_ID, parseInt(unique_id) + 1);
+    storage.setItem(KEY_CURRENT_INDEX, parseInt(index));
+    storage.setItem(KEY_NEXT_INDEX, parseInt(index) + 1);
+
     const $active_tab = $('.annotation-tab[aria-selected="true"]');
     const tab_id = $active_tab.attr("id");
 

@@ -52,3 +52,8 @@ const $action_list = $("#action_list");
 
 // Globals
 var storage = window.localStorage;
+
+const KEY_CURRENT_INDEX = "current_index";
+const KEY_NEXT_INDEX = "next_index";
+const KEY_CURRENT_UNIQUE_ID = "current_unique_id";
+const KEY_NEXT_UNIQUE_ID = "next_unique_id";
