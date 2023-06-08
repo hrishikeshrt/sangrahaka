@@ -1,5 +1,7 @@
 const $corpus_table = $("#corpus_viewer");
 
+const $refresh_row_data_buttons = $(".refresh-row-data");
+
 // Entity Annotation
 const $form_prepare_entity = $("#form_prepare_entity");
 const $line_id_entity = $("#line_id_entity");

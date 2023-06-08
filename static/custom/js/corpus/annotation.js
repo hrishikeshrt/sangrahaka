@@ -22,6 +22,27 @@ function refresh_row_data(unique_id, _callback) {
     console.log(`Line data updated for ID: ${unique_id}`);
 }
 
+/* **************************** Generic Events **************************** */
+
+$refresh_row_data_buttons.click(function() {
+    const $active_tab = $('.annotation-tab[aria-selected="true"]');
+    const tab_id = $active_tab.attr("id");
+
+    if (tab_id == "entity-tab") {
+        const unique_id = $line_id_entity.val();
+        refresh_row_data(unique_id, setup_entity_annotation);
+    }
+    if (tab_id == "relation-tab") {
+        const unique_id = $line_id_relation.val();
+        refresh_row_data(unique_id, setup_relation_annotation);
+    }
+    // if (tab_id == "action-tab") {
+    //    const unique_id = $line_id_action.val();
+    //     refresh_row_data(unique_id, setup_action_annotation);
+    //
+    // }
+});
+
 /* ******************** Entity Annotation - BEGIN ******************** */
 
 function setup_entity_annotation(unique_id) {
