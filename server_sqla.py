@@ -836,7 +836,7 @@ def api():
         if current_lemma == replacement_lemma:
             api_response["success"] = False
             api_response["message"] = (
-                "Replacement text is identical to current text."
+                "Replacement text is same as current text."
             )
             return jsonify(api_response)
 
@@ -868,6 +868,47 @@ def api():
             api_response["message"] = "Something went wrong."
             api_response["style"] = "error"
         return jsonify(api_response)
+
+    if action == 'update_node_label_id':
+        annotator_id = current_user.id
+        node_id = request.form['node_id']
+        old_label_id = request.form['old_label_id']
+        new_label_id = request.form['new_label_id']
+
+        if old_label_id == new_label_id:
+            api_response["success"] = False
+            api_response["message"] = (
+                "Replacement node type is same as current node type."
+            )
+            return jsonify(api_response)
+
+        if False:
+            # NOTE: check for conditions such as existence of new/old labels?
+            # these checks are already done in update_node_label_id()
+            # status returns False if they fail
+            api_response["success"] = False
+            api_response["message"] = "Error"
+            api_response["style"] = "warning"
+            return jsonify(api_response)
+
+        try:
+            status = update_node_label_id(node_id, old_label_id, new_label_id)
+            if not status:
+                api_response["success"] = False
+                api_response["message"] = "Failed to update."
+                api_response["style"] = "warning"
+            else:
+                api_response["success"] = True
+                api_response["message"] = "Successfully updated!"
+                api_response["style"] = "success"
+        except Exception as e:
+            print(e)
+            api_response["success"] = False
+            api_response["message"] = "Something went wrong."
+            api_response["style"] = "error"
+        return jsonify(api_response)
+
+    # ----------------------------------------------------------------------- #
 
     if action in ['update_entity', 'update_relation']:  # , 'update_action']:
         line_id = request.form['line_id']
