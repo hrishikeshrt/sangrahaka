@@ -349,25 +349,51 @@ function setup_relation_annotation(unique_id) {
             });
         }
     };
-    const edit_relation_menu_item = {
-        text: "<i class='fa fa-edit mr-1'></i> Edit Relation",
+    const edit_relation_label_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Change Relation Label",
         action: function (e, context) {
             e.preventDefault();
-            $.notify({
-                message: "Eventually this will launch a modal to edit relation."
-            }, {
-                type: "warning"
-            });
-        },
-        disabled: true
+            const $element = $(context);
+            const relation_id = $element.data('relation-id');
+            const label_id = $element.data('relation-label-id');
+
+            const src_lemma = $element.find('span.relation-source-lemma').text();
+            const src_label = $element.find('span.relation-source-label').text();
+            const dst_lemma = $element.find('span.relation-target-lemma').text();
+            const dst_label = $element.find('span.relation-target-label').text();
+            const relation_label = $element.find('span.relation-label').text();
+            const relation_detail = $element.find('span.relation-detail').text();
+
+            $edit_relation_label_modal.modal('show');
+            $edit_relation_label_relation_id.val(relation_id);
+            $edit_relation_label_src_lexicon.text(src_lemma);
+            $edit_relation_label_src_label.text(src_label);
+            $edit_relation_label_relation_label.text(relation_label);
+            $edit_relation_label_relation_detail.text(relation_detail);
+            $edit_relation_label_dst_lexicon.text(dst_lemma);
+            $edit_relation_label_dst_label.text(dst_label);
+            $edit_relation_label_current_label.selectpicker('val', label_id);
+            $edit_relation_label_replacement_label.selectpicker('val', label_id);
+            setTimeout(function () {
+                $edit_relation_label_replacement_label.focus();
+            }, 500);
+        }
     };
+    const edit_node_in_relations_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Change Node in Relations",
+        action: function(e, context) {
+            e.preventDefault();
+        },
+        disabled: true,
+    }
 
     /* --------------------------------------------------------------------- */
 
     attach_context_menu(".context-relation", [
         relation_actions_header_menu_item,
         relation_information_menu_item,
-        edit_relation_menu_item,
+        edit_relation_label_menu_item,
+        edit_node_in_relations_menu_item
     ]);
 }
 

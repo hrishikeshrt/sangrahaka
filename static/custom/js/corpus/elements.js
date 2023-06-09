@@ -47,6 +47,21 @@ const $add_relation_button = $("#add_relation")
 const $confirm_relation_button = $("#confirm_relation_list");
 const $relation_list = $("#relation_list");
 
+// Edit Relation Type
+const $edit_relation_label_modal = $("#edit-relation-label-modal");
+const $edit_relation_label_form = $("#edit-relation-label-form");
+const $edit_relation_label_submit_button = $("#edit-relation-label-submit");
+const $edit_relation_label_relation_id = $('#edit-relation-label-relation-id');
+const $edit_relation_label_src_lexicon = $('#edit-relation-label-source-lexicon');
+const $edit_relation_label_src_label = $('#edit-relation-label-source-label');
+const $edit_relation_label_relation_label = $('#edit-relation-label-relation-label');
+const $edit_relation_label_relation_detail = $('#edit-relation-label-relation-detail');
+const $edit_relation_label_dst_lexicon = $('#edit-relation-label-target-lexicon');
+const $edit_relation_label_dst_label = $('#edit-relation-label-target-label');
+
+const $edit_relation_label_current_label = $("#edit-relation-label-current-label");
+const $edit_relation_label_replacement_label = $("#edit-relation-label-replacement-label");
+
 /*
 // Action Annotation
 const $form_prepare_action = $("#form_prepare_action");

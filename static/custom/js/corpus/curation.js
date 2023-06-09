@@ -109,3 +109,39 @@ $edit_node_label_submit_button.on('click', function (e) {
         $edit_node_label_form[0].reportValidity();
     }
 });
+
+
+$edit_relation_label_submit_button.on('click', function (e) {
+    const line_id = $line_id_entity.val();
+    $edit_relation_label_modal.modal('hide');
+    if ($edit_relation_label_form[0].checkValidity()) {
+        $.post(API_URL, {
+                action: "update_relation_label_id",
+                relation_id: $edit_relation_label_relation_id.val(),
+                old_label_id: $edit_relation_label_current_label.selectpicker('val'),
+                new_label_id: $edit_relation_label_replacement_label.selectpicker('val'),
+            },
+            function (response) {
+                $.notify({
+                    message: response.message
+                }, {
+                    type: response.style
+                });
+                if (response.success) {
+                    $.notify({
+                        message: "Please refresh row data for updating the list."
+                    }, {
+                        type: "warning"
+                    });
+                    // TODO: Success Handler
+                    // refresh_row_data(line_id, setup_entity_annotation); ???
+                    // If we call "refresh_row_data" at the start of every setup_entity_annotation
+                    // we wouldn't need to do anything here. However, that may be unnecessarily costly
+                    // Other option can be to figure out which "lines" need to be refreshed and just
+                    // refresh those
+                }
+            }, 'json');
+    } else {
+        $edit_relation_label_form[0].reportValidity();
+    }
+});
