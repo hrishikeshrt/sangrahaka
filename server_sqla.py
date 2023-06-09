@@ -352,6 +352,44 @@ def update_node_label_id(
     return False
 
 
+# --------------------------------------------------------------------------- #
+
+
+def update_relation_label_id(
+    relation_id: int, old_label_id: int, new_label_id: int
+) -> bool:
+    """
+    Change relation label (label_id) of a relation
+
+    In case of the uniqueness constraint violation on `Relation`,
+    transaction will be aborted.
+
+    NOTE: Even if a user with ROLE_CURATOR changes a relation, it will not
+    change the `annotator_id` associated with it.
+    """
+    relation = Relation.query.get(relation_id)
+    relation_label = NodeLabel.query.get(new_label_id)
+
+    if relation is None or relation_label is None:
+        return False
+
+    # sanity check
+    if relation.label_id != int(old_label_id):
+        return False
+
+    try:
+        relation.label_id = new_label_id
+        db.session.add(relation)
+    except Exception as e:
+        webapp.logger.exception(e)
+        db.session.rollback()
+    else:
+        db.session.commit()
+        return True
+
+    return False
+
+
 ###############################################################################
 # Hooks
 
@@ -804,6 +842,7 @@ def api():
             # 'update_action',
             'update_lexicon',
             'update_node_label_id',
+            'update_relation_label_id',
         ],
         ROLE_CURATOR: [],
         ROLE_QUERIER: ['query', 'graph_query']
@@ -893,6 +932,47 @@ def api():
 
         try:
             status = update_node_label_id(node_id, old_label_id, new_label_id)
+            if not status:
+                api_response["success"] = False
+                api_response["message"] = "Failed to update."
+                api_response["style"] = "warning"
+            else:
+                api_response["success"] = True
+                api_response["message"] = "Successfully updated!"
+                api_response["style"] = "success"
+        except Exception as e:
+            print(e)
+            api_response["success"] = False
+            api_response["message"] = "Something went wrong."
+            api_response["style"] = "error"
+        return jsonify(api_response)
+
+    if action == 'update_relation_label_id':
+        annotator_id = current_user.id
+        relation_id = request.form['relation_id']
+        old_label_id = request.form['old_label_id']
+        new_label_id = request.form['new_label_id']
+
+        if old_label_id == new_label_id:
+            api_response["success"] = False
+            api_response["message"] = (
+                "Replacement relation type is same as current relation type."
+            )
+            return jsonify(api_response)
+
+        if False:
+            # NOTE: check for conditions such as existence of new/old labels?
+            # these checks are already done in update_relation_label_id()
+            # status returns False if they fail
+            api_response["success"] = False
+            api_response["message"] = "Error"
+            api_response["style"] = "warning"
+            return jsonify(api_response)
+
+        try:
+            status = update_relation_label_id(
+                relation_id, old_label_id, new_label_id
+            )
             if not status:
                 api_response["success"] = False
                 api_response["message"] = "Failed to update."
