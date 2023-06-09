@@ -1,0 +1,55 @@
+ <!-- Modal -->
+ <div class="modal fade" id="edit-relation-label-modal" tabindex="-1" aria-labelledby="edit-relation-label-modal-title" aria-hidden="true">
+     <div class="modal-dialog modal-lg">
+         <div class="modal-content">
+            <form id="edit-relation-label-form">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="edit-relation-label-modal-title">Edit Relation Type</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                   <input type="hidden" name="relation_id" value="" id="edit-relation-label-relation-id">
+                   <div class="form-group form-row">
+                        <span class="col-sm-4 col-form-label">Relation</span>
+                        <div class="col-sm">
+                            <span class="font-weight-bold" id="edit-relation-label-source-lexicon"></span>
+                            <span class="mx-1 text-secondary">::</span>
+                            <span class="text-secondary" id="edit-relation-label-source-label"></span>
+                            ⊢ [<span class="text-secondary" id="edit-relation-label-relation-label"></span> (<span class="text-secondary" id="edit-relation-label-relation-detail"></span>)] →
+                            <span class="font-weight-bold" id="edit-relation-label-target-lexicon"></span>
+                            <span class="mx-1 text-secondary">::</span>
+                            <span class="text-secondary" id="edit-relation-label-target-label"></span>
+                        </div>
+                   </div>
+                   <div class="form-group form-row">
+                       <label class="col-sm-4 col-form-label" for="edit-relation-label-current-label">Current</label>
+                       <div class="col-sm">
+                           <select name="" id="edit-relation-label-current-label" title="None" class="form-control selectpicker" data-container="body" data-live-search="true" autocomplete="off" required disabled>
+                                {% for _id, _label, _description in context_labels.relation_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
+                                <option data-tokens="{{_label}}" value="{{_id}}">{{_description}}</option>
+                                {% endfor %}
+                            </select>
+                       </div>
+                   </div>
+
+                   <div class="form-group form-row">
+                       <label class="col-sm-4 col-form-label" for="edit-relation-label-replacement-label">Replacement</label>
+                       <div class="col-sm">
+                            <select name="" id="edit-relation-label-replacement-label" title="None" class="form-control selectpicker" data-container="body" data-live-search="true" autocomplete="off" required>
+                                {% for _id, _label, _description in context_labels.relation_labels | sort(attribute=current_user.settings.sort_labels | default(0) | int) %}
+                                <option data-tokens="{{_label}}" value="{{_id}}">{{_description}}</option>
+                                {% endfor %}
+                            </select>
+                       </div>
+                   </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="edit-relation-label-submit">Save</button>
+                </div>
+            </form>
+         </div>
+     </div>
+ </div>
