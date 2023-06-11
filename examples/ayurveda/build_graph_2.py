@@ -124,6 +124,7 @@ class AyurvedaGraph(PropertyGraph):
 
 def build_graph() -> PropertyGraph:
     graph = AyurvedaGraph()
+    errors = []
     node_query = Node.query.filter(Node.is_deleted.is_(False))
     relation_query = Relation.query.filter(Relation.is_deleted.is_(False))
     logger.debug(node_query)
@@ -136,7 +137,8 @@ def build_graph() -> PropertyGraph:
         properties = {
             'lemma': node.lemma.lemma,
             'annotator': node.annotator.id,
-            'line_id': node.line_id
+            'line_id': node.line_id,
+            'line_text': node.line.text,
         }
         graph.add_node(node_id=node_id, labels=labels, properties=properties)
 
@@ -144,7 +146,8 @@ def build_graph() -> PropertyGraph:
         label = relationship.label.label
         properties = {
             'annotator': relationship.annotator.id,
-            'line_id': relationship.line_id
+            'line_id': relationship.line_id,
+            'line_text': relationship.line.text,
         }
         if relationship.detail:
             properties['detail'] = relationship.detail
@@ -154,20 +157,30 @@ def build_graph() -> PropertyGraph:
         src_node = relationship.src_node
         dst_node = relationship.dst_node
         if src_node.is_deleted or dst_node.is_deleted:
-            print(
-                f"Relationship ({relationship.id}) "
-                f"(Line: {relationship.line_id}): "
-                f"{src_id} ({src_node.lemma.lemma}:{src_node.label.label}) "
-                f"(is_deleted: {src_node.is_deleted}) "
-                f"-[{label}]-> "
-                f"{dst_id} ({dst_node.lemma.lemma}:{dst_node.label.label}) "
-                f"(is_deleted: {dst_node.is_deleted}) "
+            error_message = (
+                f"Line: {relationship.line_id}):: "
+                f"(Relationship {relationship.id}):\n"
+                f"\t(Node {src_id}) ({src_node.lemma.lemma}:{src_node.label.label}) "
+                f"(is_deleted: {src_node.is_deleted}, src_node.line_id = {src_node.line_id})\n"
+                f"\t-[{label}]-> \n"
+                f"\t(Node {dst_id}) ({dst_node.lemma.lemma}:{dst_node.label.label}) "
+                f"(is_deleted: {dst_node.is_deleted}, dst_node.line_id = {dst_node.line_id})\n\n"
             )
+            error_csv = (
+                f"{relationship.id},"
+                f"{relationship.line_id},"
+                f"{src_id},{src_node.line_id},{src_node.lemma.lemma} :: {src_node.label.label},"
+                f"{src_node.is_deleted},"
+                f"{label},"
+                f"{dst_id},{dst_node.line_id},{dst_node.lemma.lemma} :: {dst_node.label.label},"
+                f"{dst_node.is_deleted}"
+            )
+            errors.append(error_csv)
             continue
 
         graph.add_edge(src_id, label, dst_id, properties=properties)
 
-    return graph
+    return graph, errors
 
 ###############################################################################
 
@@ -197,7 +210,7 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------- #
 
-    graph = build_graph()
+    graph, errors = build_graph()
     graph.add_synonym_edges()
 
     if save_graph:
