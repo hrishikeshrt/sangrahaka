@@ -390,6 +390,35 @@ def update_relation_label_id(
     return False
 
 
+def update_node_id_in_relations(old_node_id: int, new_node_id: int) -> bool:
+    """
+    Change all occurrences of `old_node_id` in relations to `new_node_id`
+    """
+    old_node = Node.query.get(old_node_id)
+    new_node = Node.query.get(new_node_id)
+
+    if old_node is None or new_node is None:
+        return False
+
+    src_relations = Relation.query.filter(Relation.src_id == old_node_id).all()
+    dst_relations = Relation.query.filter(Relation.dst_id == old_node_id).all()
+
+    try:
+        for relation in src_relations:
+            relation.src_id = new_node_id
+            db.session.add(relation)
+
+        for relation in dst_relations:
+            relation.dst_id = new_node_id
+            db.session.add(relation)
+    except Exception as e:
+        webapp.logger.exception(e)
+        db.session.rollback()
+    else:
+        db.session.commit()
+        return True
+
+
 ###############################################################################
 # Hooks
 
@@ -843,6 +872,7 @@ def api():
             'update_lexicon',
             'update_node_label_id',
             'update_relation_label_id',
+            'update_node_id_in_relations',
         ],
         ROLE_CURATOR: [],
         ROLE_QUERIER: ['query', 'graph_query']
@@ -973,6 +1003,44 @@ def api():
             status = update_relation_label_id(
                 relation_id, old_label_id, new_label_id
             )
+            if not status:
+                api_response["success"] = False
+                api_response["message"] = "Failed to update."
+                api_response["style"] = "warning"
+            else:
+                api_response["success"] = True
+                api_response["message"] = "Successfully updated!"
+                api_response["style"] = "success"
+        except Exception as e:
+            print(e)
+            api_response["success"] = False
+            api_response["message"] = "Something went wrong."
+            api_response["style"] = "error"
+        return jsonify(api_response)
+
+    if action == 'update_node_id_in_relations':
+        annotator_id = current_user.id
+        old_node_id = request.form['old_label_id']
+        new_node_id = request.form['new_label_id']
+
+        if old_node_id == new_node_id:
+            api_response["success"] = False
+            api_response["message"] = (
+                "Replacement node id is same as existing node id."
+            )
+            return jsonify(api_response)
+
+        if False:
+            # NOTE: check for conditions such as existence of new/old nodes?
+            # these checks are already done in update_node_id_in_relations()
+            # status returns False if they fail
+            api_response["success"] = False
+            api_response["message"] = "Error"
+            api_response["style"] = "warning"
+            return jsonify(api_response)
+
+        try:
+            status = update_node_id_in_relations(old_node_id, new_node_id)
             if not status:
                 api_response["success"] = False
                 api_response["message"] = "Failed to update."
