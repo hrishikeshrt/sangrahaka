@@ -1,5 +1,6 @@
 *.log
-db/
+db/*
+!db/README.md
 
 data/*
 !data/tables
