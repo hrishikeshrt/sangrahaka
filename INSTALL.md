@@ -72,16 +72,19 @@ Your Saṅgrāhaka instance is now ready for annotation!
 The knowledge graph needs to be constructed using the collected annotations.
 The `PropertyGraph()` class provided in [`utils/property_graph.py`](utils/property_graph.py) can be used for this purpose.
 
-**Note**: [`examples`](examples/) directory contains sample files for building the knowledge graph.
+**Disclaimer**: This step requires a certain level of familiarity with Python,
+property graph data model and computational aspects.
 
-**Disclaimer**: This step requires some level of familiarity with Python and computational aspects.
+**Note**: [`examples`](examples/) directory contains sample files for building the knowledge graph.
 
 ### Prepare Query Templates
 
 Query templates should be prepared at `data/query.json`. The format of query templates as well as sample
 files highlighting the query template preparation are available in [`examples`](examples/).
 
-**Disclaimer**: This step requires some level of familiarity with Cypher and computational aspects.
+**Disclaimer**: Creating query templates requires a certain level of familiarity
+with [Cypher](https://neo4j.com/docs/getting-started/cypher-intro/) query
+language and computational aspects.
 
 ### Start Graph Database (Neo4j) Server *(optional)*
 
@@ -94,6 +97,3 @@ web server.
   - Open a terminal.
   - Navigate to the `Neo4j` installation directory. (`cd <your-neo4j-installation-path>`)
   - Run `./bin/neo4j console`
-
-**Note**: The graph server should be started before starting the web server. If you have already
-started the web server, you can always stop it and restart it.

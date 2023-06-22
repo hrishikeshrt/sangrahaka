@@ -32,10 +32,10 @@ Your Sangrahaka instance is now ready for annotation!
 
 *  Install [Neo4j](https://neo4j.com/download-center/#community) (Required for querying)
   - Navigate to the `Neo4j` installation directory
-  - Start Graph server `./bin/neo4j console`
-* Construct knowledge graph.
-* Load knowledge graph into Neo4j.
-* Prepare query templates.
+  - Start the graph server: `./bin/neo4j console`
+* Construct the knowledge graph.
+* Load the knowledge graph into Neo4j.
+* Prepare the query templates file and place it in the `data/` folder.
 * Restart web server.
 
 **Disclaimer**: Steps such as preparing corpus files, query templates building knowledge graph requires
