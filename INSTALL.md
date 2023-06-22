@@ -65,6 +65,8 @@ Your Saṅgrāhaka instance is now ready for annotation!
 * Ask your annotators to create accounts on your system.
 * Go to `Admin` tab to add `Annotator` role to the desired users.
 
+## Querying Setup
+
 ### Build Knowledge Graph
 
 The knowledge graph needs to be constructed using the collected annotations.
