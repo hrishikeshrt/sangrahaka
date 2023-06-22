@@ -2,15 +2,18 @@
 
 An easy and robust web-based distributed **Annotation and Querying Framework**.
 
-This work has been accepted in ESEC/FSE 2021.
+This work has been accepted in [ESEC/FSE 2021](https://2021.esec-fse.org/).
 
-## Instructions
+## Install
 
-* Clone repository
+Saṅgrāhaka is presented as a full-stack application that you can install on your own server.
+
+The detailed installation instructions are available at [INSTALL.md](INSTALL.md).
+
+### Basic Setup
+
+* Clone (or Download) this repository.
 * `pip install -r requirements.txt`
-*  Install [Neo4j](https://neo4j.com/download-center/#community) (Required for querying)
-    - Navigate to the `Neo4j` installation directory
-    - Start Graph server `./bin/neo4j console`
 * Copy `settings.sample.py` to `settings.py` and make appropriate changes.
 * Run application server using `python3 server.py`
 * Load the URL displayed on the terminal in the browser of your choice.
@@ -25,13 +28,24 @@ Your Sangrahaka instance is now ready for annotation!
 * Ask your annotators to create accounts on your system.
 * Go to `Admin` tab to add `Annotator` role to the desired users.
 
+### Graph Setup
+
+*  Install [Neo4j](https://neo4j.com/download-center/#community) (Required for querying)
+  - Navigate to the `Neo4j` installation directory
+  - Start Graph server `./bin/neo4j console`
+* Construct knowledge graph.
+* Load knowledge graph into Neo4j.
+* Prepare query templates.
+* Restart web server.
+
+**Disclaimer**: Steps such as preparing corpus files, query templates building knowledge graph requires
+a certain level of familiarity with programming and the computational aspects.
 
 **Note**: `examples` directory contains sample files for corpus creation, query template and graph building.
 
 ## Demo
 
 * Presentation: https://hrishikeshrt.github.io/publication/fse2021/presentation.mp4
-
 
 ## Cite
 
@@ -59,80 +73,69 @@ series = {ESEC/FSE 2021}
 ```
 .
 ├── requirements.txt
-├── models_sqla.py
-├── server_sqla.py
-├── server.py -> server_sqla.py
 ├── settings.sample.py
-├── examples
-│   ├── README.md
-│   └── epics
-│       ├── corpus
-│       ├── query.json
-│       ├── build_graph.py
-│       └── README.md
+├── models_admin.py
+├── models_sqla.py
+├── server.py -> server_sqla.py
+├── server_sqla.py
+├── constants.py
+├── data
+│   ├── query.json
+│   └── tables
+│       ├── README.md
+│       └── sample
+├── db
+│   ├── main.db
+│   └── README.md
+├── templates [*.html]
 ├── utils
 │   ├── configuration.py
+│   ├── cypher_utils.py
+│   ├── database.py
 │   ├── graph.py
+│   ├── plaintext.py
 │   ├── property_graph.py
 │   ├── query.py
 │   └── reverseproxied.py
-├── templates
-│   ├── about.html
-│   ├── admin.html
-│   ├── contact.html
-│   ├── corpus.html
-│   ├── entity.html
-│   ├── footer.html
-│   ├── header.html
-│   ├── home.html
-│   ├── macros.html
-│   ├── messages.html
-│   ├── privacy.html
-│   ├── query.html
-│   ├── relation.html
-│   ├── security
-│   │   ├── change_password.html
-│   │   ├── email
-│   │   ├── forgot_password.html
-│   │   ├── login_user.html
-│   │   ├── register_user.html
-│   │   └── reset_password.html
-│   ├── settings.html
-│   └── terms.html
 ├── static
-│   ├── bootstrap
-│   ├── css
+│   ├── audio [...]
+│   ├── bootstrap [...]
+│   ├── css [...]
 │   ├── custom
 │   │   ├── css
+│   │   │   ├── builder
+│   │   │   │   ├── builder.css
+│   │   │   │   └── [...]
+│   │   │   └── sticky-footer.css
 │   │   └── js
+│   │       ├── admin
+│   │       │   └── admin.js
+│   │       ├── browse
+│   │       │   └── browse.js
+│   │       ├── builder
+│   │       │   └── builder.js
 │   │       ├── corpus
+│   │       │   ├── annotation.js
+│   │       │   ├── curation.js
 │   │       │   ├── elements.js
 │   │       │   ├── events.js
 │   │       │   └── functions.js
 │   │       └── query
 │   │           ├── network.js
 │   │           └── query.js
-│   ├── fontawesome
-│   ├── js
-│   ├── plugins
-│   │   ├── bootstrap-table
-│   │   ├── css
-│   │   │   ├── animate.min.css
-│   │   │   ├── bootstrap4-toggle.min.css
-│   │   │   └── bootstrap-select.min.css
-│   │   └── js
-│   │       ├── bootstrap4-toggle.min.js
-│   │       ├── bootstrap-autocomplete.min.js
-│   │       ├── bootstrap-notify.min.js
-│   │       ├── bootstrap-select.min.js
-│   │       ├── tableExport.min.js
-│   │       └── vis-network.min.js
-│   └── themes
-├── scripts
-│   ├── build_graph.py
-│   ├── build_query_file.py
-│   └── convert_sheet_annotations.py
+│   ├── fontawesome [...]
+│   ├── images [...]
+│   ├── js [...]
+│   ├── plugins [...]
+│   └── themes [...]
+├── examples
+│   ├── ayurveda [...]
+│   ├── epics [...]
+│   ├── README.md
+│   └── requirements.txt
+├── output [...]
+├── explore_database.py
+├── setup.cfg
+├── INSTALL.md
 └── README.md
 ```
-
-
