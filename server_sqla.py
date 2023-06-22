@@ -112,10 +112,6 @@ logging.basicConfig(format='[%(asctime)s] %(name)s %(levelname)s: %(message)s',
                               logging.StreamHandler()])
 
 ###############################################################################
-
-QUERIES = load_queries(app.query_file)
-
-###############################################################################
 # UIA Mapper
 
 
@@ -225,15 +221,35 @@ limiter = Limiter(
 ###############################################################################
 # Neo4j Graph
 
-try:
-    GRAPH = Graph(
-        server=app.neo4j['server'],
-        username=app.neo4j['username'],
-        password=app.neo4j['password']
-    )
-except Exception as e:
-    GRAPH = None
-    logging.error(f"Graph Database connection failed. ({e})")
+GRAPH = None
+
+
+def connect_graph_server():
+    try:
+        return Graph(
+            server=app.neo4j['server'],
+            username=app.neo4j['username'],
+            password=app.neo4j['password']
+        )
+    except Exception as e:
+        logging.error(f"Graph Database connection failed. ({e})")
+        return None
+
+
+def initialize_graph_connection():
+    """Establish graph connection if not connected already"""
+    global GRAPH
+    if GRAPH is None:
+        GRAPH = connect_graph_server()
+    return GRAPH is not None
+
+
+# Initialize Graph Connection
+initialize_graph_connection()
+
+###############################################################################
+
+QUERIES = load_queries(app.query_file)
 
 ###############################################################################
 # Database Utility Functions
@@ -1356,6 +1372,7 @@ def api():
     # ----------------------------------------------------------------------- #
 
     if action == 'query':
+        initialize_graph_connection()
         if GRAPH is None:
             api_response['success'] = False
             api_response['message'] = 'Graph Database is not connected.'
