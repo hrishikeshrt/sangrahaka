@@ -157,6 +157,10 @@ webapp.config['SECURITY_USER_IDENTITY_ATTRIBUTES'] = [
     {'username': {'mapper': uia_username_mapper}}
 ]
 
+webapp.config['SECURITY_CONFIRMABLE'] = app.smtp_enabled
+webapp.config['SECURITY_LOGIN_WITHOUT_CONFIRMATION'] = True
+webapp.config['SECURITY_POST_CONFIRM_VIEW'] = 'show_home'
+
 webapp.config['SECURITY_RECOVERABLE'] = app.smtp_enabled
 webapp.config['SECURITY_CHANGEABLE'] = True
 webapp.config['SECURITY_TRACKABLE'] = True
@@ -186,7 +190,13 @@ if app.smtp_enabled:
 db.init_app(webapp)
 
 csrf = CSRFProtect(webapp)
-security = Security(webapp, user_datastore, login_form=CustomLoginForm)
+security = Security(webapp, user_datastore, login_form=CustomLoginForm,
+                    confirm_register_form=RegisterForm)
+
+# NOTE: By default, Flask-Security-Too disables "Confirm Password" prompt if
+# `SECURITY_CONFIRMABLE` is set to `True`.
+# We want to have both, so `confirm_register_form=flask_security.RegisterForm`
+# (Default is confirm_register_form=flask_security.ConfirmRegisterForm)
 
 # flask-admin
 admin = Admin(

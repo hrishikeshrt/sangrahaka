@@ -96,9 +96,19 @@
                 <tr>
                     <td class="lead">
                         E-mail
+                        {% if current_user.confirmed_at %}
+                        <i class="fas fa-check-circle text-success ml-1" data-toggle="tooltip" data-placement="top" title="Email confirmed at {{current_user.confirmed_at}}."></i>
+                        {% else %}
+                        <i class="fas fa-exclamation-circle text-warning ml-1" data-toggle="tooltip" data-placement="top" title="Email confirmation pending."></i></a>
+                        {% endif %}
                     </td>
                     <td>
                         {{current_user.email}}
+                        {% if not current_user.confirmed_at %}
+                        <a class="ml-3" href="{{url_for_security('send_confirmation')}}">
+                            [ Confirm ]
+                        </a>
+                        {% endif %}
                     </td>
                 </tr>
                 <tr>
