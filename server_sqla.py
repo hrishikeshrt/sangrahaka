@@ -150,6 +150,7 @@ webapp.config['WTF_CSRF_TIME_LIMIT'] = None
 # Flask-Security-Too Configuration
 
 webapp.config['SECURITY_REGISTERABLE'] = True
+webapp.config['SECURITY_POST_REGISTER_VIEW'] = 'show_home'
 webapp.config['SECURITY_SEND_REGISTER_EMAIL'] = app.smtp_enabled
 webapp.config['SECURITY_USER_IDENTITY_ATTRIBUTES'] = [
     {'email': {'mapper': uia_email_mapper}},
