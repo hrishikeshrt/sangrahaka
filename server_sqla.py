@@ -44,8 +44,10 @@ import git
 import requests
 from flask import (Flask, render_template, redirect, jsonify, url_for,
                    request, flash, session, Response, abort)
-from flask_security import (Security, auth_required, permissions_required,
-                            hash_password, current_user, user_registered,
+from flask_security import (Security, RegisterForm,
+                            auth_required, permissions_required,
+                            hash_password, current_user,
+                            user_registered, user_confirmed,
                             user_authenticated)
 from flask_security.utils import uia_email_mapper
 from sqlalchemy import or_, and_, func
@@ -533,6 +535,9 @@ def init_database():
 
     db.session.commit()
 
+###############################################################################
+# Signals
+
 
 @user_registered.connect_via(webapp)
 def assign_default_roles(sender, user, **extra):
@@ -541,9 +546,17 @@ def assign_default_roles(sender, user, **extra):
     db.session.commit()
 
 
+@user_confirmed.connect_via(webapp)
+def assign_confirm_roles(sender, user, **extra):
+    """Assign `ROLE_QUERIER` to users after email confirmation"""
+    user_datastore.add_role_to_user(user, ROLE_QUERIER)
+    db.session.commit()
+
+
 @user_authenticated.connect_via(webapp)
 def _after_authentication_hook(sender, user, **extra):
     pass
+
 
 ###############################################################################
 # Global Context
