@@ -11,9 +11,11 @@ from datetime import datetime
 
 from flask import Flask
 from sqlalchemy.orm import class_mapper
+from flask_security import Security, hash_password
 
 # Local
-from models_sqla import db
+from models_sqla import CustomLoginForm
+from models_sqla import db, user_datastore
 from models_sqla import User, Role
 from models_sqla import Corpus, Chapter, Verse, Line, Analysis
 from models_sqla import Lexicon, NodeLabel, RelationLabel, Node, Relation
@@ -25,12 +27,15 @@ from utils.database import search_node, search_relation, search_model
 ###############################################################################
 
 webapp = Flask(__name__)
+webapp.config['SECRET_KEY'] = app.secret_key
+webapp.config['SECURITY_PASSWORD_SALT'] = app.security_password_salt
 webapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 webapp.config['SQLALCHEMY_DATABASE_URI'] = app.sqla['database_uri']
 webapp.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_pre_ping": True,
 }
 db.init_app(webapp)
+security = Security(webapp, user_datastore, login_form=CustomLoginForm)
 webapp.app_context().push()
 
 ###############################################################################
