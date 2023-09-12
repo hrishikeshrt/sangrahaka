@@ -43,8 +43,8 @@ function update_query() {
         var $element = $("#" + query_input_element_prefix + input_element.id);
         var element_value = $element.val().trim();
         if (element_value) {
-            cypher = cypher.replace(`${VARIABLE_PREFIX}${input_element.id}${VARIABLE_SUFFIX}`, element_value);
-            query_text = query_text.replace(`${VARIABLE_PREFIX}${input_element.id}${VARIABLE_SUFFIX}`, `"${element_value}"`);
+            cypher = cypher.replaceAll(`${VARIABLE_PREFIX}${input_element.id}${VARIABLE_SUFFIX}`, element_value);
+            query_text = query_text.replaceAll(`${VARIABLE_PREFIX}${input_element.id}${VARIABLE_SUFFIX}`, `"${element_value}"`);
         }
     }
     $cypher_input.val(cypher);
