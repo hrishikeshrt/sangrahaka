@@ -5,13 +5,19 @@ Created on Sun Feb 19 23:05:16 2023
 
 @author: Hrishikesh Terdalkar
 
-This version corresponds to Nodes of the form Lemma::NodeLabel
-Relationship src_id and dst_id refer to node ids
+This version corresponds to Nodes of the form Lemma::NodeLabel Relationship
+src_id and dst_id refer to node ids
+
+Additionally, this makes use of hierarchical ontology, adding top level labels
+to lower levels that belong to them (i.e. a node with RASA_PROPERTY label will
+also get the label PROPERTY and so on)
 """
 
 import os
 import sys
 import logging
+
+from collections import defaultdict
 
 ###############################################################################
 
@@ -26,6 +32,55 @@ from utils.property_graph import PropertyGraph   # noqa
 ###############################################################################
 
 logger = logging.getLogger(__name__)
+
+###############################################################################
+
+
+def read_ontology(node_ontology_file: str):
+    with open(node_ontology_file, encoding="utf-8") as f:
+        content = [
+            line.split(",")
+            for line in f.read().split("\n")[1:]
+            if line
+        ]
+
+    level = 0
+    parents = defaultdict(list)
+    current_parents = []
+    for row in content:
+        for idx, cell in enumerate(row):
+            if cell.strip():
+                _level = idx
+                break
+
+        if _level == 0:
+            current_parents = [cell]
+            continue
+
+        if _level > level:
+            level = _level
+            parents[cell.strip()].extend(current_parents.copy())
+            # TODO: check for current_parents reference by pointer
+            # .copy() should handle this, but is this required?
+            current_parents.append(cell.strip())
+        elif _level == level:
+            current_parents.pop()
+            parents[cell.strip()].extend(current_parents.copy())
+            current_parents.append(cell.strip())
+        else:
+            while _level <= level:
+                print(_level, level, cell)
+                if current_parents:
+                    current_parents.pop()
+                level -= 1
+            parents[cell.strip()].extend(current_parents.copy())
+            current_parents.append(cell.strip())
+
+    # TODO: INCORRECT
+    # FIX
+
+    return parents
+
 
 ###############################################################################
 
