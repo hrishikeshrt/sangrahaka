@@ -62,6 +62,8 @@ CONTACTS = [
     }
 ]
 
+FEEDBACK_URL = ""
+
 # --------------------------------------------------------------------------- #
 # HTML About
 
@@ -195,6 +197,7 @@ app.admin = {
 }
 
 app.contacts = CONTACTS
+app.feedback_url = FEEDBACK_URL
 
 # Neo4j
 app.neo4j = {

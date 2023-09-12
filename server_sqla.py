@@ -843,6 +843,7 @@ def show_contact():
             })
         contacts.append(contact)
     data['contacts'] = contacts
+    data['feedback_url'] = app.feedback_url
     return render_template('contact.html', data=data)
 
 

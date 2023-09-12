@@ -3,6 +3,16 @@
 <div class="container p-3">
     <div class="card">
         <div class="card-header">
+            Feedback
+        </div>
+        <div class="card-body">
+            {% if data.feedback_url %}
+            Please provide detailed feedback using the Google Form: <a href="{{data.feedback_url}}" target="_blank" rel="noopener noreferrer">{{data.feedback_url}}</a>.
+            {% endif %}
+        </div>
+    </div>
+    <div class="card mt-2">
+        <div class="card-header">
             Contact
         </div>
         <div class="card-body">
