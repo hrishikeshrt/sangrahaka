@@ -51,7 +51,6 @@ class ReverseProxied(object):
         self.scheme = scheme
         self.server = server
         self.mounts = mounts or {}
-        print(f'{self.mounts=}')
 
     def __call__(self, environ, start_response):
         script_name = environ.get('HTTP_X_SCRIPT_NAME', '') or self.script_name

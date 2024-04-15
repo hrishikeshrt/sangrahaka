@@ -1061,8 +1061,8 @@ def api():
 
     if action == 'update_node_id_in_relations':
         annotator_id = current_user.id
-        old_node_id = request.form['old_label_id']
-        new_node_id = request.form['new_label_id']
+        old_node_id = request.form['old_node_id']
+        new_node_id = request.form['new_node_id']
 
         if old_node_id == new_node_id:
             api_response["success"] = False

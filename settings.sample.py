@@ -110,8 +110,8 @@ ADMIN_MAIL = os.environ.get('ADMIN_MAIL', 'admin@localhost')
 # Neo4j
 
 NEO4J_SERVER = 'bolt://localhost:7687'
-NEO4J_USERNAME = 'neo4j'
-NEO4J_PASSWORD = 'neo4j'
+NEO4J_USERNAME = 'admin'
+NEO4J_PASSWORD = 'admin'
 
 # --------------------------------------------------------------------------- #
 # PythonAnywhere
