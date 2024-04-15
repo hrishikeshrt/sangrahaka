@@ -65,7 +65,7 @@ function setup_entity_annotation(unique_id) {
                 "label": entity.label,
                 "annotator": entity.annotator
             }, true);
-            entity_list_html.push(entity_html);
+            entity_list_html.unshift(entity_html);
         });
     }
 
@@ -78,7 +78,7 @@ function setup_entity_annotation(unique_id) {
                 "label": entity.label,
                 "annotator": entity.annotator
             }, "");
-            entity_list_html.push(entity_html);
+            entity_list_html.unshift(entity_html);
         }
     });
 
@@ -182,7 +182,7 @@ $add_entity_button.on('click', function(e) {
             "is_deleted": false
         };
         const entity_html = entity_formatter(entity_object, true);
-        $entity_list.append(entity_html);
+        $entity_list.prepend(entity_html);
         $('[name="entity"]').bootstrapToggle();
 
         // update local unconfirmed storage
@@ -292,7 +292,7 @@ function setup_relation_annotation(unique_id) {
                 "target": relation.target,
                 "annotator": relation.annotator
             }, true);
-            relation_list_html.push(relation_html);
+            relation_list_html.unshift(relation_html);
         });
     }
 
@@ -307,7 +307,7 @@ function setup_relation_annotation(unique_id) {
                 "target": relation.target,
                 "annotator": relation.annotator,
             }, "");
-            relation_list_html.push(relation_html);
+            relation_list_html.unshift(relation_html);
         }
     });
 
@@ -460,7 +460,7 @@ $add_relation_button.on('click', function(e) {
             "is_deleted": false
         };
         const relation_html = relation_formatter(relation_object, true);
-        $relation_list.append(relation_html);
+        $relation_list.prepend(relation_html);
         $('[name="relation"]').bootstrapToggle();
 
         // update local unconfirmed storage
@@ -566,7 +566,7 @@ $add_action_button.on('click', function(e) {
         const _actor = unnamed_formatter($line_id_action.val(), $action_actor.val().trim(), UNNAMED_PREFIX);
 
         const action_html = action_formatter(_label, _actor_label, _actor, true, CURRENT_USERNAME);
-        $action_list.append(action_html);
+        $action_list.prepend(action_html);
         $('[name="action"]').bootstrapToggle();
 
         // update local unconfirmed storage
