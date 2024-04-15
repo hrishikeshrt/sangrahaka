@@ -21,7 +21,7 @@ class SecureAdminIndexView(AdminIndexView):
 
     def inaccessible_callback(self, name, **kwargs):
         flash("You do not have permission to view this resource.", "error")
-        return redirect(url_for('show_home', next=request.url))
+        return redirect(url_for("show_login", next=request.url))
 
 
 class SecureModelView(ModelView):

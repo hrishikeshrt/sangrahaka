@@ -48,6 +48,23 @@ class Graph:
         )
         self.__logger = logging.getLogger(self.__class__.__name__)
 
+    def clear_graph(self):
+        result = self.graph.run("MATCH (n) DETACH DELETE (n)")
+        print(result)
+        return result
+
+    def load_graph(self, nodes_file, edges_file):
+        result = self.graph.run(
+            f"""CALL apoc.import.csv("
+                [{{fileName: '{nodes_file}', labels: []}}],
+                [{{fileName: '{edges_file}', type: null}}],
+                {{ignoreDuplicateNodes: true, ignoreBlankString: true}}
+            );
+            """
+        )
+        print(result)
+        return result
+
     def run_query(self, query):
         """Execute a Cypher query"""
         # py2neo.run() - Read/Write Query
