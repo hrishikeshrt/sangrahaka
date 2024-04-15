@@ -103,6 +103,7 @@ class Analysis(db.Model):
 
 DEFAULT_SETTING = {
     'display_name': '',
+    'sort_labels': 0,
     'theme': 'united',
 }
 

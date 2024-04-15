@@ -95,10 +95,12 @@
     const CHAPTER_ID = "{{data.chapter_id}}";
     const CURRENT_USER_ID = "{{current_user.id}}";
     const CURRENT_USERNAME = "{{current_user.username}}";
+    const SORT_LABELS = "{{current_user.settings.sort_labels | int}}";
 
     const UNNAMED_PREFIX = "{{config.unnamed_prefix}}";
     const API_URL = "{{url_for('api')}}";
     const SAMPLE_LINE_DATA_URL = "{{url_for('api_line', line_id=0)}}";
+    const ONTOLOGY_URL = "{{url_for('get_ontology')}}";
 </script>
 <script src="{{url_for('static', filename='custom/js/corpus/elements.js')}}"></script>
 <script src="{{url_for('static', filename='custom/js/corpus/events.js')}}"></script>

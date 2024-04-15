@@ -887,6 +887,33 @@ def show_home():
     return render_template('home.html', data=data)
 
 ###############################################################################
+# Ontology
+
+
+@webapp.route("/ontology", methods=["GET"])
+@auth_required()
+def get_ontology():
+    ontology = {
+        'node_labels': [
+            tuple(nl)
+            for nl in NodeLabel.query.filter(
+                NodeLabel.is_deleted == False  # noqa # '== False' is required
+            ).with_entities(
+                NodeLabel.id, NodeLabel.label, NodeLabel.description
+            ).all()
+        ],
+        'relation_labels': [
+            tuple(rl)
+            for rl in RelationLabel.query.filter(
+                RelationLabel.is_deleted == False  # noqa # '== False' is required
+            ).with_entities(
+                RelationLabel.id, RelationLabel.label, RelationLabel.description
+            ).all()
+        ],
+    }
+    return jsonify(ontology)
+
+###############################################################################
 # Action Endpoints
 
 

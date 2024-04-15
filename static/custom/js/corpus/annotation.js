@@ -3,6 +3,37 @@
 
 /* *************************** Generic Functions *************************** */
 
+function refresh_ontology() {
+    $.get(ONTOLOGY_URL, function(labels) {
+        const node_labels = labels["node_labels"].sort((a, b) => (a[SORT_LABELS] > b[SORT_LABELS]) ? 1 : ((a[SORT_LABELS] < b[SORT_LABELS]) ? -1 : 0));
+        $entity_type.val("");
+        for (const row of node_labels) {
+            const $option = $("<option />", {
+                "data-tokens": row[1],
+                value: row[1],
+                "html": row[2]
+            }).appendTo($entity_type);
+        }
+        $entity_type.selectpicker("refresh");
+
+        const relation_labels = labels["relation_labels"].sort((a, b) => (a[SORT_LABELS] > b[SORT_LABELS]) ? 1 : ((a[SORT_LABELS] < b[SORT_LABELS]) ? -1 : 0));
+        $relation_label.val("");
+        for (const row of relation_labels) {
+            const $option = $("<option />", {
+                "data-tokens": row[1],
+                value: row[1],
+                "html": row[2]
+            }).appendTo($relation_label);
+        }
+        $relation_label.selectpicker("refresh");
+
+        console.log(`Ontology updated: ${node_labels.length} node labels, ${relation_labels.length} relation labels`);
+    });
+    $.notify({
+        message: "Ontology updated."
+    });
+}
+
 function refresh_row_data(unique_id, _callback) {
     console.log(`Called ${arguments.callee.name}(${Object.values(arguments).join(", ")});`);
     const line_data_url = SAMPLE_LINE_DATA_URL.replace('0', unique_id);
@@ -19,7 +50,11 @@ function refresh_row_data(unique_id, _callback) {
             _callback(unique_id);
         }
     }, 'json');
+    refresh_ontology();
     console.log(`Line data updated for ID: ${unique_id}`);
+    $.notify({
+        message: "Line data updated."
+    });
 }
 
 /* **************************** Generic Events **************************** */
