@@ -11,6 +11,7 @@ from typing import List, Dict
 
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.relationships import RelationshipProperty
+from sqlalchemy.sql import func
 
 from models_sqla import db, User, Role
 from models_sqla import Corpus, Chapter, Verse, Line, Analysis
@@ -479,3 +480,91 @@ def get_line_data(
     #         data[action.line_id]['marked'] = True
 
     return data
+
+
+def get_progress(
+    chapter_ids: List[int] = None,
+    annotator_ids: List[int] = None,
+) -> dict:
+    """Get Annotation Progress
+
+    Parameters
+    ----------
+    chapter_ids : List[int], optional
+        List of chaper IDs
+    annotator_ids : List[int], optional
+        List of user IDs of annotators
+
+    Returns
+    -------
+    dict
+    """
+
+    filters = []
+    if chapter_ids:
+        filters.append(Chapter.id.in_(chapter_ids))
+    if annotator_ids:
+        filters.append(User.id.in_(annotator_ids))
+
+    verse_annotation_query = (
+        Relation.query.join(Line).join(Verse).join(Chapter)
+        .filter(*filters)
+        .with_entities(
+            Chapter.id.label("chapter_id"),
+            Chapter.name.label("chapter_name"),
+            Verse.id.label("verse_id"),
+            func.MIN(func.DATE(Relation.updated_at)).label("start_date"),
+            func.MAX(func.DATE(Relation.updated_at)).label("end_date"),
+        )
+        .group_by(Verse.id)
+    )
+    verse_annotation_log = verse_annotation_query.all()
+    va_subquery = verse_annotation_query.subquery("verse_annotation")
+
+    chapter_annotation_query = (
+        db.session.query(va_subquery)
+        .with_entities(
+            va_subquery.c.chapter_id,
+            va_subquery.c.chapter_name,
+            func.MIN(va_subquery.c.start_date),
+            func.MAX(va_subquery.c.start_date),
+            func.MIN(va_subquery.c.end_date),
+            func.MAX(va_subquery.c.end_date),
+        )
+        .group_by(va_subquery.c.chapter_id)
+        .order_by(va_subquery.c.chapter_id)
+    )
+    chapter_annotation_log = chapter_annotation_query.all()
+
+    daily_verse_start_query = (
+        db.session.query(va_subquery)
+        .with_entities(
+            va_subquery.c.chapter_id,
+            va_subquery.c.chapter_name,
+            va_subquery.c.start_date,
+            func.COUNT(va_subquery.c.verse_id).label("verse_count")
+        )
+        .group_by(va_subquery.c.start_date)
+        .order_by(va_subquery.c.chapter_id, va_subquery.c.start_date)
+    )
+    daily_verse_start_progress = daily_verse_start_query.all()
+
+    daily_verse_end_query = (
+        db.session.query(va_subquery)
+        .with_entities(
+            va_subquery.c.chapter_id,
+            va_subquery.c.chapter_name,
+            va_subquery.c.end_date,
+            func.COUNT(va_subquery.c.verse_id).label("verse_count")
+        )
+        .group_by(va_subquery.c.end_date)
+        .order_by(va_subquery.c.chapter_id, va_subquery.c.end_date)
+    )
+    daily_verse_end_progress = daily_verse_end_query.all()
+
+    return {
+        "verse_annotation_log": verse_annotation_log,
+        "chapter_annotation_log": chapter_annotation_log,
+        "daily_verse_start_progress": daily_verse_start_progress,
+        "daily_verse_end_progress": daily_verse_end_progress,
+    }
