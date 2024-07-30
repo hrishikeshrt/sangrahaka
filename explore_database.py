@@ -23,6 +23,7 @@ from models_sqla import Lexicon, NodeLabel, RelationLabel, Node, Relation
 from settings import app
 
 from utils.database import search_node, search_relation, search_model
+from utils.database import get_progress
 
 ###############################################################################
 
@@ -147,5 +148,17 @@ globals().update({
     f'get_{model_name}': define_getter(model_name) for model_name in MODELS
 })
 
+
+###############################################################################
+
+
+def save_progress(progress_file: str = "chapter_verse_annotation_log.csv"):
+    progress = get_progress()
+    with open(progress_file, "w", encoding="utf-8") as f:
+        content = [
+            f"{cid},{cname},{vid},{start},{end}"
+            for cid, cname, vid, start, end in progress["verse_annotation_log"]
+        ]
+        f.write("\n".join(content))
 
 ###############################################################################
