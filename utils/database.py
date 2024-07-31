@@ -486,8 +486,8 @@ def get_line_data(
 
 
 def build_graph(
-    graph: PropertyGraph | Any = None
-) -> Tuple[PropertyGraph, List[Dict[str, str | int | bool]]]:
+    graph: PropertyGraph or Any = None
+) -> Tuple[PropertyGraph, List[Dict[str, str or int or bool]]]:
     if graph is None:
         graph = PropertyGraph()
 
