@@ -7,7 +7,7 @@ Database Utility Functions
 ###############################################################################
 
 import logging
-from typing import List, Dict
+from typing import List, Dict, Any, Tuple
 
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.relationships import RelationshipProperty
@@ -19,6 +19,7 @@ from models_sqla import Lexicon, NodeLabel, RelationLabel, Node, Relation
 from models_sqla import ActionLabel, ActorLabel, Action
 
 from constants import PERMISSION_ANNOTATE, PERMISSION_CURATE, ROLE_ADMIN
+from utils.property_graph import PropertyGraph
 
 ###############################################################################
 
@@ -481,6 +482,82 @@ def get_line_data(
 
     return data
 
+###############################################################################
+
+
+def build_graph(
+    graph: PropertyGraph | Any = None
+) -> Tuple[PropertyGraph, List[Dict[str, str | int | bool]]]:
+    if graph is None:
+        graph = PropertyGraph()
+
+    errors = []
+    node_query = Node.query.filter(Node.is_deleted.is_(False))
+    relation_query = Relation.query.filter(Relation.is_deleted.is_(False))
+    LOGGER.debug(node_query)
+    LOGGER.debug(relation_query)
+    nodes = node_query.all()
+    relationships = relation_query.all()
+    for node in nodes:
+        node_id = node.id
+        labels = [node.label.label]
+        properties = {
+            'lemma': node.lemma.lemma,
+            'annotator': node.annotator.id,
+            'line_id': node.line_id,
+            'line_text': node.line.text,
+        }
+        graph.add_node(node_id=node_id, labels=labels, properties=properties)
+
+    for relationship in relationships:
+        label = relationship.label.label
+        properties = {
+            'annotator': relationship.annotator.id,
+            'line_id': relationship.line_id,
+            'line_text': relationship.line.text,
+        }
+        if relationship.detail:
+            properties['detail'] = relationship.detail
+
+        src_id = relationship.src_id
+        dst_id = relationship.dst_id
+        src_node = relationship.src_node
+        dst_node = relationship.dst_node
+        if src_node.is_deleted or dst_node.is_deleted:
+            error_message = (
+                f"Line: {relationship.line_id}):: "
+                f"(Relationship {relationship.id}):\n"
+                f"\t(Node {src_id}) ({src_node.lemma.lemma}:{src_node.label.label}) "
+                f"(src_node.is_deleted: {src_node.is_deleted}, src_node.line_id = {src_node.line_id})\n"
+                f"\t-[{label}]-> \n"
+                f"\t(Node {dst_id}) ({dst_node.lemma.lemma}:{dst_node.label.label}) "
+                f"(dst_node.is_deleted: {dst_node.is_deleted}, dst_node.line_id = {dst_node.line_id})\n\n"
+            )
+            error = {
+                "relation.id": relationship.id,
+                "relation.line_id": relationship.line_id,
+                "relation.src_id": src_id,
+                "relation.src_node.line_id": src_node.line_id,
+                "relation.src_node.lemma.lemma": src_node.lemma.lemma,
+                "relation.src_node.label.label": src_node.label.label,
+                "relation.src_node.ist_deleted": src_node.is_deleted,
+                "relation.label.label": label,
+                "relation.dst_id": dst_id,
+                "relation.dst_node.line_id": dst_node.line_id,
+                "relation.dst_node.lemma.lemma": dst_node.lemma.lemma,
+                "relation.dst_node.label.label": dst_node.label.label,
+                "relation.dst_node.ist_deleted": dst_node.is_deleted,
+            }
+            errors.append(error)
+            continue
+
+        graph.add_edge(src_id, label, dst_id, properties=properties)
+
+    return graph, errors
+
+
+
+###############################################################################
 
 def get_progress(
     chapter_ids: List[int] = None,
