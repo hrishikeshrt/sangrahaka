@@ -196,6 +196,29 @@
                         </div>
                     </div>
                 </div>
+                <div class="card" style="border-top-left-radius: 0; border-top-right-radius: 0;">
+                    <div class="card-header collapsed" data-toggle="collapse" data-target="#download_property_graph_container"
+                        aria-expanded="false" aria-controls="download_property_graph_container">
+                        Download Graph
+                        <button type="button" class="btn text-seondary" data-toggle="tooltip" data-html="true" title="Download Graph in Neo4j Importable Format">
+                            <i class="fa fa-question-circle"></i>
+                        </button>
+                    </div>
+                    <div id="download_property_graph_container" role="tabpanel" class="collapse" data-parent="#manage_data">
+                        <div class="card-body">
+                            <form method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
+                                <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+                                    <button type="submit" name="action" value="download_property_graph_csv" class="btn btn-secondary">
+                                        CSV <i class="fa fa-download"></i>
+                                    </button>
+
+                                    <button type="submit" name="action" value="download_property_graph_jsonl" class="btn btn-secondary">
+                                        JSONL <i class="fa fa-download"></i>
+                                    </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
