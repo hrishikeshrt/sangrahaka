@@ -39,6 +39,8 @@ import glob
 import json
 import logging
 import datetime
+import io
+import zipfile
 
 import git
 import requests
@@ -98,7 +100,12 @@ from models_admin import (SecureAdminIndexView,
                           LexiconModelView, AnnotationModelView)
 from settings import app
 from utils.reverseproxied import ReverseProxied
-from utils.database import add_chapter, get_line_data, get_chapter_data
+from utils.database import (
+    add_chapter,
+    get_line_data,
+    get_chapter_data,
+    build_graph
+)
 from utils.graph import Graph
 from utils.property_graph import PropertyGraph
 from utils.query import load_queries
@@ -1691,7 +1698,9 @@ def perform_action():
 
             # Data
             'corpus_add', 'chapter_add',
-            'annotation_download'
+            'annotation_download',
+            'download_property_graph_csv',
+            'download_property_graph_jsonl',
         ],
         ROLE_CURATOR: [],
         ROLE_ANNOTATOR: [],
@@ -2059,7 +2068,64 @@ def perform_action():
         return redirect(request.referrer)
 
     # ----------------------------------------------------------------------- #
-    # Corpus Download
+    # Graph Download
+
+    if action in ["download_property_graph_csv", "download_property_graph_jsonl"]:
+        request_time = datetime.datetime.now(datetime.UTC).strftime("%Y_%m_%d_%H_%M_%S")
+        file_prefix = "graph"
+        file_extension = action.rsplit('_', 1)[1].lower()
+
+        try:
+            graph, errors = build_graph()
+
+            if file_extension == "jsonl":
+                filename = f'{file_prefix}_{request_time}.{file_extension}'
+                jsonl_content = json.dumps(graph.to_jsonl(), ensure_ascii=False)
+                return Response(
+                    jsonl_content,
+                    mimetype='application/json',
+                    headers={
+                        'Content-Disposition': f'attachment;filename={filename}'
+                    }
+                )
+            if file_extension == "csv":
+                csv_content = graph.to_csv()
+                filename = f'{file_prefix}_{request_time}.zip'
+                nodes_content = csv_content["nodes"]
+                edges_content = csv_content["edges"]
+                nodes_filename = f'{file_prefix}_nodes_{request_time}.{file_extension}'
+                edges_filename = f'{file_prefix}_edges_{request_time}.{file_extension}'
+                files = {
+                    nodes_filename: nodes_content,
+                    edges_filename: edges_content
+                }
+                zip_buffer = io.BytesIO()
+                # create a ZipFile object
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    for _filename, _content in files.items():
+                        # write each file to the zip archive
+                        zip_file.writestr(_filename, _content)
+
+                # Seek to the beginning of the BytesIO object to read its content
+                zip_buffer.seek(0)
+
+                return Response(
+                    zip_buffer.read(),
+                    mimetype='application/zip',
+                    headers={
+                        'Content-Disposition': f'attachment;filename={filename}'
+                    }
+                )
+
+        except Exception as e:
+            print(e)
+            flash("Failed to export graph.", "error")
+            return redirect(request.referrer)
+
+    # ----------------------------------------------------------------------- #
+
+    # ----------------------------------------------------------------------- #
+    # Annotations Download
 
     if action in ["annotation_download"]:
         usernames = request.form.getlist('annotator')
