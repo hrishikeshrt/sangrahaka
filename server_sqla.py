@@ -2071,7 +2071,7 @@ def perform_action():
     # Graph Download
 
     if action in ["download_property_graph_csv", "download_property_graph_jsonl"]:
-        request_time = datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")
+        request_time = datetime.datetime.utcnow().strftime("%Y_%m_%d")
         file_prefix = "graph"
         file_extension = action.rsplit('_', 1)[1].lower()
 
