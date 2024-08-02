@@ -486,14 +486,27 @@ def get_line_data(
 
 
 def build_graph(
-    graph: PropertyGraph or Any = None
-) -> Tuple[PropertyGraph, List[Dict[str, str or int or bool]]]:
+    graph: PropertyGraph = None,
+    line_ids: List[int] = None,
+    annotator_ids: List[int] = None,
+) -> Tuple[PropertyGraph, List[Dict[str, Any]]]:
     if graph is None:
         graph = PropertyGraph()
 
     errors = []
-    node_query = Node.query.filter(Node.is_deleted.is_(False))
-    relation_query = Relation.query.filter(Relation.is_deleted.is_(False))
+
+    node_conditions = [Node.is_deleted.is_(False)]
+    relation_conditions = [Relation.is_deleted.is_(False)]
+    if line_ids is not None:
+        node_conditions.append(Node.line_id.in_(line_ids))
+        relation_conditions.append(Relation.line_id.in_(line_ids))
+
+    if annotator_ids is not None:
+        node_conditions.append(Node.annotator_id.in_(annotator_ids))
+        relation_conditions.append(Relation.annotator_id.in_(annotator_ids))
+
+    node_query = Node.query.filter(*node_conditions)
+    relation_query = Relation.query.filter(*relation_conditions)
     LOGGER.debug(node_query)
     LOGGER.debug(relation_query)
     nodes = node_query.all()
