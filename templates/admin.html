@@ -208,6 +208,40 @@
                         <div class="card-body">
                             <form method=POST enctype=multipart/form-data action="{{url_for('perform_action')}}">
                                 <input type="hidden" name="csrf_token" value={{csrf_token()}}>
+
+                                <div>
+                                    <label for="annotator">User</label>
+                                    <select class="lead m-1 selectpicker" name="annotator" id="graph_annotator"
+                                        data-container="body"
+                                        data-width="20%"
+                                        data-live-search="true"
+                                        data-actions-box="true"
+                                        data-select-all-text="All"
+                                        data-deselect-all-text="None"
+                                        data-selected-text-format="count"
+                                        multiple>
+                                        {% for user in data.users %}
+                                        <option value="{{user}}">{{user}}</option>
+                                        {% endfor %}
+                                    </select>
+
+                                    <label for="corpus_id">Chapter</label>
+                                    <select class="lead m-1 selectpicker" name="chapter_id" id="graph_annotator_chapter_id"
+                                        data-container="body"
+                                        data-width="50%"
+                                        data-live-search="true"
+                                        data-actions-box="true"
+                                        data-select-all-text="All"
+                                        data-deselect-all-text="None"
+                                        data-selected-text-format="count"
+                                        multiple>
+                                        {% for corpus in data.corpus_list %}
+                                        {% for chapter in corpus.chapters %}
+                                        <option value="{{chapter.id}}">{{corpus.name}} - {{chapter.name}}</option>
+                                        {% endfor %}
+                                        {% endfor %}
+                                    </select>
+
                                     <button type="submit" name="action" value="download_property_graph_csv" class="btn btn-secondary">
                                         CSV <i class="fa fa-download"></i>
                                     </button>
@@ -215,6 +249,7 @@
                                     <button type="submit" name="action" value="download_property_graph_jsonl" class="btn btn-secondary">
                                         JSONL <i class="fa fa-download"></i>
                                     </button>
+                                </div>
                             </form>
                         </div>
                     </div>
