@@ -2103,7 +2103,7 @@ def perform_action():
 
             if file_extension == "jsonl":
                 filename = f'{file_prefix}_{request_time}.{file_extension}'
-                jsonl_content = json.dumps(graph.to_jsonl(), ensure_ascii=False)
+                jsonl_content = graph.to_jsonl()
                 return Response(
                     jsonl_content,
                     mimetype='application/json',
