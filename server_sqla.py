@@ -2071,12 +2071,35 @@ def perform_action():
     # Graph Download
 
     if action in ["download_property_graph_csv", "download_property_graph_jsonl"]:
+        usernames = request.form.getlist('annotator')
+        chapters = request.form.getlist('chapter_id')
+
         request_time = datetime.datetime.utcnow().strftime("%Y_%m_%d")
         file_prefix = "graph"
         file_extension = action.rsplit('_', 1)[1].lower()
 
         try:
-            graph, errors = build_graph()
+            User = user_datastore.user_model
+            annotator_ids = None
+            line_ids = None
+
+            if usernames:
+                annotator_ids =  [
+                    user.id
+                    for user in User.query.filter(User.username.in_(usernames))
+                ]
+            if chapters:
+                line_ids = [
+                    line.id
+                    for chapter in Chapter.query.filter(Chapter.id.in_(chapters))
+                    for verse in chapter.verses
+                    for line in verse.lines
+                ]
+
+            graph, errors = build_graph(
+                line_ids=line_ids,
+                annotator_ids=annotator_ids
+            )
 
             if file_extension == "jsonl":
                 filename = f'{file_prefix}_{request_time}.{file_extension}'
