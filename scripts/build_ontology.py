@@ -170,6 +170,8 @@ def create_node_hierarchy(ontology, df):
     parent_class = {"lvl0": EX[parent_label["lvl0"]]}
     CLASS_DICT[parent_label["lvl0"]] = Node(
         parent_label["lvl0"],
+        level=0,
+        display=1,
         data=VertexData(parent_label["lvl0"])
     )
     parent_node = {"lvl0": CLASS_DICT[parent_label["lvl0"]]}
@@ -213,6 +215,8 @@ def create_node_hierarchy(ontology, df):
                     CLASS_DICT[current_label] = Node(
                         current_label,
                         parent=parent_node.get(parent_level),
+                        level=level_idx,
+                        display=int(row["display"]),
                         data=VertexData(current_label, sanskrit_label, english_label)
                     )
                 current_node = CLASS_DICT[current_label]
@@ -233,6 +237,8 @@ def create_relation_hierarchy(ontology, df):
     parent_relation = {"lvl0": EX[parent_label["lvl0"]]}
     RELATION_DICT[parent_label["lvl0"]] = Node(
         parent_label["lvl0"],
+        level=0,
+        display=1,
         data=VertexData(parent_label["lvl0"])
     )
     parent_node = {"lvl0": RELATION_DICT[parent_label["lvl0"]]}
@@ -285,6 +291,8 @@ def create_relation_hierarchy(ontology, df):
                     RELATION_DICT[current_label] = Node(
                         current_label,
                         parent=parent_node.get(parent_level),
+                        level=level_idx,
+                        display=int(row["display"]),
                         data=VertexData(current_label, sanskrit_label, english_label)
                     )
                 current_node = RELATION_DICT[current_label]
@@ -399,5 +407,39 @@ owlready2.onto_path.append(DATA_DIR)
 
 O = owlready2.get_ontology(ONTOLOGY_URI).load()
 O.save(str(DATA_DIR/  f"ontology_v{ONTOLOGY_VERSION}.owl"))
+
+###############################################################################
+
+LATEX_NODE_DIRTREE = ["\\dirtree{%"]
+for _, _, node in RenderTree(CLASS_TREE):
+    if node.display < 1:
+        continue
+    LATEX_NODE_DIRTREE.append(
+        f"  . {node.level} {node.name} ({node.data.sanskrit}) "
+        f"({node.data.total_children_count}, "
+        f"N:{node.data.total_node_count}, "
+        f"R:{node.data.total_relation_count}) ."
+    )
+LATEX_NODE_DIRTREE.append("}")
+
+LATEX_RELATION_DIRTREE = ["\\dirtree{%"]
+for _, _, node in RenderTree(RELATION_TREE):
+    if node.display < 1:
+        continue
+    LATEX_RELATION_DIRTREE.append(
+        f"  . {node.level} {node.name} ({node.data.sanskrit}) "
+        f"({node.data.total_children_count}, "
+        f"N:{node.data.total_node_count}, "
+        f"R:{node.data.total_relation_count}) ."
+    )
+LATEX_RELATION_DIRTREE.append("}")
+
+# --------------------------------------------------------------------------- #
+
+with open(DATA_DIR / "node_tree.tex", "w") as f:
+    f.write("\n".join(LATEX_NODE_DIRTREE))
+
+with open(DATA_DIR / "relation_tree.tex", "w") as f:
+    f.write("\n".join(LATEX_RELATION_DIRTREE))
 
 ###############################################################################
