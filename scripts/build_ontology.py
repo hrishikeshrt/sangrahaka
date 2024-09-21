@@ -29,8 +29,7 @@ from rdflib import Graph, Namespace, Literal, RDF, RDFS, OWL, BNode
 from rdflib.namespace import XSD
 from rdflib.collection import Collection
 
-from anytree import Node, RenderTree, Walker
-from anytree.exporter import JsonExporter
+import anytree
 
 import owlready2
 
@@ -89,11 +88,11 @@ IS_SUBRELATION_OF = EX.IS_SUBRELATION_OF
 LABEL_PROPERTY = EX.label
 SANSKRIT_NAME_PROPERTY = EX.sanskrit
 ENGLISH_NAME_PROPERTY = EX.english
-CHILDREN_COUNT_PROPERTY = EX.children_count
+CHILD_COUNT_PROPERTY = EX.child_count
 NODE_COUNT_PROPERTY = EX.node_count
 RELATION_COUNT_PROPERTY = EX.relation_count
 
-TOTAL_CHILDREN_COUNT_PROPERTY = EX.toal_children_count
+DESCENDANT_COUNT_PROPERTY = EX.descendant_count
 TOTAL_NODE_COUNT_PROPERTY = EX.total_node_count
 TOTAL_RELATION_COUNT_PROPERTY = EX.total_relation_count
 
@@ -101,10 +100,10 @@ TOTAL_RELATION_COUNT_PROPERTY = EX.total_relation_count
 ONTOLOGY.add((LABEL_PROPERTY, RDF.type, OWL.AnnotationProperty))
 ONTOLOGY.add((SANSKRIT_NAME_PROPERTY, RDF.type, OWL.AnnotationProperty))
 ONTOLOGY.add((ENGLISH_NAME_PROPERTY, RDF.type, OWL.AnnotationProperty))
-ONTOLOGY.add((CHILDREN_COUNT_PROPERTY, RDF.type, OWL.AnnotationProperty))
+ONTOLOGY.add((CHILD_COUNT_PROPERTY, RDF.type, OWL.AnnotationProperty))
 ONTOLOGY.add((NODE_COUNT_PROPERTY, RDF.type, OWL.AnnotationProperty))
 ONTOLOGY.add((RELATION_COUNT_PROPERTY, RDF.type, OWL.AnnotationProperty))
-ONTOLOGY.add((TOTAL_CHILDREN_COUNT_PROPERTY, RDF.type, OWL.AnnotationProperty))
+ONTOLOGY.add((DESCENDANT_COUNT_PROPERTY, RDF.type, OWL.AnnotationProperty))
 ONTOLOGY.add((TOTAL_NODE_COUNT_PROPERTY, RDF.type, OWL.AnnotationProperty))
 ONTOLOGY.add((TOTAL_RELATION_COUNT_PROPERTY, RDF.type, OWL.AnnotationProperty))
 
@@ -140,16 +139,17 @@ class VertexData:
         self.name = name
         self.sanskrit = sanskrit
         self.english = english
-        self.children_count = 0
+        self.child_count = 0
         self.node_count = 0
         self.relation_count = 0
-        self.total_children_count = 0
+        self.descendant_count = 0
         self.total_node_count = 0
         self.total_relation_count = 0
 
     def __repr__(self):
         return (
-            f"(children: {self.total_children_count}, "
+            f"(children: {self.child_count}, "
+            f"descendants: {self.descendant_count}, "
             f"nodes: {self.total_node_count}, "
             f"relations: {self.total_relation_count})"
         )
@@ -168,7 +168,7 @@ TOP_LEVEL_RELATION_LABEL = "RELATION"
 def create_node_hierarchy(ontology, df):
     parent_label = {"lvl0": TOP_LEVEL_CLASS_LABEL}
     parent_class = {"lvl0": EX[parent_label["lvl0"]]}
-    CLASS_DICT[parent_label["lvl0"]] = Node(
+    CLASS_DICT[parent_label["lvl0"]] = anytree.Node(
         parent_label["lvl0"],
         level=0,
         display=1,
@@ -212,7 +212,7 @@ def create_node_hierarchy(ontology, df):
 
                 # Build class tree
                 if current_label not in CLASS_DICT:
-                    CLASS_DICT[current_label] = Node(
+                    CLASS_DICT[current_label] = anytree.Node(
                         current_label,
                         parent=parent_node.get(parent_level),
                         level=level_idx,
@@ -235,7 +235,7 @@ def create_node_hierarchy(ontology, df):
 def create_relation_hierarchy(ontology, df):
     parent_label = {"lvl0": TOP_LEVEL_RELATION_LABEL}
     parent_relation = {"lvl0": EX[parent_label["lvl0"]]}
-    RELATION_DICT[parent_label["lvl0"]] = Node(
+    RELATION_DICT[parent_label["lvl0"]] = anytree.Node(
         parent_label["lvl0"],
         level=0,
         display=1,
@@ -288,7 +288,7 @@ def create_relation_hierarchy(ontology, df):
 
                 # Build relation tree
                 if current_label not in RELATION_DICT:
-                    RELATION_DICT[current_label] = Node(
+                    RELATION_DICT[current_label] = anytree.Node(
                         current_label,
                         parent=parent_node.get(parent_level),
                         level=level_idx,
@@ -307,42 +307,47 @@ def create_relation_hierarchy(ontology, df):
 ###############################################################################
 
 
-def aggregate_counts(node, node_stats):
-    node.data.children_count = len(node.children)
-    node.data.node_count = node_stats.get(node.name, {}).get("node_count", 0)
-    node.data.relation_count = node_stats.get(node.name, {}).get("relation_count", 0)
+def add_empirical_counts_to_tree(root_node, node_stats, aggregate=True):
+    root_node.data.child_count = len(root_node.children)
+    root_node.data.node_count = node_stats.get(root_node.name, {}).get("node_count", 0)
+    root_node.data.relation_count = node_stats.get(root_node.name, {}).get("relation_count", 0)
 
-    node.data.total_children_count = len(node.children)
-    node.data.total_node_count = node_stats.get(node.name, {}).get("node_count", 0)
-    node.data.total_relation_count = node_stats.get(node.name, {}).get("relation_count", 0)
+    root_node.data.descendant_count = len(root_node.children)
+    root_node.data.total_node_count = node_stats.get(root_node.name, {}).get("node_count", 0)
+    root_node.data.total_relation_count = node_stats.get(root_node.name, {}).get("relation_count", 0)
 
     # Aggregate counts from child nodes
-    for child in node.children:
-        aggregate_counts(child, node_stats)
-        node.data.total_children_count += child.data.total_children_count
-        node.data.total_node_count += child.data.total_node_count
-        node.data.total_relation_count += child.data.total_relation_count
+    for child in root_node.children:
+        add_empirical_counts_to_tree(child, node_stats)
+        if aggregate:
+            root_node.data.descendant_count += child.data.descendant_count
+            root_node.data.total_node_count += child.data.total_node_count
+            root_node.data.total_relation_count += child.data.total_relation_count
 
 
-def add_empirical_counts(root_node, ontology):
+def add_empirical_counts_to_ontology(root_node, ontology):
     node = EX[root_node.name]
 
     # Add children, node and relation counts
-    ontology.add((node, CHILDREN_COUNT_PROPERTY, Literal(root_node.data.children_count, datatype=XSD.integer)))
+    ontology.add((node, CHILD_COUNT_PROPERTY, Literal(root_node.data.child_count, datatype=XSD.integer)))
     ontology.add((node, NODE_COUNT_PROPERTY, Literal(root_node.data.node_count, datatype=XSD.integer)))
     ontology.add((node, RELATION_COUNT_PROPERTY, Literal(root_node.data.relation_count, datatype=XSD.integer)))
 
-    ontology.add((node, TOTAL_CHILDREN_COUNT_PROPERTY, Literal(root_node.data.total_children_count, datatype=XSD.integer)))
+    ontology.add((node, DESCENDANT_COUNT_PROPERTY, Literal(root_node.data.descendant_count, datatype=XSD.integer)))
     ontology.add((node, TOTAL_NODE_COUNT_PROPERTY, Literal(root_node.data.total_node_count, datatype=XSD.integer)))
     ontology.add((node, TOTAL_RELATION_COUNT_PROPERTY, Literal(root_node.data.total_relation_count, datatype=XSD.integer)))
 
     # Process child nodes
     for child in root_node.children:
-        add_empirical_counts(child, ontology)
+        add_empirical_counts_to_ontology(child, ontology)
 
 
-def add_empirical_domain_range(ontology, relation_stats):
+def add_empirical_domain_range(root_node, ontology, relation_stats):
     for relation, stats in relation_stats.items():
+        relation_node = anytree.find(root_node, lambda node: node.name == relation)
+        relation_node.data.domain = list(map(tuple, stats["source_nodes"]))
+        relation_node.data.range = list(map(tuple, stats["destination_nodes"]))
+
         domains = [EX[t[0]] for t in stats["source_nodes"]]
         for _domain in domains:
             ontology.add((EX[relation], RDFS.domain, _domain))
@@ -367,13 +372,12 @@ ROOT_CLASS_NODES = [node for node in CLASS_DICT.values() if node.is_root]
 ROOT_RELATION_NODES = [node for node in RELATION_DICT.values() if node.is_root]
 
 for root_node in ROOT_CLASS_NODES:
-    aggregate_counts(root_node, NODE_STATS)
-    add_empirical_counts(root_node, ONTOLOGY)
+    add_empirical_counts_to_tree(root_node, NODE_STATS, aggregate=True)
+    add_empirical_counts_to_ontology(root_node, ONTOLOGY)
 for root_node in ROOT_RELATION_NODES:
-    aggregate_counts(root_node, RELATION_STATS)
-    add_empirical_counts(root_node, ONTOLOGY)
-
-add_empirical_domain_range(ONTOLOGY, RELATION_STATS)
+    add_empirical_counts_to_tree(root_node, RELATION_STATS, aggregate=True)
+    add_empirical_counts_to_ontology(root_node, ONTOLOGY)
+    add_empirical_domain_range(root_node, ONTOLOGY, RELATION_STATS)
 
 ###############################################################################
 
@@ -411,24 +415,24 @@ O.save(str(DATA_DIR/  f"ontology_v{ONTOLOGY_VERSION}.owl"))
 ###############################################################################
 
 LATEX_NODE_DIRTREE = ["\\dirtree{%"]
-for _, _, node in RenderTree(CLASS_TREE):
+for _, _, node in anytree.RenderTree(CLASS_TREE):
     if node.display < 1:
         continue
     LATEX_NODE_DIRTREE.append(
         f"  . {node.level} {node.name} ({node.data.sanskrit}) "
-        f"({node.data.total_children_count}, "
+        f"({node.data.descendant_count}, "
         f"N:{node.data.total_node_count}, "
         f"R:{node.data.total_relation_count}) ."
     )
 LATEX_NODE_DIRTREE.append("}")
 
 LATEX_RELATION_DIRTREE = ["\\dirtree{%"]
-for _, _, node in RenderTree(RELATION_TREE):
+for _, _, node in anytree.RenderTree(RELATION_TREE):
     if node.display < 1:
         continue
     LATEX_RELATION_DIRTREE.append(
         f"  . {node.level} {node.name} ({node.data.sanskrit}) "
-        f"({node.data.total_children_count}, "
+        f"({node.data.descendant_count}, "
         f"N:{node.data.total_node_count}, "
         f"R:{node.data.total_relation_count}) ."
     )
