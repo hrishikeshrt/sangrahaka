@@ -25,7 +25,7 @@ from collections import defaultdict, Counter
 
 import pandas as pd
 
-from rdflib import Graph, Namespace, Literal, RDF, RDFS, OWL, BNode
+from rdflib import Graph, Namespace, Literal, RDF, RDFS, OWL, URIRef, BNode
 from rdflib.namespace import XSD
 from rdflib.collection import Collection
 
@@ -154,42 +154,48 @@ class VertexData:
             f"relations: {self.total_relation_count})"
         )
 
-
-CLASS_DICT = {}
+NODE_DICT = {}
 RELATION_DICT = {}
 
-TOP_LEVEL_CLASS_LABEL = "THING"
+TOP_LEVEL_NODE_LABEL = "THING"
 TOP_LEVEL_RELATION_LABEL = "RELATION"
 
 ###############################################################################
-# Create node ontology class hierarchy from CSV
+# Create ontology hierarchy from CSV
 
 
-def create_node_hierarchy(ontology, df):
-    parent_label = {"lvl0": TOP_LEVEL_CLASS_LABEL}
-    parent_class = {"lvl0": EX[parent_label["lvl0"]]}
-    CLASS_DICT[parent_label["lvl0"]] = anytree.Node(
-        parent_label["lvl0"],
+def create_hierarchy(
+    ontology: Graph,
+    df: pd.DataFrame,
+    tree_dict: dict,
+    top_label: str,
+    node_type: URIRef,
+    child_predicate: URIRef
+):
+    parent_labels = {"lvl0": top_label}
+    parent_ontology_nodes = {"lvl0": EX[parent_labels["lvl0"]]}
+    tree_dict[parent_labels["lvl0"]] = anytree.Node(
+        parent_labels["lvl0"],
         level=0,
         display=1,
-        data=VertexData(parent_label["lvl0"])
+        data=VertexData(parent_labels["lvl0"])
     )
-    parent_node = {"lvl0": CLASS_DICT[parent_label["lvl0"]]}
+    parent_tree_nodes = {"lvl0": tree_dict[parent_labels["lvl0"]]}
     for idx, row in df.iterrows():
-        # Define class URIs for each level in the hierarchy
+        # Define ontology node URIs for each level in the hierarchy
         for level_idx in range(1, 7):
             level = f"lvl{level_idx}"
             parent_level = f"lvl{level_idx - 1}"
             if pd.notna(row[level]):
                 current_label = row[level]
-                current_class = EX[current_label]
-                ontology.add((current_class, RDF.type, OWL.Class))
+                current_ontology_node = EX[current_label]
+                ontology.add((current_ontology_node, RDF.type, node_type))
 
                 if level != "lvl1":
-                    ontology.add((current_class, RDFS.subClassOf, parent_class.get(parent_level)))
+                    ontology.add((current_ontology_node, child_predicate, parent_ontology_nodes.get(parent_level)))
 
                 ontology.add((
-                    current_class,
+                    current_ontology_node,
                     LABEL_PROPERTY,
                     Literal(current_label, datatype=XSD.string)
                 ))
@@ -197,81 +203,14 @@ def create_node_hierarchy(ontology, df):
                 english_label = ""
                 if pd.notna(row["sanskrit"]):
                     ontology.add((
-                        current_class,
+                        current_ontology_node,
                         SANSKRIT_NAME_PROPERTY,
                         Literal(row["sanskrit"], datatype=XSD.string)
                     ))
                     sanskrit_label = row["sanskrit"]
                 if pd.notna(row["english"]):
                     ontology.add((
-                        current_class,
-                        ENGLISH_NAME_PROPERTY,
-                        Literal(row["english"], datatype=XSD.string)
-                    ))
-                    english_label = row["english"]
-
-                # Build class tree
-                if current_label not in CLASS_DICT:
-                    CLASS_DICT[current_label] = anytree.Node(
-                        current_label,
-                        parent=parent_node.get(parent_level),
-                        level=level_idx,
-                        display=int(row["display"]),
-                        data=VertexData(current_label, sanskrit_label, english_label)
-                    )
-                current_node = CLASS_DICT[current_label]
-                current_node.data.name = current_label
-
-                # Update parents
-                parent_node[level] = current_node
-                parent_class[level] = current_class
-                parent_label[level] = current_label
-
-
-###############################################################################
-# Create relationship ontology hierarchy from CSV
-
-
-def create_relation_hierarchy(ontology, df):
-    parent_label = {"lvl0": TOP_LEVEL_RELATION_LABEL}
-    parent_relation = {"lvl0": EX[parent_label["lvl0"]]}
-    RELATION_DICT[parent_label["lvl0"]] = anytree.Node(
-        parent_label["lvl0"],
-        level=0,
-        display=1,
-        data=VertexData(parent_label["lvl0"])
-    )
-    parent_node = {"lvl0": RELATION_DICT[parent_label["lvl0"]]}
-    for idx, row in df.iterrows():
-        # Define class URIs for each level in the hierarchy
-        for level_idx in range(1, 7):
-            level = f"lvl{level_idx}"
-            parent_level = f"lvl{level_idx - 1}"
-            if pd.notna(row[level]):
-                current_label = row[level]
-                current_relation = EX[current_label]
-                ontology.add((current_relation, RDF.type, OWL.ObjectProperty))
-
-                if level != "lvl1":
-                    ontology.add((current_relation, RDFS.subPropertyOf, parent_relation.get(parent_level)))
-
-                ontology.add((
-                    current_relation,
-                    LABEL_PROPERTY,
-                    Literal(current_label, datatype=XSD.string)
-                ))
-                sanskrit_label = ""
-                english_label = ""
-                if pd.notna(row["sanskrit"]):
-                    ontology.add((
-                        current_relation,
-                        SANSKRIT_NAME_PROPERTY,
-                        Literal(row["sanskrit"], datatype=XSD.string)
-                    ))
-                    sanskrit_label = row["sanskrit"]
-                if pd.notna(row["english"]):
-                    ontology.add((
-                        current_relation,
+                        current_ontology_node,
                         ENGLISH_NAME_PROPERTY,
                         Literal(row["english"], datatype=XSD.string)
                     ))
@@ -280,28 +219,32 @@ def create_relation_hierarchy(ontology, df):
                 # Set domain and range constraints if present in the CSV
                 if "domain" in df.columns and pd.notna(row["domain"]):
                     domains = [EX[_domain.strip()] for _domain in row["domain"].split(",")]
-                    # add_union_of_classes(ontology, current_relation, domains, "domain")
+                    for _domain in domains:
+                        ontology.add((current_ontology_node, RDFS.domain, _domain))
+                    # add_union_of_classes(ontology, current_ontology_node, domains, "domain")
 
                 if "range" in df.columns and pd.notna(row["range"]):
                     ranges = [EX[_range.strip()] for _range in row["range"].split(",")]
-                    # add_union_of_classes(ontology, current_relation, ranges, "range")
+                    for _range in ranges:
+                        ontology.add((current_ontology_node, RDFS.range, _range))
+                    # add_union_of_classes(ontology, current_ontology_node, domains, "domain")
 
-                # Build relation tree
-                if current_label not in RELATION_DICT:
-                    RELATION_DICT[current_label] = anytree.Node(
+                # Build hierarchy tree
+                if current_label not in tree_dict:
+                    tree_dict[current_label] = anytree.Node(
                         current_label,
-                        parent=parent_node.get(parent_level),
+                        parent=parent_tree_nodes.get(parent_level),
                         level=level_idx,
                         display=int(row["display"]),
                         data=VertexData(current_label, sanskrit_label, english_label)
                     )
-                current_node = RELATION_DICT[current_label]
-                current_node.data.name = current_label
+                current_tree_node = tree_dict[current_label]
+                current_tree_node.data.name = current_label
 
                 # Update parents
-                parent_node[level] = current_node
-                parent_relation[level] = current_relation
-                parent_label[level] = current_label
+                parent_tree_nodes[level] = current_tree_node
+                parent_ontology_nodes[level] = current_ontology_node
+                parent_labels[level] = current_label
 
 
 ###############################################################################
@@ -362,19 +305,19 @@ def add_empirical_domain_range(root_node, ontology, relation_stats):
 ###############################################################################
 # Build the ontology from the CSV files
 
-create_node_hierarchy(ONTOLOGY, NODE_DATA)
-create_relation_hierarchy(ONTOLOGY, RELATION_DATA)
+create_hierarchy(ONTOLOGY, NODE_DATA, NODE_DICT, TOP_LEVEL_NODE_LABEL, OWL.Class, RDFS.subClassOf)
+create_hierarchy(ONTOLOGY, RELATION_DATA, RELATION_DICT, TOP_LEVEL_RELATION_LABEL, OWL.ObjectProperty, RDFS.subPropertyOf)
 
-CLASS_TREE = CLASS_DICT[TOP_LEVEL_CLASS_LABEL]
+NODE_TREE = NODE_DICT[TOP_LEVEL_NODE_LABEL]
 RELATION_TREE = RELATION_DICT[TOP_LEVEL_RELATION_LABEL]
 
-ROOT_CLASS_NODES = [node for node in CLASS_DICT.values() if node.is_root]
-ROOT_RELATION_NODES = [node for node in RELATION_DICT.values() if node.is_root]
+ROOT_LEVEL_NODE_LABELS = [node for node in NODE_DICT.values() if node.is_root]
+ROOT_LEVEL_RELATION_LABELS = [node for node in RELATION_DICT.values() if node.is_root]
 
-for root_node in ROOT_CLASS_NODES:
+for root_node in ROOT_LEVEL_NODE_LABELS:
     add_empirical_counts_to_tree(root_node, NODE_STATS, aggregate=True)
     add_empirical_counts_to_ontology(root_node, ONTOLOGY)
-for root_node in ROOT_RELATION_NODES:
+for root_node in ROOT_LEVEL_RELATION_LABELS:
     add_empirical_counts_to_tree(root_node, RELATION_STATS, aggregate=True)
     add_empirical_counts_to_ontology(root_node, ONTOLOGY)
     add_empirical_domain_range(root_node, ONTOLOGY, RELATION_STATS)
@@ -415,7 +358,7 @@ O.save(str(DATA_DIR/  f"ontology_v{ONTOLOGY_VERSION}.owl"))
 ###############################################################################
 
 LATEX_NODE_DIRTREE = ["\\dirtree{%"]
-for _, _, node in anytree.RenderTree(CLASS_TREE):
+for _, _, node in anytree.RenderTree(NODE_TREE):
     if node.display < 1:
         continue
     LATEX_NODE_DIRTREE.append(
