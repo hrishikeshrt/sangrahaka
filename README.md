@@ -4,6 +4,13 @@ An easy and robust web-based distributed **Annotation and Querying Framework**.
 
 This work has been accepted in [ESEC/FSE 2021](https://2021.esec-fse.org/).
 
+## Honours
+
+* Best Software Award at [57th Convocation, IIT Kanpur](https://www.iitk.ac.in/doaa/convocation/data/57th-Convocation2024-Awards-and-Honours.pdf#page=21).
+* Best Poster Award at [NYCIKS 2023](https://iitr.ac.in/nyciks/).
+* Publication in [CS & DH @ WSC 2023](https://aclanthology.org/2023.wsc-csdh.0/).
+* Publication in [ESEC/FSE 2021](https://2021.esec-fse.org).
+
 ## Install
 
 Saṅgrāhaka is presented as a full-stack application that you can install on your own server.
