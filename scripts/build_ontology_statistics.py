@@ -10,6 +10,7 @@ Created on Sat Sep 14 11:47:12 2024
 
 ###############################################################################
 
+import csv
 import json
 from pathlib import Path
 from collections import defaultdict, Counter
@@ -143,6 +144,20 @@ def get_ontology_statistics():
 ###############################################################################
 
 STATS = get_ontology_statistics()
+SIMPLE_STATS = [["label", "chapter_count", "node_count", "relation_count"]]
+
+for stat_key in ["node_label", "relation_label"]:
+    for element_label, element_stats in STATS[stat_key].items():
+        SIMPLE_STATS.append([
+            element_label,
+            len(element_stats["chapters"]),
+            element_stats["node_count"],
+            element_stats["relation_count"]
+        ])
+
+with open(DATA_DIR / "ontology_stats.csv", "w") as f:
+    writer = csv.writer(f)
+    writer.writerows(SIMPLE_STATS)
 
 with open(DATA_DIR / "chapter_stats.json", "w") as f:
     json.dump(STATS["chapter"], f, ensure_ascii=False, indent=2)
