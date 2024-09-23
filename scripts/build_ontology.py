@@ -157,7 +157,7 @@ class VertexData:
 NODE_DICT = {}
 RELATION_DICT = {}
 
-TOP_LEVEL_NODE_LABEL = "THING"
+TOP_LEVEL_NODE_LABEL = "ENTITY"
 TOP_LEVEL_RELATION_LABEL = "RELATION"
 
 ###############################################################################
@@ -388,5 +388,22 @@ with open(DATA_DIR / "node_tree.tex", "w") as f:
 
 with open(DATA_DIR / "relation_tree.tex", "w") as f:
     f.write("\n".join(LATEX_RELATION_DIRTREE))
+
+# --------------------------------------------------------------------------- #
+
+NODE_TREE_TEXT = []
+RELATION_TREE_TEXT = []
+
+for pre, fill, node in anytree.RenderTree(NODE_TREE):
+    NODE_TREE_TEXT.append(f"{pre}{node.name} ({node.data.sanskrit}) {node.data}")
+
+for pre, fill, node in anytree.RenderTree(RELATION_TREE):
+    RELATION_TREE_TEXT.append(f"{pre}{node.name} ({node.data.sanskrit}) {node.data}")
+
+with open(DATA_DIR / "node_ontology.txt", "w") as f:
+    f.write("\n".join(NODE_TREE_TEXT))
+
+with open(DATA_DIR / "relation_ontology.txt", "w") as f:
+    f.write("\n".join(RELATION_TREE_TEXT))
 
 ###############################################################################
