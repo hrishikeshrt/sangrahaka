@@ -106,8 +106,8 @@ def get_ontology_statistics():
             "relations": stats["chapter_relation"][chapter_name].most_common(),
         }
 
-    for node in Node.query.filter(Node.is_deleted == False):
-        node_label = node.label.label
+    for _node_label in NodeLabel.query.filter(NodeLabel.is_deleted == False):
+        node_label = _node_label.label
         node_label_stats[node_label] = {
             "node_count": stats["node_chapter"][node_label].total(),
             "chapters": stats["node_chapter"][node_label].most_common(),
@@ -119,10 +119,8 @@ def get_ontology_statistics():
             "relations_as_destination": stats["destination_node_relation"][node_label].most_common(),
         }
 
-    for relation in Relation.query.filter(Relation.is_deleted == False):
-        relation_label = relation.label.label
-        src_label = relation.src_node.label.label
-        dst_label = relation.dst_node.label.label
+    for _relation_label in RelationLabel.query.filter(RelationLabel.is_deleted == False):
+        relation_label = _relation_label.label
         relation_label_stats[relation_label] = {
             "relation_count": stats["relation_chapter"][relation_label].total(),
             "chapters": stats["relation_chapter"][relation_label].most_common(),
