@@ -12,6 +12,7 @@ Created on Sat Sep 14 11:47:12 2024
 
 import csv
 import json
+import pickle
 from pathlib import Path
 from collections import defaultdict, Counter
 
@@ -141,7 +142,43 @@ def get_ontology_statistics():
 
 ###############################################################################
 
+
+def get_ontology_examples():
+    examples = {
+        "node": defaultdict(Counter),
+        "relation": defaultdict(Counter)
+    }
+    node_weight = Counter()
+
+    for relation in Relation.query.filter(
+        Relation.is_deleted == False
+    ):
+        node_weight[relation.src_id] += 1
+        node_weight[relation.dst_id] += 1
+
+    for relation in Relation.query.filter(
+        Relation.is_deleted == False
+    ):
+        relation_weight = node_weight[relation.src_id] + node_weight[relation.dst_id]
+        relation_label = relation.label.label
+        src_label = relation.src_node.label.label
+        dst_label = relation.dst_node.label.label
+        src_text = relation.src_node.lemma.lemma
+        dst_text = relation.dst_node.lemma.lemma
+
+        relation_tuple = (src_text, src_label, relation_label, dst_text, dst_label)
+
+        examples["node"][src_label][relation_tuple] = relation_weight
+        examples["node"][dst_label][relation_tuple] = relation_weight
+        examples["relation"][relation_label][relation_tuple] = relation_weight
+
+    return examples
+
+
+###############################################################################
+
 STATS = get_ontology_statistics()
+EXAMPLES = get_ontology_examples()
 SIMPLE_STATS = [["label", "chapter_count", "node_count", "relation_count"]]
 
 for stat_key in ["node_label", "relation_label"]:
@@ -159,6 +196,9 @@ with open(DATA_DIR / "ontology_stats.csv", "w") as f:
 
 with open(DATA_DIR / "chapter_stats.json", "w") as f:
     json.dump(STATS["chapter"], f, ensure_ascii=False, indent=2)
+
+with open(DATA_DIR / "examples.pkl", "wb") as f:
+    pickle.dump(EXAMPLES, f)
 
 with open(DATA_DIR / "node_label_stats.json", "w") as f:
     json.dump(STATS["node_label"], f, ensure_ascii=False, indent=2)
