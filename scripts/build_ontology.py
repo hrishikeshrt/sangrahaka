@@ -20,6 +20,7 @@ Created on Sat Sep 07 15:03:53 2024
 ###############################################################################
 
 import json
+import pickle
 from pathlib import Path
 from collections import defaultdict, Counter
 
@@ -46,6 +47,7 @@ DATA_DIR = PROJECT_DIR / "data"
 NODE_ONTOLOGY_CSV = DATA_DIR / "node_ontology.csv"
 RELATION_ONTOLOGY_CSV = DATA_DIR / "relation_ontology.csv"
 
+EXAMPLES_PICKLE = DATA_DIR / "examples.pkl"
 NODE_STATS_JSON = DATA_DIR / "node_label_stats.json"
 RELATION_STATS_JSON = DATA_DIR / "relation_label_stats.json"
 
@@ -70,6 +72,9 @@ RELATION_DATA = pd.read_csv(RELATION_ONTOLOGY_CSV)
 
 NODE_STATS = json.loads(NODE_STATS_JSON.read_text()) if NODE_STATS_JSON.exists() else defaultdict(Counter)
 RELATION_STATS = json.loads(RELATION_STATS_JSON.read_text()) if RELATION_STATS_JSON.exists() else defaultdict(Counter)
+
+with open(EXAMPLES_PICKLE, "rb") as f:
+    EXAMPLES = pickle.load(f)
 
 ###############################################################################
 # Ontology URI (unique but not necessarily valid)
@@ -357,37 +362,58 @@ O.save(str(DATA_DIR/  f"ontology_v{ONTOLOGY_VERSION}.owl"))
 
 ###############################################################################
 
-LATEX_NODE_DIRTREE = ["\\dirtree{%"]
-for _, _, node in anytree.RenderTree(NODE_TREE):
-    if node.display < 1:
-        continue
-    LATEX_NODE_DIRTREE.append(
-        f"  . {node.level} {node.name} ({node.data.sanskrit}) "
-        f"({node.data.descendant_count}, "
-        f"N:{node.data.total_node_count}, "
-        f"R:{node.data.total_relation_count}) ."
-    )
-LATEX_NODE_DIRTREE.append("}")
+LATEX_NODE_TREE_FILE = DATA_DIR / "node_tree.tex"
+LATEX_NODE_EXAMPLE_FILE = DATA_DIR / "node_examples.tex"
 
-LATEX_RELATION_DIRTREE = ["\\dirtree{%"]
-for _, _, node in anytree.RenderTree(RELATION_TREE):
-    if node.display < 1:
-        continue
-    LATEX_RELATION_DIRTREE.append(
-        f"  . {node.level} {node.name} ({node.data.sanskrit}) "
-        f"({node.data.descendant_count}, "
-        f"N:{node.data.total_node_count}, "
-        f"R:{node.data.total_relation_count}) ."
-    )
-LATEX_RELATION_DIRTREE.append("}")
+LATEX_RELATION_TREE_FILE = DATA_DIR / "relation_tree.tex"
+LATEX_RELATION_EXAMPLE_FILE = DATA_DIR / "relation_examples.tex"
 
 # --------------------------------------------------------------------------- #
 
-with open(DATA_DIR / "node_tree.tex", "w") as f:
-    f.write("\n".join(LATEX_NODE_DIRTREE))
+NODE_EXAMPLES = EXAMPLES["node"]
+RELATION_EXAMPLES = EXAMPLES["relation"]
 
-with open(DATA_DIR / "relation_tree.tex", "w") as f:
-    f.write("\n".join(LATEX_RELATION_DIRTREE))
+LATEX_GENERATION_INPUT = [
+    (NODE_TREE, NODE_EXAMPLES, LATEX_NODE_TREE_FILE, LATEX_NODE_EXAMPLE_FILE),
+    (RELATION_TREE, RELATION_EXAMPLES, LATEX_RELATION_TREE_FILE, LATEX_RELATION_EXAMPLE_FILE)
+]
+
+# --------------------------------------------------------------------------- #
+
+for tree, examples, latex_tree_file, latex_example_file in LATEX_GENERATION_INPUT:
+    latex_lines = ["\\dirtree{%"]
+    example_lines = []
+
+    for _, _, node in anytree.RenderTree(tree):
+        if node.display < 1:
+            pass
+            continue
+        node_name = node.name.replace("_", "\\_")
+        latex_lines.append(
+            f"  .{node.level} {node_name} "
+            f"(C:{node.data.child_count}, "
+            f"D:{node.data.descendant_count}, "
+            f"N:{node.data.total_node_count}, "
+            f"R:{node.data.total_relation_count})."
+        )
+
+        if examples[node.name]:
+            example_lines.append(f"\\subsubsection*{{{node_name}}}")
+            example_lines.append(f"\\skt{{{node.data.sanskrit}}}\\\\\n")
+
+            for (_nt1, _nl1, _rl, _nt2, _nl2), count in examples[node.name].most_common(5):
+                _nl1 = _nl1.replace("_", "\\_")
+                _nl2 = _nl2.replace("_", "\\_")
+                _rl = _rl.replace("_", "\\_")
+                example_lines.append(f"\\noindent\\relation{{{_nt1}}}{{{_nl1}}}{{{_rl}}}{{{_nt2}}}{{{_nl2}}}\\\\\n")
+
+    latex_lines.append("}")
+
+    with open(latex_tree_file, "w") as f:
+        f.write("\n".join(latex_lines))
+
+    with open(latex_example_file, "w") as f:
+        f.write("\n".join(example_lines))
 
 # --------------------------------------------------------------------------- #
 
