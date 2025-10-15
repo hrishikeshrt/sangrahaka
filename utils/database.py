@@ -141,6 +141,7 @@ def annotation_to_dict(model: Node or Relation) -> dict:
             "source": {
                 "id": model.src_id,
                 "lemma": model.src_node.lemma.lemma,
+                "label_id": model.src_node.label.id,
                 "label": model.src_node.label.label
             },
             "relation_label": {
@@ -151,6 +152,7 @@ def annotation_to_dict(model: Node or Relation) -> dict:
             "target": {
                 "id": model.dst_id,
                 "lemma": model.dst_node.lemma.lemma,
+                "label_id": model.dst_node.label.label,
                 "label": model.dst_node.label.label
             },
             "line": {
@@ -448,6 +450,7 @@ def get_line_data(
                 'source': {
                     'id': relation.src_id,
                     'lemma': relation.src_node.lemma.lemma,
+                    'label_id': relation.src_node.label.id,
                     'label': relation.src_node.label.label
                 },
                 'label': {
@@ -458,6 +461,7 @@ def get_line_data(
                 'target': {
                     'id': relation.dst_id,
                     'lemma': relation.dst_node.lemma.lemma,
+                    'label_id': relation.dst_node.label.id,
                     'label': relation.dst_node.label.label
                 },
                 'annotator': {
