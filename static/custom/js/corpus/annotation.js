@@ -414,6 +414,76 @@ function setup_relation_annotation(unique_id) {
             }, 500);
         }
     };
+    const edit_source_node_lexicon_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Edit Source Entity Text",
+        action: function (e, context) {
+            e.preventDefault();
+            const $element = $(context);
+            const current_lemma = $element.find('span.relation-source-lemma').text();
+            $edit_lexicon_modal.modal('show');
+            $edit_lexicon_current_lemma.val(current_lemma);
+            $edit_lexicon_replacement_lemma.val(current_lemma);
+            setTimeout(function () {
+                $edit_lexicon_replacement_lemma.focus();
+            }, 500);
+        },
+    };
+    const edit_source_node_label_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Change Source Entity Type",
+        action: function (e, context) {
+            e.preventDefault();
+            const $element = $(context);
+            const lemma = $element.find('span.relation-source-lemma').text();
+            const label =  $element.find('span.relation-source-label').text();
+            const node_id = $element.data('src-node-id');
+            const label_id = $element.data('src-label-id');
+
+            $edit_node_label_modal.modal('show');
+            $edit_node_label_node_id.val(node_id);
+            $edit_node_label_lexicon.text(lemma);
+            $edit_node_label_node_label.text(label);
+            $edit_node_label_current_label.selectpicker('val', label_id);
+            $edit_node_label_replacement_label.selectpicker('val', label_id);
+            setTimeout(function () {
+                $edit_node_label_replacement_label.focus();
+            }, 500);
+        },
+    };
+    const edit_target_node_lexicon_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Edit Target Entity Text",
+        action: function (e, context) {
+            e.preventDefault();
+            const $element = $(context);
+            const current_lemma = $element.find('span.relation-target-lemma').text();
+            $edit_lexicon_modal.modal('show');
+            $edit_lexicon_current_lemma.val(current_lemma);
+            $edit_lexicon_replacement_lemma.val(current_lemma);
+            setTimeout(function () {
+                $edit_lexicon_replacement_lemma.focus();
+            }, 500);
+        },
+    };
+    const edit_target_node_label_menu_item = {
+        text: "<i class='fa fa-edit mr-1'></i> Change Target Entity Type",
+        action: function (e, context) {
+            e.preventDefault();
+            const $element = $(context);
+            const lemma = $element.find('span.relation-target-lemma').text();
+            const label =  $element.find('span.relation-target-label').text();
+            const node_id = $element.data('dst-node-id');
+            const label_id = $element.data('dst-label-id');
+
+            $edit_node_label_modal.modal('show');
+            $edit_node_label_node_id.val(node_id);
+            $edit_node_label_lexicon.text(lemma);
+            $edit_node_label_node_label.text(label);
+            $edit_node_label_current_label.selectpicker('val', label_id);
+            $edit_node_label_replacement_label.selectpicker('val', label_id);
+            setTimeout(function () {
+                $edit_node_label_replacement_label.focus();
+            }, 500);
+        },
+    };
     const edit_node_in_relations_menu_item = {
         text: "<i class='fa fa-edit mr-1'></i> Change Node in Relations",
         action: function(e, context) {
@@ -428,6 +498,10 @@ function setup_relation_annotation(unique_id) {
         relation_actions_header_menu_item,
         relation_information_menu_item,
         edit_relation_label_menu_item,
+        edit_source_node_lexicon_menu_item,
+        edit_source_node_label_menu_item,
+        edit_target_node_lexicon_menu_item,
+        edit_target_node_label_menu_item,
         edit_node_in_relations_menu_item
     ]);
 }

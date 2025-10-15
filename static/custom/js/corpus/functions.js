@@ -40,7 +40,7 @@ function sanskrit_line_detail_formatter(index, row) {
     for (const word of row.analysis) {
         words.push(word.original);
         roots.push(word.root);
-        if (word.details !== {}) {
+        if (word.details != {}) {
             genders.push(word.details.gender);
             cases.push(word.details.case);
             forms.push(word.details.form);
@@ -150,7 +150,7 @@ function relation_formatter(relation, is_unconfirmed = false) {
     const relation_label_hover_text = `Label ID: ${relation.label.id}`;
 
     const relation_html = [
-        `<li title="${relation_hover_text}" class="${li_class}" data-relation-id="${relation.id}" data-annotator-id="${relation.annotator.id}" data-src-node-id="${relation.source.id}" data-dst-node-id="${relation.target.id}" data-relation-label-id="${relation.label.id}">`,
+        `<li title="${relation_hover_text}" class="${li_class}" data-relation-id="${relation.id}" data-annotator-id="${relation.annotator.id}" data-src-node-id="${relation.source.id}" data-src-label-id="${relation.source.label_id}" data-dst-node-id="${relation.target.id}" data-dst-label-id="${relation.target.label_id}" data-relation-label-id="${relation.label.id}">`,
         '<div class="row">',
         '<div class="col-sm">',
         `<span title="${source_node_hover_text}">(<span class="relation-lemma relation-source-lemma">${relation.source.lemma}</span> <span class="text-secondary">::</span> <span class="text-secondary relation-source-label">${relation.source.label}</span>)</span>`,
