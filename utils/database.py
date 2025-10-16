@@ -152,7 +152,7 @@ def annotation_to_dict(model: Node or Relation) -> dict:
             "target": {
                 "id": model.dst_id,
                 "lemma": model.dst_node.lemma.lemma,
-                "label_id": model.dst_node.label.label,
+                "label_id": model.dst_node.label.id,
                 "label": model.dst_node.label.label
             },
             "line": {

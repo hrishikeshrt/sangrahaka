@@ -404,7 +404,7 @@ def update_relation_label_id(
     change the `annotator_id` associated with it.
     """
     relation = Relation.query.get(relation_id)
-    relation_label = NodeLabel.query.get(new_label_id)
+    relation_label = RelationLabel.query.get(new_label_id)
 
     if relation is None or relation_label is None:
         return False
