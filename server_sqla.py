@@ -155,6 +155,13 @@ webapp.config["FLASK_ADMIN_SWATCH"] = "united"
 # CSRF Token Expiry
 webapp.config['WTF_CSRF_TIME_LIMIT'] = None
 
+# Cookie Hardening (HttpOnly is already the Flask/Flask-Login default;
+# Secure defaults to False in both and must be set explicitly for HTTPS)
+webapp.config['SESSION_COOKIE_SECURE'] = True
+webapp.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+webapp.config['REMEMBER_COOKIE_SECURE'] = True
+webapp.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
+
 ###############################################################################
 # Flask-Security-Too Configuration
 
