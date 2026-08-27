@@ -1472,7 +1472,10 @@ def api():
 
         # bad-words
         must_have = ['MATCH', 'RETURN']
-        must_avoid = ['DETACH', 'DELETE', 'UPDATE', 'SET', 'MERGE']
+        must_avoid = [
+            'DETACH', 'DELETE', 'UPDATE', 'SET', 'MERGE', 'CREATE',
+            'LOAD', 'CALL', 'FOREACH'
+        ]
 
         absent_goodwords = [w for w in must_have if w not in query_words]
         present_badwords = [w for w in must_avoid if w in query_words]
