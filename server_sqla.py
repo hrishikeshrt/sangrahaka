@@ -178,6 +178,7 @@ webapp.config['SECURITY_USERNAME_REQUIRED'] = True
 webapp.config['SECURITY_POST_LOGIN_VIEW'] = 'show_home'
 webapp.config['SECURITY_POST_LOGOUT_VIEW'] = 'show_home'
 webapp.config['SECURITY_UNAUTHORIZED_VIEW'] = 'show_home'
+webapp.config['SECURITY_RETURN_GENERIC_RESPONSES'] = True
 
 ###############################################################################
 # Mail Configuration
