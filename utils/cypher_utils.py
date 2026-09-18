@@ -8,6 +8,7 @@ Created on Fri Sep 24 23:22:31 2021
 
 ###############################################################################
 
+import json
 import logging
 import pypher
 
@@ -198,7 +199,7 @@ def graph_to_cypher(graph, non_conditionals=None,
     query = str(p)
     params = p.bound_params
     for param_name, param_value in params.items():
-        query = query.replace(f'${param_name}', f'"{param_value}"')
+        query = query.replace(f'${param_name}', json.dumps(param_value))
     return query
 
 ###############################################################################
