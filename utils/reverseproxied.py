@@ -12,7 +12,23 @@ Created on Tue Sep 10 13:56:54 2019
 # https://blog.macuyiko.com/post/2016/fixing-flask-url_for-when-behind-mod_proxy.html
 """
 
+import os
+
 from werkzeug.middleware.proxy_fix import ProxyFix
+
+###############################################################################
+
+# Hosts the application is allowed to believe it is being served as.
+# Anything else in the `Host` (or `X-Forwarded-Server`) header is untrusted
+# client input and gets normalized to the first entry below, so it never
+# reaches `request.host` / `request.url` / templates.
+DEFAULT_ALLOWED_HOSTS = [
+    host.strip().lower()
+    for host in os.environ.get(
+        'ALLOWED_HOSTS', 'sanskrit.iitk.ac.in,localhost'
+    ).split(',')
+    if host.strip()
+]
 
 ###############################################################################
 
@@ -45,12 +61,14 @@ class ReverseProxied(object):
 
     :param app: the WSGI application
     '''
-    def __init__(self, app, script_name=None, scheme=None, server=None, mounts=None):
+    def __init__(self, app, script_name=None, scheme=None, server=None,
+                 mounts=None, allowed_hosts=None):
         self.app = ProxyFix(app)
         self.script_name = script_name
         self.scheme = scheme
         self.server = server
         self.mounts = mounts or {}
+        self.allowed_hosts = allowed_hosts or DEFAULT_ALLOWED_HOSTS
 
     def __call__(self, environ, start_response):
         script_name = environ.get('HTTP_X_SCRIPT_NAME', '') or self.script_name
@@ -85,6 +103,10 @@ class ReverseProxied(object):
                 app = self.app
         else:
             app = self.app
+
+        host = environ.get('HTTP_HOST', '').rsplit(':', 1)[0].lower()
+        if self.allowed_hosts and host not in self.allowed_hosts:
+            environ['HTTP_HOST'] = self.allowed_hosts[0]
 
         return app(environ, start_response)
 
