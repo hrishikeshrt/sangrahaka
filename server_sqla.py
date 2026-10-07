@@ -162,6 +162,16 @@ webapp.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 webapp.config['REMEMBER_COOKIE_SECURE'] = True
 webapp.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
 
+# Idle session timeout. `SESSION_REFRESH_EACH_REQUEST` (Flask default: True)
+# Actively-working user is never ogged out mid-session,
+# only after this long with no requests at all
+webapp.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(weeks=1)
+
+
+@webapp.before_request
+def _make_session_permanent():
+    session.permanent = True
+
 ###############################################################################
 # Flask-Security-Too Configuration
 
@@ -244,6 +254,18 @@ limiter = Limiter(
     app=webapp,
     default_limits=["1800 per hour"],
     storage_uri="memory://",
+)
+
+# The global default is too loose to stop a login brute-force
+# (1800/hour still allows a fast burst of attempts).
+# tighten the login and register view,
+# wrapped view must be written back into `view_functions`,
+# otherwise Flask keeps dispatching to the original
+webapp.view_functions["security.login"] = limiter.limit("10 per minute")(
+    webapp.view_functions["security.login"]
+)
+webapp.view_functions["security.register"] = limiter.limit("10 per minute")(
+    webapp.view_functions["security.register"]
 )
 
 ###############################################################################
